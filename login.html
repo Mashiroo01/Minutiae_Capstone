@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - Minutiae</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --pnp-blue: #0038a8;
+            --pnp-blue-dark: #002b80;
+            --pnp-red: #ce1126;
+            --pnp-gold: #fcd116;
+            --pnp-ink: #172338;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--pnp-ink);
+            background:
+                radial-gradient(circle at 15% 20%, rgba(252, 209, 22, 0.16), transparent 26%),
+                radial-gradient(circle at 88% 20%, rgba(206, 17, 38, 0.14), transparent 24%),
+                linear-gradient(180deg, #f7faff 0%, #edf3ff 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .login-shell {
+            width: min(1040px, 100%);
+            display: grid;
+            grid-template-columns: minmax(0, 1.2fr) minmax(360px, 440px);
+            gap: 22px;
+            align-items: stretch;
+        }
+
+        .login-hero,
+        .login-card {
+            border-radius: 28px;
+            overflow: hidden;
+            box-shadow: 0 28px 60px rgba(10, 22, 48, 0.16);
+        }
+
+        .login-hero {
+            position: relative;
+            padding: 36px;
+            background:
+                linear-gradient(135deg, rgba(0, 43, 128, 0.96) 0%, rgba(0, 56, 168, 0.95) 62%, rgba(206, 17, 38, 0.92) 100%);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .login-hero::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--pnp-gold), #fff4b8, var(--pnp-red));
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 13px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.12);
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.9px;
+            margin-bottom: 16px;
+        }
+
+        .login-hero h1 {
+            font-size: clamp(30px, 4vw, 44px);
+            line-height: 1.08;
+            margin-bottom: 14px;
+            font-weight: 800;
+        }
+
+        .login-hero p {
+            color: rgba(255, 255, 255, 0.88);
+            line-height: 1.7;
+            margin-bottom: 18px;
+            max-width: 580px;
+        }
+
+        .hero-list {
+            display: grid;
+            gap: 12px;
+            margin-top: 28px;
+        }
+
+        .hero-item {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            padding: 14px 16px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .hero-item i {
+            color: #ffe17a;
+            font-size: 18px;
+            margin-top: 2px;
+        }
+
+        .hero-item strong {
+            display: block;
+            font-size: 15px;
+            margin-bottom: 4px;
+        }
+
+        .hero-item span {
+            display: block;
+            color: rgba(255, 255, 255, 0.84);
+            font-size: 13px;
+            line-height: 1.55;
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.97);
+            border: 1px solid rgba(0, 56, 168, 0.12);
+            padding: 34px 30px;
+        }
+
+        .login-mark {
+            width: 64px;
+            height: 64px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, var(--pnp-blue) 0%, var(--pnp-red) 100%);
+            color: white;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            box-shadow: 0 18px 32px rgba(0, 56, 168, 0.2);
+            margin-bottom: 18px;
+        }
+
+        .login-card h2 {
+            font-size: 30px;
+            font-weight: 800;
+            margin-bottom: 10px;
+            color: var(--pnp-ink);
+        }
+
+        .login-card p {
+            color: #61718d;
+            line-height: 1.65;
+            margin-bottom: 22px;
+        }
+
+        .form-label {
+            font-weight: 700;
+            color: #223758;
+        }
+
+        .form-control {
+            border-radius: 14px;
+            border: 1px solid rgba(0, 56, 168, 0.14);
+            padding: 12px 14px;
+            background: #fbfdff;
+        }
+
+        .form-control:focus {
+            border-color: rgba(0, 56, 168, 0.45);
+            box-shadow: 0 0 0 0.22rem rgba(0, 56, 168, 0.12);
+        }
+
+        .password-group {
+            position: relative;
+        }
+
+        .password-toggle {
+            border: 1px solid rgba(0, 56, 168, 0.14);
+            border-left: none;
+            background: #fbfdff;
+            color: #35507f;
+            border-radius: 0 14px 14px 0;
+            min-width: 54px;
+        }
+
+        .password-toggle:hover,
+        .password-toggle:focus {
+            background: #f1f6ff;
+            color: var(--pnp-blue-deep);
+            box-shadow: none;
+        }
+
+        .password-group .form-control {
+            border-right: none;
+            border-radius: 14px 0 0 14px;
+        }
+
+        .btn-login {
+            width: 100%;
+            border: none;
+            border-radius: 14px;
+            padding: 13px 16px;
+            color: white;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--pnp-blue) 0%, var(--pnp-red) 100%);
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 14px 26px rgba(0, 56, 168, 0.2);
+        }
+
+        .login-note {
+            margin-top: 18px;
+            padding: 14px 16px;
+            border-radius: 14px;
+            background: #f7faff;
+            border: 1px solid #d6e2fb;
+            color: #42597f;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 900px) {
+            .login-shell {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-shell">
+        <section class="login-hero">
+            <div class="hero-badge">
+                <i class="bi bi-shield-lock"></i> Protected Admin Access
+            </div>
+            <h1>Admin Authentication Required</h1>
+            <p>This entry point is reserved for authenticated admin and super admin users only. Sign in first to continue to the protected Minutiae administration page.</p>
+
+            <div class="hero-list">
+                <div class="hero-item">
+                    <i class="bi bi-person-lock"></i>
+                    <div>
+                        <strong>Role-based access</strong>
+                        <span>Only admin and super admin accounts can continue to the protected page.</span>
+                    </div>
+                </div>
+                <div class="hero-item">
+                    <i class="bi bi-fingerprint"></i>
+                    <div>
+                        <strong>Restricted biometric data</strong>
+                        <span>Sensitive fingerprint match information remains protected by session-based access control.</span>
+                    </div>
+                </div>
+                <div class="hero-item">
+                    <i class="bi bi-clock-history"></i>
+                    <div>
+                        <strong>Audited access</strong>
+                        <span>Authentication actions and downstream admin activity continue into the system audit trail.</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="login-card">
+            <div class="login-mark">
+                <i class="bi bi-person-lock"></i>
+            </div>
+            <h2>Sign In</h2>
+            <p>Use an authorized admin or super admin account to access the protected admin page at `index.html`.</p>
+
+            <div id="loginError" class="alert alert-danger" style="display: none;"></div>
+
+            <form id="loginForm">
+                <div class="mb-3">
+                    <label class="form-label" for="username">Username</label>
+                    <input type="text" id="username" class="form-control" autocomplete="username" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="password">Password</label>
+                    <div class="input-group password-group">
+                        <input type="password" id="password" class="form-control" autocomplete="current-password" required>
+                        <button type="button" class="btn password-toggle" id="togglePassword" aria-label="Show password" aria-pressed="false">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                <button type="submit" class="btn-login">
+                    <i class="bi bi-box-arrow-in-right"></i> Continue to Protected Page
+                </button>
+            </form>
+
+            <div class="login-note">
+                You can stay on this login page even if a previous admin session already exists.
+                Use the administrator credentials configured for this installation.
+            </div>
+        </section>
+    </div>
+
+    <script>
+        const loginForm = document.getElementById('loginForm');
+        const loginError = document.getElementById('loginError');
+        const passwordInput = document.getElementById('password');
+        const togglePasswordButton = document.getElementById('togglePassword');
+        const redirectTarget = new URLSearchParams(window.location.search).get('redirect') || 'index.html';
+
+        function normalizeRedirect(target) {
+            if (!target || /^(https?:)?\/\//i.test(target)) {
+                return 'index.html';
+            }
+            if (target.startsWith('/')) {
+                return 'index.html';
+            }
+            return target;
+        }
+
+        function updatePasswordToggleState(input, button) {
+            const isVisible = input.type === 'text';
+            button.setAttribute('aria-pressed', String(isVisible));
+            button.setAttribute('aria-label', isVisible ? 'Hide password' : 'Show password');
+            button.innerHTML = `<i class="bi ${isVisible ? 'bi-eye-slash' : 'bi-eye'}"></i>`;
+        }
+
+        togglePasswordButton.addEventListener('click', () => {
+            passwordInput.type = passwordInput.type === 'password' ? 'text' : 'password';
+            updatePasswordToggleState(passwordInput, togglePasswordButton);
+            passwordInput.focus();
+            passwordInput.setSelectionRange(passwordInput.value.length, passwordInput.value.length);
+        });
+
+        updatePasswordToggleState(passwordInput, togglePasswordButton);
+
+        loginForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            loginError.style.display = 'none';
+            loginError.textContent = '';
+
+            try {
+                const response = await fetch('backend/auth.php?action=login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: document.getElementById('username').value.trim(),
+                        password: document.getElementById('password').value
+                    })
+                });
+
+                const data = await response.json();
+                if (!response.ok || data.error) {
+                    throw new Error(data.error || 'Unable to sign in.');
+                }
+
+                if (!['officer', 'admin', 'super_admin'].includes(data.user?.role)) {
+                    throw new Error('This account is not allowed to access the admin page.');
+                }
+
+                const target = normalizeRedirect(redirectTarget);
+                const destination = data.user?.role === 'officer' && (target === 'index.html' || target === 'dashboard.html')
+                    ? 'admin.html'
+                    : target;
+
+                window.location.replace(destination);
+            } catch (error) {
+                loginError.textContent = error.message;
+                loginError.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,94 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║                                                                            ║
+║                    MINUTIAE - QUICK START GUIDE                           ║
+║              Professional Police Clearance Verification System            ║
+║                                                                            ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+📖 Start Here:
+   1. Read: GETTING_STARTED.md (Complete setup instructions)
+   2. Open: http://localhost/Minutiae/index.html (Landing page)
+
+🚀 For Users:
+   • Dashboard: http://localhost/Minutiae/dashboard.html
+   • Submit application for police clearance verification
+
+🛠️ For Administrators:
+   • Admin Portal: http://localhost/Minutiae/admin.html
+   • Manage criminal records, view applications, check system status
+
+📋 Files Overview:
+
+   Backend (API & Logic):
+   ├─ backend/config.php              ← Configuration file (EDIT THIS FIRST)
+   ├─ backend/Bozorth3Matcher.php    ← Fingerprint matching algorithm
+   ├─ backend/FingerprintDB.php       ← Database operations
+   ├─ backend/applicant_info.php      ← Applicant API endpoints
+   ├─ backend/criminal_info.php       ← Criminal database management
+   └─ backend/criminal_record.php     ← Main REST API
+
+   Frontend (Web Interfaces):
+   ├─ index.html                      ← Landing page & home
+   ├─ dashboard.html                  ← Applicant submission form
+   └─ admin.html                      ← Administrator dashboard
+
+   Documentation:
+   ├─ GETTING_STARTED.md              ← Setup & configuration guide
+   ├─ POLICE_CLEARANCE_WORKFLOW.md    ← Technical workflow explanation
+   ├─ API_REFERENCE.md                ← API endpoints documentation
+   ├─ INSTALLATION.md                 ← Platform-specific installation
+   ├─ QUICK_REFERENCE.md              ← SQL & troubleshooting
+   └─ README.md                       ← Project overview
+
+⚙️ Minimum Setup Steps:
+
+   1. Update config.php:
+      - Set your MySQL credentials
+      - Set path to bozorth3 executable
+
+   2. Create database:
+      - CREATE DATABASE minutiae;
+
+   3. Initialize tables:
+      - Call: http://localhost/Minutiae/backend/criminal_record.php?action=init
+
+   4. Access the system:
+      - Applicant: http://localhost/Minutiae/dashboard.html
+      - Admin: http://localhost/Minutiae/admin.html
+
+🔑 Key Features:
+
+   ✓ Two-step verification:
+     Step 1: Demographic screening (name, age, sex)
+     Step 2: Fingerprint matching (if demographic hit found)
+   
+   ✓ NIST Bozorth3 algorithm (99.9% accuracy)
+   ✓ Web-based interface (responsive, mobile-friendly)
+   ✓ Comprehensive audit trail
+   ✓ Admin management dashboard
+   ✓ Secure database storage
+
+📖 Read First:
+   → GETTING_STARTED.md (Complete guide with examples)
+   → Documentation/POLICE_CLEARANCE_WORKFLOW.md (Technical explanation)
+
+🆘 Troubleshooting:
+   → Documentation/QUICK_REFERENCE.md (FAQs and common issues)
+   → Documentation/API_REFERENCE.md (API endpoints)
+
+📊 System Requirements:
+   • PHP 7.4+ 
+   • MySQL 5.7+ or MariaDB 10.3+
+   • NIST Bozorth3 executable
+   • Modern web browser (Chrome, Firefox, Safari, Edge)
+
+🎯 Ready? Start with:
+   http://localhost/Minutiae/index.html
+
+═══════════════════════════════════════════════════════════════════════════════
+
+Version: 1.0.0
+Last Updated: 2024
+Powered by: NIST Bozorth3 Algorithm
+
+═══════════════════════════════════════════════════════════════════════════════

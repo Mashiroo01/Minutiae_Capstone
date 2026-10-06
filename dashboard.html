@@ -1,0 +1,1769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minutiae - Police System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --pnp-blue: #0038a8;
+            --pnp-blue-dark: #002b80;
+            --pnp-red: #ce1126;
+            --pnp-gold: #fcd116;
+            --pnp-ink: #1b2430;
+            --pnp-bg: #f3f7ff;
+            --pnp-card: #ffffff;
+            --pnp-border: #d5def0;
+            --pnp-shadow: 0 24px 48px rgba(11, 40, 102, 0.14);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background:
+                radial-gradient(circle at 15% 20%, rgba(252, 209, 22, 0.16), transparent 28%),
+                radial-gradient(circle at 85% 80%, rgba(206, 17, 38, 0.13), transparent 24%),
+                linear-gradient(180deg, #f9fbff 0%, #eef4ff 54%, var(--pnp-bg) 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--pnp-ink);
+            min-height: 100vh;
+        }
+
+        body.auth-pending {
+            display: none;
+        }
+
+        /* Navbar */
+        .navbar {
+            background: linear-gradient(100deg, var(--pnp-blue-dark) 0%, var(--pnp-blue) 62%, var(--pnp-red) 100%);
+            box-shadow: 0 14px 30px rgba(0, 30, 90, 0.24);
+            padding: 16px 30px 18px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .navbar-brand {
+            font-size: 24px;
+            font-weight: 700;
+            color: white !important;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: 0.4px;
+        }
+
+        .navbar::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--pnp-gold), #fff, var(--pnp-gold));
+        }
+
+        .nav-meta {
+            color: rgba(255, 255, 255, 0.92);
+            font-size: 13px;
+            letter-spacing: 0.3px;
+            padding: 8px 14px;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logout-button {
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.26);
+            color: white;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 8px 14px;
+            font-size: 13px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .logout-button:hover {
+            background: rgba(255, 255, 255, 0.18);
+            border-color: rgba(255, 255, 255, 0.34);
+        }
+
+        .nav-tabs {
+            border: 1px solid var(--pnp-border);
+            margin: 20px 0 18px;
+            background: rgba(255, 255, 255, 0.92);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 28px rgba(0, 56, 168, 0.08);
+            display: flex;
+            gap: 8px;
+            padding: 8px;
+        }
+
+        .nav-link {
+            color: var(--pnp-blue);
+            border: none;
+            font-weight: 600;
+            padding: 14px 22px;
+            cursor: pointer;
+            border-radius: 14px;
+            transition: all 0.25s;
+            flex: 1;
+        }
+
+        .nav-link.active {
+            color: white;
+            background: linear-gradient(90deg, var(--pnp-blue), var(--pnp-blue-dark));
+            box-shadow: 0 14px 26px rgba(0, 56, 168, 0.2);
+        }
+
+        .nav-link:hover {
+            color: white;
+            background: linear-gradient(90deg, #184ab8, var(--pnp-blue));
+        }
+
+        /* Main Container */
+        .main-container {
+            max-width: 1120px;
+            margin: 0 auto;
+            padding: 34px 20px 42px;
+        }
+
+        .hero-shell {
+            display: grid;
+            grid-template-columns: minmax(0, 1.6fr) minmax(260px, 0.9fr);
+            gap: 18px;
+            margin-bottom: 18px;
+        }
+
+        .hero-panel,
+        .hero-sidecard {
+            border-radius: 24px;
+            border: 1px solid var(--pnp-border);
+            box-shadow: var(--pnp-shadow);
+        }
+
+        .hero-panel {
+            position: relative;
+            overflow: hidden;
+            padding: 26px 28px;
+            background:
+                radial-gradient(circle at 12% 18%, rgba(252, 209, 22, 0.18), transparent 26%),
+                linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(244, 248, 255, 0.98) 100%);
+        }
+
+        .hero-panel::after {
+            content: '';
+            position: absolute;
+            right: -40px;
+            top: -32px;
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            background: rgba(0, 56, 168, 0.08);
+        }
+
+        .hero-kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 12px;
+            border-radius: 999px;
+            background: rgba(0, 56, 168, 0.08);
+            color: var(--pnp-blue-dark);
+            font-size: 11px;
+            text-transform: uppercase;
+            font-weight: 800;
+            letter-spacing: 1px;
+            margin-bottom: 14px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-panel h1 {
+            position: relative;
+            z-index: 1;
+            font-size: clamp(28px, 4vw, 40px);
+            line-height: 1.1;
+            margin-bottom: 12px;
+            color: var(--pnp-blue-dark);
+            font-weight: 800;
+        }
+
+        .hero-panel p {
+            position: relative;
+            z-index: 1;
+            margin-bottom: 18px;
+            color: #42546f;
+            line-height: 1.65;
+            max-width: 700px;
+        }
+
+        .hero-chip-row {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .hero-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 13px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(0, 56, 168, 0.12);
+            color: #26426f;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .hero-sidecard {
+            background: linear-gradient(160deg, var(--pnp-blue-dark) 0%, var(--pnp-blue) 100%);
+            color: white;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .hero-sidecard span {
+            display: inline-flex;
+            width: fit-content;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.12);
+            color: #fff1a6;
+            font-size: 11px;
+            text-transform: uppercase;
+            font-weight: 800;
+            letter-spacing: 0.9px;
+            margin-bottom: 12px;
+        }
+
+        .hero-sidecard strong {
+            font-size: 20px;
+            line-height: 1.35;
+            margin-bottom: 10px;
+        }
+
+        .hero-sidecard p {
+            margin: 0;
+            color: rgba(255, 255, 255, 0.84);
+            line-height: 1.6;
+        }
+
+        /* Tab Content */
+        .tab-content {
+            background: var(--pnp-card);
+            border-radius: 26px;
+            box-shadow: var(--pnp-shadow);
+            padding: 42px;
+            border: 1px solid var(--pnp-border);
+        }
+
+        .tab-pane {
+            display: none;
+        }
+
+        .tab-pane.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Form Styles */
+        .form-section h2 {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--pnp-blue-dark);
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            position: relative;
+            padding-bottom: 8px;
+        }
+
+        .form-section h2::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 78px;
+            height: 3px;
+            border-radius: 2px;
+            background: linear-gradient(90deg, var(--pnp-gold), var(--pnp-red));
+        }
+
+        .form-section h2 i {
+            color: var(--pnp-blue);
+            font-size: 32px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            font-weight: 600;
+            color: #22314a;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="email"],
+        input[type="file"],
+        select {
+            width: 100%;
+            padding: 13px 15px;
+            border: 1px solid #d8e1f2;
+            border-radius: 14px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+            background: #fbfdff;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--pnp-blue);
+            box-shadow: 0 0 0 3px rgba(0, 56, 168, 0.12);
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, var(--pnp-blue) 0%, var(--pnp-blue-dark) 100%);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 56, 168, 0.28);
+        }
+
+        /* Two Column Form */
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Messages */
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid;
+        }
+
+        .alert-error {
+            background: #fff1f2;
+            border-left-color: var(--pnp-red);
+            color: #8f1420;
+            display: none;
+        }
+
+        .alert-success {
+            background: #eef8f0;
+            border-left-color: #238a3b;
+            color: #16652b;
+            display: none;
+        }
+
+        .alert.show {
+            display: block;
+        }
+
+        /* Loading */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--pnp-blue);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Results */
+        .result-card {
+            border-radius: 18px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border-left: 5px solid;
+            display: none;
+            box-shadow: 0 18px 34px rgba(13, 32, 78, 0.08);
+        }
+
+        .result-card.show {
+            display: block;
+        }
+
+        .result-card.approved {
+            background: #edf5ff;
+            border-left-color: #28a745;
+        }
+
+        .result-card.rejected {
+            background: #fff1f3;
+            border-left-color: var(--pnp-red);
+        }
+
+        .result-card.caution {
+            background: #fff9e8;
+            border-left-color: #d39e00;
+        }
+
+        .result-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .result-lead {
+            font-size: 18px;
+            font-weight: 700;
+            margin: 0 0 10px;
+            color: var(--pnp-ink);
+        }
+
+        .result-description {
+            color: #4b5d78;
+            line-height: 1.65;
+            margin: 0 0 18px;
+        }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 12px;
+            margin-top: 18px;
+        }
+
+        .result-metric {
+            background: rgba(255, 255, 255, 0.72);
+            border: 1px solid rgba(0, 56, 168, 0.08);
+            border-radius: 14px;
+            padding: 14px 15px;
+        }
+
+        .result-metric-label {
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: #5a6d8d;
+            margin-bottom: 6px;
+        }
+
+        .result-metric-value {
+            font-size: 15px;
+            font-weight: 700;
+            color: #203250;
+            line-height: 1.45;
+        }
+
+        .result-note {
+            margin-top: 18px;
+            padding: 14px 16px;
+            border-radius: 14px;
+            border: 1px solid rgba(0, 56, 168, 0.1);
+            background: rgba(255, 255, 255, 0.72);
+            color: #304765;
+            line-height: 1.6;
+        }
+
+        .result-note strong {
+            color: var(--pnp-blue-dark);
+        }
+
+        .fingerprint-callout {
+            background: linear-gradient(135deg, rgba(206, 17, 38, 0.08) 0%, rgba(252, 209, 22, 0.18) 100%);
+            border: 1px solid rgba(206, 17, 38, 0.12);
+            border-radius: 18px;
+            padding: 18px 18px 20px;
+            margin-bottom: 18px;
+        }
+
+        .fingerprint-callout h5 {
+            color: #a1202e;
+            margin-bottom: 10px;
+            font-weight: 800;
+        }
+
+        .fingerprint-callout p {
+            margin: 0;
+            color: #5d4a39;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        .fingerprint-preview-panel {
+            display: none;
+            margin-top: 14px;
+            padding: 14px;
+            border: 1px solid #d9e6f8;
+            border-radius: 10px;
+            background: #f8fbff;
+            width: fit-content;
+            max-width: 100%;
+        }
+
+        .fingerprint-preview-panel.show {
+            display: block;
+        }
+
+        .fingerprint-preview-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+            color: var(--pnp-blue-dark);
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .fingerprint-preview-image {
+            display: block;
+            width: min(260px, 100%);
+            height: auto;
+            max-height: 340px;
+            object-fit: contain;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            background: #ffffff;
+        }
+
+        .fingerprint-preview-meta {
+            margin-top: 8px;
+            color: #64748b;
+            font-size: 12px;
+        }
+
+        .fingerprint-preview-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .fingerprint-download-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border: none;
+            border-radius: 8px;
+            background: #0f766e;
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 8px 11px;
+            cursor: pointer;
+        }
+
+        .fingerprint-download-button:hover,
+        .fingerprint-download-button:focus {
+            background: #115e59;
+            color: #ffffff;
+        }
+
+        .result-badge {
+            display: inline-block;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .badge-approved {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-rejected {
+            background: #ffe0e4;
+            color: #8f1420;
+        }
+
+        .badge-caution {
+            background: #fff1b9;
+            color: #6f5700;
+        }
+
+        .result-table {
+            width: 100%;
+            font-size: 13px;
+            margin-top: 15px;
+        }
+
+        .result-table tr {
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .result-table td {
+            padding: 8px 0;
+        }
+
+        .result-table td:first-child {
+            font-weight: 600;
+            color: #333;
+            width: 40%;
+        }
+
+        /* File Upload */
+        .file-input-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px;
+            background: #f7faff;
+            border: 2px dashed var(--pnp-blue);
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .file-input-label:hover {
+            background: #edf3ff;
+            border-color: var(--pnp-red);
+        }
+
+        .file-input-wrapper input[type="file"] {
+            display: none;
+        }
+
+        .file-name {
+            font-size: 13px;
+            color: #666;
+            margin-top: 8px;
+        }
+
+        .hidden-section {
+            display: none;
+        }
+
+        .hidden-section.show {
+            display: block;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        .privacy-lock-hint {
+            background: #fff8e8;
+            border: 1px solid #f0d89b;
+            border-radius: 10px;
+            padding: 14px 16px;
+            color: #6a5514;
+            margin-bottom: 18px;
+            font-size: 14px;
+        }
+
+        .privacy-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(12, 24, 52, 0.72);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 3000;
+        }
+
+        .privacy-overlay.show {
+            display: flex;
+        }
+
+        .privacy-card {
+            width: min(720px, 100%);
+            max-height: calc(100vh - 40px);
+            overflow: auto;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 28px 60px rgba(8, 24, 56, 0.3);
+            padding: 28px;
+        }
+
+        .workflow-banner {
+            background: linear-gradient(90deg, rgba(0,56,168,0.08), rgba(252,209,22,0.22));
+            border: 1px solid #d8e3fa;
+            border-radius: 18px;
+            padding: 13px 16px;
+            color: #1f3151;
+            margin-bottom: 14px;
+            font-size: 13px;
+            box-shadow: 0 14px 24px rgba(11, 40, 102, 0.08);
+        }
+
+        .single-tab {
+            justify-content: flex-start;
+        }
+
+        .single-tab .nav-link {
+            flex: 0 0 auto;
+            min-width: 220px;
+        }
+
+        hr {
+            margin: 25px 0;
+            opacity: 0.5;
+            border-color: #d9e4fa;
+        }
+
+        @media (max-width: 900px) {
+            .hero-shell {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 16px 18px 18px;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .nav-tabs {
+                flex-direction: column;
+            }
+
+            .main-container {
+                padding: 15px 10px;
+            }
+
+            .tab-content {
+                padding: 25px 20px;
+            }
+
+            .form-section h2 {
+                font-size: 22px;
+            }
+        }
+    </style>
+</head>
+<body class="auth-pending">
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <i class="bi bi-fingerprint"></i> MINUTIAE
+        </div>
+        <div class="nav-actions">
+            <div class="nav-meta" id="dashboardAuthMeta">Philippine National Police Clearance Workflow</div>
+            <button id="dashboardLogoutButton" type="button" class="logout-button">
+                <i class="bi bi-box-arrow-right"></i> Logout
+            </button>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <div class="hero-shell">
+            <div class="hero-panel">
+                <div class="hero-kicker">
+                    <i class="bi bi-shield-check"></i> Applicant Screening
+                </div>
+                <h1>Minutiae-Based Fingerprint Identification for Police Clearance Screening Application</h1>
+                <p>Run applicant screening with privacy-first consent, controlled fingerprint verification, and a clearer two-step workflow designed for PNP operations.</p>
+                <div class="hero-chip-row">
+                    <div class="hero-chip"><i class="bi bi-shield-lock"></i> RA 10173 consent required</div>
+                    <div class="hero-chip"><i class="bi bi-fingerprint"></i> Neutral biometric review handling</div>
+                    <div class="hero-chip"><i class="bi bi-journal-check"></i> Applicant-only clearance intake</div>
+                </div>
+            </div>
+            <div class="hero-sidecard">
+                <span>Workflow</span>
+                <strong>Demographic screening first, fingerprint verification only when needed.</strong>
+                <p>Potential criminal fingerprint hits stay under review until a super admin completes manual verification.</p>
+            </div>
+        </div>
+
+        <div class="workflow-banner">
+            <strong style="color: var(--pnp-blue-dark);">PNP Clearance Workflow:</strong>
+            Demographic screening first, then fingerprint verification for positive hits.
+        </div>
+        <!-- Tab Navigation -->
+        <div class="nav-tabs single-tab">
+            <button class="nav-link active" onclick="switchTab(event, 'checkApplicant')">
+                <i class="bi bi-search"></i> Check Applicant
+            </button>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="tab-content">
+            <!-- Check Applicant Tab -->
+            <div id="checkApplicant" class="tab-pane active">
+                <div class="form-section">
+                    <h2>
+                        <i class="bi bi-search"></i> Check Applicant Record
+                    </h2>
+                    
+                    <div id="checkErrorMessage" class="alert alert-error"></div>
+                    <div id="checkSuccessMessage" class="alert alert-success"></div>
+                    <div id="privacyLockHint" class="privacy-lock-hint">
+                        Applicant data entry is locked until the mandatory Data Privacy Act consent form is reviewed and accepted.
+                    </div>
+
+                    <form id="checkForm">
+                        <fieldset id="checkApplicantFieldset" disabled>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="checkFamilyName">Family Name *</label>
+                                <input type="text" id="checkFamilyName" placeholder="Enter family name" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="checkFirstName">First Name *</label>
+                                <input type="text" id="checkFirstName" placeholder="Enter first name" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="checkMiddleName">Middle Name</label>
+                                <input type="text" id="checkMiddleName" placeholder="Enter middle name (optional)">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="checkAge">Age *</label>
+                                <input type="number" id="checkAge" min="18" max="120" placeholder="Enter age" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="checkSex">Sex *</label>
+                            <select id="checkSex" required>
+                                <option value="">Select sex</option>
+                                <option value="M">Male</option>
+                                <option value="F">Female</option>
+                            </select>
+                        </div>
+
+                        <!-- Fingerprint Section (Hidden until HIT) -->
+                        <div id="fingerprintSection" class="hidden-section">
+                            <hr>
+                            <div class="fingerprint-callout">
+                                <h5>
+                                    <i class="bi bi-exclamation-triangle"></i> Demographic match found. Fingerprint verification is required.
+                                </h5>
+                                <p>Continue with biometric verification to determine whether this is a confirmed criminal fingerprint match or a cleared applicant record.</p>
+                            </div>
+                            <div class="form-group">
+                                <label>Applicant Fingerprint *</label>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                    <button type="button" class="btn-submit" style="margin: 0; background: #28a745;" onclick="scanApplicantFingerprint()">
+                                        <i class="bi bi-fingerprint"></i> Scan with ZK9500
+                                    </button>
+                                    <button type="button" class="btn-submit" style="margin: 0; background: #6c757d;" onclick="document.getElementById('checkFingerprintFile').click()">
+                                        <i class="bi bi-upload"></i> Upload File
+                                    </button>
+                                </div>
+                                <input type="file" id="checkFingerprintFile" accept=".iso,.bin,.tif,.tiff,image/tiff,image/*" style="display: none;">
+                                <div id="checkFingerprintStatus" style="margin-top: 10px; padding: 10px; background: #f0f9ff; border-radius: 6px; border-left: 3px solid #28a745; display: none;">
+                                    <i class="bi bi-check-circle" style="color: #28a745;"></i> 
+                                    <span id="checkFingerprintStatusText"></span>
+                                </div>
+                                <div id="checkFingerprintPreview" class="fingerprint-preview-panel" aria-live="polite">
+                                    <div class="fingerprint-preview-title">
+                                        <i class="bi bi-image"></i> Captured Fingerprint Preview
+                                    </div>
+                                    <img id="checkFingerprintPreviewImage" class="fingerprint-preview-image" alt="Captured fingerprint preview">
+                                    <div id="checkFingerprintPreviewMeta" class="fingerprint-preview-meta"></div>
+                                    <div class="fingerprint-preview-actions">
+                                        <button type="button" id="checkFingerprintDownloadButton" class="fingerprint-download-button" onclick="downloadApplicantFingerprintImage()" hidden>
+                                            <i class="bi bi-download"></i> Download PNG
+                                        </button>
+                                    </div>
+                                </div>
+                                <canvas id="checkFingerprintCanvas" style="display: none;"></canvas>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn-submit">
+                            <i class="bi bi-play-circle"></i> Start Verification
+                        </button>
+                        </fieldset>
+                    </form>
+
+                    <div class="loading" id="checkLoading">
+                        <div class="spinner"></div>
+                        <p style="color: #666;">Processing verification...</p>
+                    </div>
+
+                    <div id="checkResults"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="privacyConsentOverlay" class="privacy-overlay show" role="dialog" aria-modal="true" aria-labelledby="privacyConsentTitle">
+        <div class="privacy-card">
+            <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 18px;">
+                <div style="width: 56px; height: 56px; border-radius: 16px; background: linear-gradient(135deg, var(--pnp-blue) 0%, var(--pnp-red) 100%); color: white; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                    <i class="bi bi-shield-check"></i>
+                </div>
+                <div>
+                    <h3 id="privacyConsentTitle" style="margin: 0; color: var(--pnp-blue-dark);">Data Privacy Consent</h3>
+                    <div style="font-size: 13px; color: #64748b;">Data Privacy Act of 2012 (RA 10173)</div>
+                </div>
+            </div>
+
+            <div style="font-size: 14px; color: #334155; line-height: 1.7;">
+                <p>The Philippine National Police clearance workflow collects the applicant's identifying details and, when needed, fingerprint information for demographic screening, biometric verification, case review, and audit documentation.</p>
+                <p>Your data may be stored in the Minutiae system and accessed only by authorized personnel for verification, match review, records management, legal compliance, and security monitoring. Biometric match details are restricted and may only be disclosed to an authorized super admin for manual review.</p>
+                <p>By continuing, you confirm that you understand how the applicant's personal and biometric data will be collected, used, stored, and protected within this system.</p>
+            </div>
+
+            <div style="background: #f8fbff; border: 1px solid #d6e2fb; border-radius: 12px; padding: 14px 16px; margin: 18px 0;">
+                <label style="display: flex; gap: 12px; align-items: flex-start; margin: 0; cursor: pointer;">
+                    <input type="checkbox" id="privacyConsentCheckbox" style="margin-top: 3px; width: auto;">
+                    <span>I have read the privacy notice and I explicitly consent to the collection, processing, storage, and restricted review of the applicant's personal and biometric data for police clearance verification.</span>
+                </label>
+            </div>
+
+            <div id="privacyConsentError" class="alert alert-error" style="margin-bottom: 0;"></div>
+
+            <div style="display: flex; justify-content: flex-end; margin-top: 18px;">
+                <button type="button" id="privacyConsentButton" class="btn-submit" style="width: auto; min-width: 220px; margin-top: 0;">
+                    <i class="bi bi-check-circle"></i> I Agree and Continue
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab Switching
+        function switchTab(event, tabName) {
+            document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            event.target.closest('.nav-link').classList.add('active');
+            if (tabName === 'checkApplicant' && !applicantConsentGranted) {
+                openPrivacyConsent();
+            }
+        }
+
+        // Fingerprint scanner data storage
+        let applicantFingerprintData = null;
+        let applicantFingerprintImage = null;  // Store actual fingerprint image
+        let fingerprintSource = {}; // Track scan source for each
+        let applicantConsentGranted = false;
+        let applicantConsentTimestamp = '';
+        let currentApplicantId = null;
+        let currentCheckSignature = null;
+        let privacyNoticeVersion = '2026-03-28';
+        let currentDashboardUser = null;
+
+        const consentOverlay = document.getElementById('privacyConsentOverlay');
+        const consentCheckbox = document.getElementById('privacyConsentCheckbox');
+        const consentError = document.getElementById('privacyConsentError');
+        const applicantFieldset = document.getElementById('checkApplicantFieldset');
+        const privacyLockHint = document.getElementById('privacyLockHint');
+        const dashboardAuthMeta = document.getElementById('dashboardAuthMeta');
+        const dashboardLogoutButton = document.getElementById('dashboardLogoutButton');
+
+        function buildApplicantSignature(name, age, sex) {
+            return `${String(name || '').trim().toLowerCase()}|${String(age || '').trim()}|${String(sex || '').trim().toUpperCase()}`;
+        }
+
+        function resetFingerprintWorkflow(clearResults = false) {
+            currentApplicantId = null;
+            currentCheckSignature = null;
+            applicantFingerprintData = null;
+            applicantFingerprintImage = null;
+            if (fingerprintSource && typeof fingerprintSource === 'object') {
+                delete fingerprintSource.applicant;
+            }
+
+            const fingerprintSection = document.getElementById('fingerprintSection');
+            if (fingerprintSection) {
+                fingerprintSection.classList.remove('show');
+            }
+
+            const fingerprintStatus = document.getElementById('checkFingerprintStatus');
+            const fingerprintStatusText = document.getElementById('checkFingerprintStatusText');
+            if (fingerprintStatus) {
+                fingerprintStatus.style.display = 'none';
+            }
+            if (fingerprintStatusText) {
+                fingerprintStatusText.textContent = '';
+            }
+
+            const fingerprintFileInput = document.getElementById('checkFingerprintFile');
+            if (fingerprintFileInput) {
+                fingerprintFileInput.value = '';
+            }
+
+            const canvas = document.getElementById('checkFingerprintCanvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width || 0, canvas.height || 0);
+                canvas.style.display = 'none';
+            }
+
+            const preview = document.getElementById('checkFingerprintPreview');
+            const previewImage = document.getElementById('checkFingerprintPreviewImage');
+            const previewMeta = document.getElementById('checkFingerprintPreviewMeta');
+            const downloadButton = document.getElementById('checkFingerprintDownloadButton');
+            if (preview) {
+                preview.classList.remove('show');
+            }
+            if (previewImage) {
+                previewImage.removeAttribute('src');
+            }
+            if (previewMeta) {
+                previewMeta.textContent = '';
+            }
+            if (downloadButton) {
+                downloadButton.hidden = true;
+            }
+
+            if (clearResults) {
+                const results = document.getElementById('checkResults');
+                if (results) {
+                    results.innerHTML = '';
+                }
+            }
+        }
+
+        function updateDashboardAuthUI(user) {
+            if (!user) {
+                dashboardAuthMeta.textContent = 'Philippine National Police Clearance Workflow';
+                return;
+            }
+
+            const displayName = user.full_name || user.username || 'Authorized User';
+            const role = String(user.role || 'admin').replace('_', ' ');
+            dashboardAuthMeta.textContent = `${displayName} (${role})`;
+        }
+
+        async function handleDashboardLogout() {
+            try {
+                await fetch('backend/auth.php?action=logout', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+            } catch (error) {
+                console.warn('Logout request failed, redirecting to login anyway.', error);
+            } finally {
+                currentDashboardUser = null;
+                window.location.replace('login.html?redirect=dashboard.html');
+            }
+        }
+
+        function setApplicantFormAccess(enabled) {
+            applicantFieldset.disabled = !enabled;
+            privacyLockHint.style.display = enabled ? 'none' : 'block';
+        }
+
+        function openPrivacyConsent() {
+            consentCheckbox.checked = false;
+            consentOverlay.classList.add('show');
+            consentError.classList.remove('show');
+            consentError.textContent = '';
+        }
+
+        function closePrivacyConsent() {
+            consentOverlay.classList.remove('show');
+        }
+
+        function getConsentPayload() {
+            return {
+                privacy_consent: applicantConsentGranted,
+                privacy_notice_version: privacyNoticeVersion,
+                consent_timestamp: applicantConsentTimestamp
+            };
+        }
+
+        async function initializePrivacyConsent() {
+            try {
+                const response = await fetch('backend/auth.php?action=session', { cache: 'no-store' });
+                const data = await response.json();
+                if (data.privacy_notice_version) {
+                    privacyNoticeVersion = data.privacy_notice_version;
+                }
+            } catch (error) {
+                console.warn('Unable to fetch privacy notice version.', error);
+            }
+
+            applicantConsentGranted = false;
+            applicantConsentTimestamp = '';
+            setApplicantFormAccess(false);
+            openPrivacyConsent();
+        }
+
+        document.getElementById('privacyConsentButton').addEventListener('click', () => {
+            if (!consentCheckbox.checked) {
+                consentError.textContent = 'You must explicitly agree to the privacy notice before continuing.';
+                consentError.classList.add('show');
+                return;
+            }
+
+            applicantConsentGranted = true;
+            applicantConsentTimestamp = new Date().toISOString();
+            setApplicantFormAccess(true);
+            closePrivacyConsent();
+        });
+
+        // Scanner popup functions
+        function showScannerPopup() {
+            const popup = document.getElementById('scannerPopup');
+            if (popup) {
+                popup.style.display = 'flex';
+                popup.style.visibility = 'visible';
+                console.log('[POPUP] Scanner popup shown');
+            }
+        }
+        
+        function hideScannerPopup() {
+            const popup = document.getElementById('scannerPopup');
+            if (popup) {
+                popup.style.display = 'none';
+                popup.style.visibility = 'hidden';
+                console.log('[POPUP] Scanner popup hidden');
+            }
+        }
+
+        function normalizeFingerprintImageSrc(imageBase64) {
+            if (!imageBase64) {
+                return '';
+            }
+
+            const value = String(imageBase64).trim();
+            return value.startsWith('data:image/')
+                ? value
+                : ('data:image/png;base64,' + value);
+        }
+
+        function sanitizeDatasetFilenamePart(value, fallback = 'unknown') {
+            const cleaned = String(value || '')
+                .trim()
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, '_')
+                .replace(/^_+|_+$/g, '');
+            return cleaned || fallback;
+        }
+
+        function getDatasetTimestamp() {
+            return new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
+        }
+
+        function downloadFingerprintImage(imageBase64, filename) {
+            const imageSrc = normalizeFingerprintImageSrc(imageBase64);
+            if (!imageSrc) {
+                return false;
+            }
+
+            const link = document.createElement('a');
+            link.href = imageSrc;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            return true;
+        }
+
+        function buildApplicantFingerprintFilename() {
+            const familyName = document.getElementById('checkFamilyName')?.value;
+            const firstName = document.getElementById('checkFirstName')?.value;
+            const middleName = document.getElementById('checkMiddleName')?.value;
+            const age = document.getElementById('checkAge')?.value;
+            const sex = document.getElementById('checkSex')?.value;
+            const name = sanitizeDatasetFilenamePart([familyName, firstName, middleName].filter(Boolean).join('_'), 'applicant');
+            const agePart = sanitizeDatasetFilenamePart(age, 'age_unknown');
+            const sexPart = sanitizeDatasetFilenamePart(sex, 'sex_unknown');
+
+            return `zkteco_applicant_${name}_${agePart}_${sexPart}_${getDatasetTimestamp()}.png`;
+        }
+
+        function downloadApplicantFingerprintImage() {
+            const downloaded = downloadFingerprintImage(applicantFingerprintImage, buildApplicantFingerprintFilename());
+            if (!downloaded) {
+                showError('check', 'No scanned fingerprint image is available to download yet.');
+            }
+        }
+
+        // Generate and display fingerprint visualization
+        function displayFingerprintImage(canvasId) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            
+            // Determine which image data to use based on canvas ID
+            let imageBase64 = null;
+            if (canvasId === 'checkFingerprintCanvas') {
+                imageBase64 = applicantFingerprintImage;
+            }
+            
+            // If we have actual image data from scanner, display it
+            if (imageBase64) {
+                const imageSrc = String(imageBase64).startsWith('data:image/')
+                    ? String(imageBase64)
+                    : ('data:image/png;base64,' + imageBase64);
+                const preview = document.getElementById('checkFingerprintPreview');
+                const previewImage = document.getElementById('checkFingerprintPreviewImage');
+                const previewMeta = document.getElementById('checkFingerprintPreviewMeta');
+                const downloadButton = document.getElementById('checkFingerprintDownloadButton');
+                if (preview && previewImage) {
+                    previewImage.onload = function() {
+                        if (previewMeta) {
+                            previewMeta.textContent = `${previewImage.naturalWidth} x ${previewImage.naturalHeight} PNG preview`;
+                        }
+                    };
+                    previewImage.src = imageSrc;
+                    preview.classList.add('show');
+                    if (downloadButton) {
+                        downloadButton.hidden = fingerprintSource.applicant !== 'scanned';
+                    }
+                }
+
+                const img = new Image();
+                img.onload = function() {
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+                    console.log('[IMAGE] Fingerprint image displayed on canvas');
+                };
+                img.onerror = function() {
+                    console.error('[IMAGE ERROR] Failed to load fingerprint image, showing simulated');
+                    displaySimulatedFingerprint(canvas);
+                };
+                img.src = imageSrc;
+                return;
+            }
+            
+            // Fallback: show simulated fingerprint
+            displaySimulatedFingerprint(canvas);
+        }
+        
+        function displaySimulatedFingerprint(canvas) {
+            canvas.style.display = 'block';
+            canvas.width = 300;
+            canvas.height = 400;
+            const ctx = canvas.getContext('2d');
+            
+            // Create a more realistic fingerprint scan appearance
+            // White background (like a scanner glass)
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Black border (scanner edge)
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw realistic fingerprint ridges
+            ctx.strokeStyle = '#333333';
+            ctx.lineWidth = 2;
+            
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            
+            // Generate fingerprint loop pattern (common fingerprint type)
+            for (let i = 0; i < 35; i++) {
+                ctx.beginPath();
+                
+                const scale = 1 + (i / 35) * 0.8;
+                const points = 100;
+                
+                for (let p = 0; p < points; p++) {
+                    const angle = (p / points) * Math.PI * 2;
+                    const radiusBase = 50 + i * 5;
+                    const wobble = Math.sin(angle * 3 + i * 0.2) * 8;
+                    const radius = radiusBase + wobble;
+                    
+                    const x = centerX + Math.cos(angle) * radius;
+                    const y = centerY + Math.sin(angle) * radius * 1.2;
+                    
+                    if (p === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                }
+                ctx.closePath();
+                ctx.stroke();
+            }
+            
+            // Add fingerprint minutiae points (key features)
+            // Bifurcation point (ridge fork)
+            ctx.fillStyle = '#e74c3c';
+            ctx.beginPath();
+            ctx.arc(centerX - 40, centerY - 50, 6, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#000';
+            ctx.font = 'bold 10px Arial';
+            ctx.fillText('Bifurcation', centerX - 65, centerY - 45);
+            
+            // Ending point (ridge termination)
+            ctx.fillStyle = '#3498db';
+            ctx.beginPath();
+            ctx.arc(centerX + 45, centerY + 70, 6, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#000';
+            ctx.font = 'bold 10px Arial';
+            ctx.fillText('Ridge Ending', centerX + 20, centerY + 85);
+            
+            // Add quality indicator
+            ctx.fillStyle = '#27ae60';
+            ctx.font = 'bold 12px Arial';
+            ctx.fillText('Quality: 90%', centerX - 35, 25);
+            
+            // Add scan timestamp
+            const now = new Date();
+            ctx.fillStyle = '#666';
+            ctx.font = '11px Arial';
+            ctx.fillText('Scanned: ' + now.toLocaleTimeString(), centerX - 70, canvas.height - 10);
+            
+            // Show canvas
+            canvas.style.display = 'block';
+        }
+
+        // Scan Applicant Fingerprint
+        async function scanApplicantFingerprint() {
+            let scanTimeout = null;
+            try {
+                console.log('[SCAN START] Sending request to ZKTeco ZK9500 scanner service...');
+                // Show scanner popup
+                showScannerPopup();
+                
+                document.getElementById('checkLoading').style.display = 'block';
+                
+                const controller = new AbortController();
+                scanTimeout = setTimeout(() => controller.abort(), 40000);
+
+                // Call fingerprint scanner service
+                const response = await fetch('http://localhost:9000/scan', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ type: 'applicant' }),
+                    signal: controller.signal
+                });
+                clearTimeout(scanTimeout);
+
+                console.log('[SCAN RESPONSE] Response received from server');
+                hideScannerPopup();
+                const data = await response.json();
+                
+                if (data.success) {
+                    console.log('[SCAN SUCCESS] Fingerprint captured:', data.source);
+                    applicantFingerprintData = data.templateBase64 || data.template; // Prefer base64
+                    applicantFingerprintImage = data.image || data.normalizedImage || data.enhancedImage || data.originalImage;
+                    fingerprintSource.applicant = 'scanned';
+                    document.getElementById('checkFingerprintStatus').style.display = 'block';
+                    document.getElementById('checkFingerprintStatusText').textContent = 'Fingerprint captured successfully (' + (data.source || 'scanner') + ')';
+                    displayFingerprintImage('checkFingerprintCanvas');  // Show fingerprint image
+                    showSuccess('check', 'Fingerprint scanned and ready for verification.');
+                } else {
+                    console.log('[SCAN ERROR]', data.error);
+                    showError('check', data.error || 'Failed to scan fingerprint. Please try again.');
+                }
+            } catch (error) {
+                console.error('[SCAN FAILED]', error);
+                hideScannerPopup();
+                const message = error.name === 'AbortError'
+                    ? 'ZKTeco ZK9500 scanner timed out. Lift your finger, place it flat on the scanner, and try again.'
+                    : 'ZKTeco ZK9500 scanner not available. Ensure the fingerprint service is running on port 9000 and the ZKTeco SDK adapter is installed.';
+                showError('check', message);
+            } finally {
+                if (scanTimeout) {
+                    clearTimeout(scanTimeout);
+                }
+                document.getElementById('checkLoading').style.display = 'none';
+            }
+        }
+
+        // File upload handlers
+        document.getElementById('checkFingerprintFile')?.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const lower = file.name.toLowerCase();
+                const isImage = file.type.startsWith('image/') || lower.endsWith('.tif') || lower.endsWith('.tiff');
+                if (isImage) {
+                    const reader = new FileReader();
+                    reader.onload = async function(e) {
+                        try {
+                            const dataUrl = e.target.result;
+                            const response = await fetch('http://localhost:9000/afis/from-image', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ image: dataUrl })
+                            });
+                            const converted = await response.json();
+                            if (!converted.success) {
+                                throw new Error(converted.error || 'TIFF conversion failed');
+                            }
+                            applicantFingerprintData = converted.templateBase64;
+                            applicantFingerprintImage = converted.image;
+                            fingerprintSource.applicant = 'uploaded-image';
+                            document.getElementById('checkFingerprintStatus').style.display = 'block';
+                            document.getElementById('checkFingerprintStatusText').textContent = 'Fingerprint image processed: ' + file.name;
+                            displayFingerprintImage('checkFingerprintCanvas');
+                        } catch (err) {
+                            showError('check', 'Image upload conversion failed: ' + err.message);
+                        }
+                    };
+                    reader.readAsDataURL(file);
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    applicantFingerprintData = e.target.result;
+                    applicantFingerprintImage = null;
+                    fingerprintSource.applicant = 'uploaded';
+                    document.getElementById('checkFingerprintStatus').style.display = 'block';
+                    document.getElementById('checkFingerprintStatusText').textContent = 'Fingerprint file uploaded: ' + file.name;
+                    displayFingerprintImage('checkFingerprintCanvas');  // Show fingerprint image
+                };
+                reader.readAsArrayBuffer(file);
+            }
+        });
+
+        ['checkFamilyName', 'checkFirstName', 'checkMiddleName', 'checkAge', 'checkSex'].forEach((fieldId) => {
+            const input = document.getElementById(fieldId);
+            if (!input) {
+                return;
+            }
+
+            input.addEventListener('input', () => {
+                if (currentCheckSignature !== null) {
+                    resetFingerprintWorkflow(true);
+                }
+            });
+
+            input.addEventListener('change', () => {
+                if (currentCheckSignature !== null) {
+                    resetFingerprintWorkflow(true);
+                }
+            });
+        });
+
+        // Check Applicant Form
+        document.getElementById('checkForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!applicantConsentGranted) {
+                document.getElementById('checkLoading').style.display = 'none';
+                openPrivacyConsent();
+                showError('check', 'Privacy consent is required before entering or submitting applicant data.');
+                return;
+            }
+            const familyName = document.getElementById('checkFamilyName').value;
+            const firstName = document.getElementById('checkFirstName').value;
+            const middleName = document.getElementById('checkMiddleName').value;
+            const name = middleName ? `${familyName}, ${firstName} ${middleName}` : `${familyName}, ${firstName}`;
+            const age = document.getElementById('checkAge').value;
+            const sex = document.getElementById('checkSex').value;
+            const currentSignature = buildApplicantSignature(name, age, sex);
+
+            clearMessages('check');
+            document.getElementById('checkLoading').style.display = 'block';
+
+            // Fingerprint verification is only valid for the exact demographic check that produced the applicant_id.
+            const fingerprintSectionVisible = document.getElementById('fingerprintSection').classList.contains('show');
+            const canRunFingerprintStep = fingerprintSectionVisible
+                && !!currentApplicantId
+                && currentCheckSignature === currentSignature;
+            
+            if (canRunFingerprintStep) {
+                // Second submit - do fingerprint matching
+                if (!applicantFingerprintData) {
+                    showError('check', 'Please scan or upload fingerprint');
+                    document.getElementById('checkLoading').style.display = 'none';
+                    return;
+                }
+
+                try {
+                    const formData = new FormData();
+                    formData.append('applicant_id', currentApplicantId || '');
+                    formData.append('name', name);
+                    formData.append('age', age);
+                    formData.append('sex', sex);
+                    formData.append('privacy_consent', '1');
+                    formData.append('privacy_notice_version', privacyNoticeVersion);
+                    formData.append('consent_timestamp', applicantConsentTimestamp);
+                    
+                    if (applicantFingerprintData instanceof ArrayBuffer) {
+                        const blob = new Blob([applicantFingerprintData]);
+                        formData.append('fingerprint_template', blob);
+                    } else if (typeof applicantFingerprintData === 'string') {
+                        formData.append('fingerprint_data', applicantFingerprintData);
+                    }
+                    if (typeof applicantFingerprintImage === 'string' && applicantFingerprintImage.trim() !== '') {
+                        formData.append('fingerprint_image', applicantFingerprintImage);
+                    }
+                    formData.append('template_format', 'ISO');
+
+                    const matchResponse = await fetch('backend/applicant_info.php?action=match', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const matchData = await matchResponse.json();
+                    document.getElementById('checkLoading').style.display = 'none';
+
+                    if (!matchResponse.ok) {
+                        showError('check', matchData.error || 'Fingerprint matching failed');
+                        return;
+                    }
+
+                    displayFingerprintResults(matchData);
+                } catch (error) {
+                    document.getElementById('checkLoading').style.display = 'none';
+                    showError('check', 'Network error: ' + error.message);
+                }
+                return;
+            }
+
+            // First submit - do demographic check
+            document.getElementById('checkResults').innerHTML = '';
+
+            try {
+                // Step 1: Check Demographics
+                const checkResponse = await fetch('backend/applicant_info.php?action=check', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name,
+                        age,
+                        sex,
+                        privacy_consent: true,
+                        privacy_notice_version: privacyNoticeVersion,
+                        consent_timestamp: applicantConsentTimestamp
+                    })
+                });
+
+                const checkData = await checkResponse.json();
+                document.getElementById('checkLoading').style.display = 'none';
+
+                if (!checkResponse.ok) {
+                    showError('check', checkData.error || 'Verification failed');
+                    return;
+                }
+
+                // Display Step 1 Results
+                const hitFound = !!(checkData.demographic_hit ?? checkData.has_match);
+                currentApplicantId = checkData.applicant_id || null;
+                currentCheckSignature = currentSignature;
+                displayCheckResults(checkData, hitFound);
+
+                // If HIT found, show fingerprint section
+                if (hitFound) {
+                    document.getElementById('fingerprintSection').classList.add('show');
+                } else {
+                    resetFingerprintWorkflow(false);
+                    currentApplicantId = checkData.applicant_id || null;
+                    currentCheckSignature = currentSignature;
+                }
+
+            } catch (error) {
+                document.getElementById('checkLoading').style.display = 'none';
+                showError('check', 'Network error: ' + error.message);
+            }
+        });
+
+        function displayCheckResults(data, hitFound) {
+            let html = '<div class="result-card ' + (hitFound ? 'caution' : 'approved') + ' show">';
+            html += '<div class="result-title"><i class="bi bi-info-circle"></i> Step 1: Demographic Screening</div>';
+
+            if (hitFound) {
+                html += '<p class="result-lead">Possible record hit found.</p>';
+                html += '<p class="result-description">The applicant profile matched one or more demographic details in the criminal database. Fingerprint verification is required before any final decision is made.</p>';
+                html += '<div class="result-grid">';
+                html += '<div class="result-metric"><div class="result-metric-label">Screening Outcome</div><div class="result-metric-value">Potential demographic hit</div></div>';
+                html += '<div class="result-metric"><div class="result-metric-label">Next Step</div><div class="result-metric-value">Capture or upload the applicant fingerprint</div></div>';
+                html += '</div>';
+                html += '<div class="result-note"><strong>What this means:</strong> This is not yet a confirmed criminal match. The system requires biometric verification to confirm or clear the applicant.</div>';
+            } else {
+                html += '<p class="result-lead">No demographic hit found.</p>';
+                html += '<p class="result-description">No matching criminal record was found from the applicant details submitted in this screening step.</p>';
+                html += '<div class="result-grid">';
+                html += '<div class="result-metric"><div class="result-metric-label">Screening Outcome</div><div class="result-metric-value">No demographic match</div></div>';
+                html += '<div class="result-metric"><div class="result-metric-label">Clearance Status</div><div class="result-metric-value">' + (data.clearance_status || 'APPROVED') + '</div></div>';
+                html += '</div>';
+                html += '<div class="result-note"><strong>Result:</strong> The applicant can proceed as clear in this stage because no demographic criminal record hit was detected.</div>';
+            }
+
+            html += '</div>';
+            document.getElementById('checkResults').innerHTML = html;
+        }
+
+        function showError(type, message) {
+            const el = document.getElementById(type + 'ErrorMessage');
+            el.textContent = message;
+            el.classList.add('show');
+        }
+
+        function showSuccess(type, message) {
+            const el = document.getElementById(type + 'SuccessMessage');
+            el.textContent = message;
+            el.classList.add('show');
+        }
+
+        function clearMessages(type) {
+            document.getElementById(type + 'ErrorMessage').classList.remove('show');
+            document.getElementById(type + 'SuccessMessage').classList.remove('show');
+        }
+
+        function displayFingerprintResults(data) {
+            const requiresManualReview = !!(data.requires_manual_review || data.clearance_status === 'UNDER_REVIEW');
+            const normalizedMatchScore = Number.isFinite(Number(data.match_score))
+                ? Math.max(0, Math.min(100, Math.round(Number(data.match_score))))
+                : 0;
+            let html = '<div class="result-card ' + (requiresManualReview ? 'caution' : (data.is_match ? 'rejected' : 'approved')) + ' show">';
+            html += '<div class="result-title"><i class="bi bi-fingerprint"></i> Step 2: Fingerprint Verification</div>';
+
+            if (requiresManualReview) {
+                html += '<p class="result-lead">Fingerprint verification is processing.</p>';
+                html += '<p class="result-description">The fingerprint check is still being processed. Please wait for the final application status update.</p>';
+                html += '<div class="result-grid">';
+                html += '<div class="result-metric"><div class="result-metric-label">Status</div><div class="result-metric-value"><span class="result-badge badge-caution">' + (data.public_status_label || 'PROCESSING...') + '</span></div></div>';
+                html += '</div>';
+            } else if (data.is_match) {
+                html += '<p class="result-lead">Confirmed fingerprint match.</p>';
+                html += '<p class="result-description">The applicant fingerprint matched an existing criminal biometric record and the application should not proceed as cleared.</p>';
+                html += '<div class="result-grid">';
+                html += '<div class="result-metric"><div class="result-metric-label">Decision</div><div class="result-metric-value"><span class="result-badge badge-rejected">Fingerprint Match</span></div></div>';
+                html += '<div class="result-metric"><div class="result-metric-label">Clearance Status</div><div class="result-metric-value">' + (data.clearance_status || 'REJECTED') + '</div></div>';
+                html += '<div class="result-metric"><div class="result-metric-label">Match Score</div><div class="result-metric-value">' + normalizedMatchScore + '/100</div></div>';
+                html += '</div>';
+                html += '<div class="result-note"><strong>Outcome:</strong> This biometric result indicates a confirmed match with an existing record.</div>';
+            } else {
+                html += '<p class="result-lead">No fingerprint match found.</p>';
+                html += '<p class="result-description">The fingerprint did not match any existing criminal biometric record. The applicant can continue with the clearance workflow.</p>';
+                html += '<div class="result-grid">';
+                html += '<div class="result-metric"><div class="result-metric-label">Decision</div><div class="result-metric-value"><span class="result-badge badge-approved">No Match</span></div></div>';
+                html += '<div class="result-metric"><div class="result-metric-label">Clearance Status</div><div class="result-metric-value">' + (data.clearance_status || 'APPROVED') + '</div></div>';
+                html += '<div class="result-metric"><div class="result-metric-label">Match Score</div><div class="result-metric-value">' + normalizedMatchScore + '/100</div></div>';
+                html += '</div>';
+                html += '<div class="result-note"><strong>Outcome:</strong> The applicant biometric data was checked and no criminal fingerprint match was detected.</div>';
+            }
+
+            html += '</div>';
+            
+            document.getElementById('checkResults').innerHTML += html;
+        }
+
+        async function enforceDashboardAccess() {
+            document.body.classList.add('auth-pending');
+            try {
+                const response = await fetch('backend/auth.php?action=session', { cache: 'no-store' });
+                const data = await response.json();
+
+                if (!response.ok || !data.authenticated || !['admin', 'super_admin'].includes(data.user?.role)) {
+                    window.location.replace('login.html?redirect=dashboard.html');
+                    return false;
+                }
+
+                currentDashboardUser = data.user;
+                updateDashboardAuthUI(currentDashboardUser);
+                document.body.classList.remove('auth-pending');
+                return true;
+            } catch (error) {
+                window.location.replace('login.html?redirect=dashboard.html');
+                return false;
+            }
+        }
+
+        function registerDashboardAccessRevalidation() {
+            window.addEventListener('pageshow', () => {
+                enforceDashboardAccess();
+            });
+
+            window.addEventListener('focus', () => {
+                enforceDashboardAccess();
+            });
+
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible') {
+                    enforceDashboardAccess();
+                }
+            });
+        }
+
+        (async () => {
+            dashboardLogoutButton.addEventListener('click', handleDashboardLogout);
+            registerDashboardAccessRevalidation();
+            const allowed = await enforceDashboardAccess();
+            if (allowed) {
+                initializePrivacyConsent();
+            }
+        })();
+    </script>
+
+    <!-- Scanner Popup Modal -->
+    <div id="scannerPopup" style="display: none !important; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); z-index: 9999; justify-content: center; align-items: center;">
+        <div style="background: white; padding: 40px; border-radius: 15px; text-align: center; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); max-width: 500px;">
+            <div style="font-size: 48px; margin-bottom: 20px;">🔍</div>
+            <h2 style="color: #2c3e50; margin: 0 0 15px 0; font-size: 28px;">PLACE YOUR FINGER ON THE ZK9500</h2>
+            <p style="color: #666; font-size: 16px; margin: 0 0 30px 0;">Optical capture in progress...</p>
+            <div style="width: 60px; height: 60px; border: 4px solid #28a745; border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto;"></div>
+        </div>
+        <style>
+            #scannerPopup {
+                display: none !important;
+            }
+            #scannerPopup[style*="display: flex"] {
+                display: flex !important;
+            }
+            @keyframes spin {
+                to { transform: rotate(360deg); }
+            }
+        </style>
+    </div>
+
+</body>
+</html>

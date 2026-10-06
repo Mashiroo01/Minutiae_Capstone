@@ -1,0 +1,27 @@
+# Local dependencies and generated caches
+node_modules/
+__pycache__/
+*.py[cod]
+
+# Runtime output
+temp/
+logs/
+*.log
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+backend/config.php
+
+# Biometric test/runtime data
+fingerprint-test.png
+*.wsq
+*.xyt
+
+# Editor and operating-system files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+

@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minutiae - Police Clearance System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+
+        body.auth-pending {
+            display: none;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 100px 20px;
+            text-align: center;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .hero-logo {
+            font-size: 64px;
+            margin-bottom: 20px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .hero-title {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .hero-subtitle {
+            font-size: 20px;
+            margin-bottom: 40px;
+            opacity: 0.95;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 60px;
+        }
+
+        .btn-hero {
+            padding: 15px 40px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-hero-primary {
+            background: white;
+            color: #667eea;
+        }
+
+        .btn-hero-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            color: #667eea;
+        }
+
+        .btn-hero-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
+        }
+
+        .btn-hero-secondary:hover {
+            background: white;
+            color: #667eea;
+            transform: translateY(-3px);
+            text-decoration: none;
+        }
+
+        /* Features Section */
+        .features {
+            padding: 80px 20px;
+            background: #f8f9fa;
+        }
+
+        .features-title {
+            font-size: 36px;
+            font-weight: 700;
+            text-align: center;
+            color: #333;
+            margin-bottom: 60px;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 40px 30px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            margin-bottom: 30px;
+            border-top: 4px solid #667eea;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .feature-icon {
+            font-size: 48px;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        .feature-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .feature-description {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .admin-login-note {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.9);
+            margin-top: 12px;
+        }
+
+        /* How It Works Section */
+        .how-it-works {
+            padding: 80px 20px;
+            background: white;
+        }
+
+        .how-it-works-title {
+            font-size: 36px;
+            font-weight: 700;
+            text-align: center;
+            color: #333;
+            margin-bottom: 60px;
+        }
+
+        .step {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 40px;
+            gap: 30px;
+        }
+
+        .step-number {
+            flex-shrink: 0;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-weight: 700;
+            font-size: 20px;
+        }
+
+        .step-content h3 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .step-content p {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        /* Stats Section */
+        .stats {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 60px 20px;
+            text-align: center;
+        }
+
+        .stat-box {
+            margin: 20px 0;
+        }
+
+        .stat-number {
+            font-size: 40px;
+            font-weight: 700;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        /* Footer */
+        footer {
+            background: #222;
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+            font-size: 13px;
+        }
+
+        footer a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 32px;
+            }
+
+            .hero-subtitle {
+                font-size: 16px;
+            }
+
+            .step {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .features-title,
+            .how-it-works-title {
+                font-size: 28px;
+            }
+        }
+
+        .navbar {
+            background: white !important;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            color: #667eea !important;
+            font-size: 20px;
+        }
+
+        .nav-link {
+            color: #333 !important;
+            font-weight: 500;
+            margin-left: 10px;
+        }
+
+        .nav-link:hover {
+            color: #667eea !important;
+        }
+    </style>
+</head>
+<body class="auth-pending">
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-fingerprint"></i> MINUTIAE
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="#features">Features</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#how">How It Works</a></li>
+                    <li class="nav-item"><a class="nav-link btn-hero-primary btn-hero" href="dashboard.html" style="color: white; padding: 8px 20px;">Applicant Screening</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-logo">
+            <i class="bi bi-fingerprint"></i>
+        </div>
+        <h1 class="hero-title">MINUTIAE</h1>
+        <p class="hero-subtitle">Minutiae-Based Fingerprint Identification for Police Clearance Screening</p>
+        <div class="hero-buttons">
+            <a href="dashboard.html" class="btn-hero btn-hero-primary">
+                <i class="bi bi-search"></i> Open Applicant Screening
+            </a>
+            <a href="admin.html" class="btn-hero btn-hero-secondary">
+                <i class="bi bi-speedometer2"></i> Open Admin Panel
+            </a>
+        </div>
+        <div style="opacity: 0.86; font-size: 13px;">
+            <div>Applicant screening, privacy-first intake, and protected biometric review</div>
+            <div style="margin-top: 5px;">NIST Bozorth3 matching | ISO/IEC 19794-2 workflow | Protected admin access</div>
+            <div class="admin-login-note">Access to this page is already protected by admin authentication.</div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <h2 class="features-title">Connected System Features</h2>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-search"></i>
+                        </div>
+                        <h3 class="feature-title">Applicant Screening</h3>
+                        <p class="feature-description">
+                            Run live police clearance screening from the applicant page using name, age, sex, and fingerprint verification only when a demographic hit is found.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-shield-check"></i>
+                        </div>
+                        <h3 class="feature-title">Data Privacy Consent</h3>
+                        <p class="feature-description">
+                            The applicant workflow is locked until the mandatory Data Privacy Act consent notice is accepted for the current page session.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-fingerprint"></i>
+                        </div>
+                        <h3 class="feature-title">Biometric Matching</h3>
+                        <p class="feature-description">
+                            Fingerprint verification uses NIST Bozorth3 matching and keeps possible biometric hits in a neutral processing state on the applicant side.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-clock-history"></i>
+                        </div>
+                        <h3 class="feature-title">Application History</h3>
+                        <p class="feature-description">
+                            Every application is recorded with timestamps, status updates, fingerprint verification status, and append-only audit history.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-person-lock"></i>
+                        </div>
+                        <h3 class="feature-title">Protected Admin Access</h3>
+                        <p class="feature-description">
+                            Admin and super admin access is authenticated, role-restricted, and separated so sensitive fingerprint match details stay protected.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-bell"></i>
+                        </div>
+                        <h3 class="feature-title">Super Admin Review</h3>
+                        <p class="feature-description">
+                            Restricted fingerprint hits are surfaced only to the super admin for manual review, decision logging, and final action handling.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section id="how" class="how-it-works">
+        <h2 class="how-it-works-title">How The System Works</h2>
+        <div class="container" style="max-width: 760px;">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h3>Applicant Opens The Screening Page</h3>
+                    <p>
+                        The applicant workflow begins from the screening page, where personal data entry stays locked until the privacy consent notice is accepted.
+                    </p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h3>Demographic Screening Runs First</h3>
+                    <p>
+                        The system checks the applicant's name, age, and sex against stored criminal records before asking for fingerprint verification.
+                    </p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h3>No Demographic Hit Means Approved</h3>
+                    <p>
+                        If no demographic hit is found, the application is automatically approved and counted in the approved statistics.
+                    </p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <h3>Fingerprint Verification Runs Only When Needed</h3>
+                    <p>
+                        If a demographic hit appears, the applicant fingerprint is captured or uploaded and then compared against relevant criminal biometric records.
+                    </p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">5</div>
+                <div class="step-content">
+                    <h3>Final Status Is Controlled By The Match Result</h3>
+                    <p>
+                        No fingerprint match means approved. A possible fingerprint hit stays in processing for restricted review. A confirmed fingerprint match leads to rejection.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="stat-box">
+                        <span class="stat-number">RA 10173</span>
+                        <span class="stat-label">Privacy Compliance</span>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-box">
+                        <span class="stat-number">2-Step</span>
+                        <span class="stat-label">Verification Flow</span>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-box">
+                        <span class="stat-number">Role Based</span>
+                        <span class="stat-label">Admin Security</span>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-box">
+                        <span class="stat-number">Audit Ready</span>
+                        <span class="stat-label">History Tracking</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section style="background: white; padding: 60px 20px; text-align: center;">
+        <div class="container">
+            <h2 style="font-size: 32px; font-weight: 700; margin-bottom: 20px; color: #333;">Start From The Right Entry Point</h2>
+            <p style="font-size: 16px; color: #666; margin-bottom: 30px; max-width: 650px; margin-left: auto; margin-right: auto;">
+                Use applicant screening for clearance intake, or sign in as an admin to open the protected record management and review workspace.
+            </p>
+            <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                <a href="dashboard.html" class="btn-hero btn-hero-primary" style="padding: 15px 50px; font-size: 18px;">
+                    <i class="bi bi-search"></i> Open Applicant Screening
+                </a>
+                <a href="admin.html" class="btn-hero btn-hero-secondary" style="padding: 15px 50px; font-size: 18px;">
+                    <i class="bi bi-speedometer2"></i> Open Admin Panel
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <h6 style="color: white; margin-bottom: 15px;">System</h6>
+                    <p><a href="dashboard.html">Applicant Screening</a></p>
+                    <p><a href="admin.html">Admin Panel</a></p>
+                    <p><a href="#">Documentation</a></p>
+                </div>
+                <div class="col-md-3">
+                    <h6 style="color: white; margin-bottom: 15px;">Features</h6>
+                    <p><a href="#">Applicant Screening</a></p>
+                    <p><a href="#">Application History</a></p>
+                    <p><a href="#">Fingerprint Review</a></p>
+                </div>
+                <div class="col-md-3">
+                    <h6 style="color: white; margin-bottom: 15px;">Compliance</h6>
+                    <p><a href="#">Privacy Policy</a></p>
+                    <p><a href="#">Terms of Use</a></p>
+                    <p><a href="#">Data Handling</a></p>
+                </div>
+                <div class="col-md-3">
+                    <h6 style="color: white; margin-bottom: 15px;">Certifications</h6>
+                    <p><i class="bi bi-shield-check"></i> NIST Approved</p>
+                    <p><i class="bi bi-check-circle"></i> ISO 27001</p>
+                    <p><i class="bi bi-badge-check"></i> SOC 2 Ready</p>
+                </div>
+            </div>
+            <hr style="border-color: #444;">
+            <p>&copy; 2024 Minutiae Police Verification System. Internal Police Use Only.</p>
+            <p style="font-size: 11px; margin-top: 10px;">
+                NIST Bozorth3 | ISO/IEC 19794-2 | Version 1.0.0 | <strong>For Police Departments Only</strong>
+            </p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        async function enforceIndexAdminAccess() {
+            document.body.classList.add('auth-pending');
+            try {
+                const response = await fetch('backend/auth.php?action=session', { cache: 'no-store' });
+                const data = await response.json();
+
+                if (!response.ok || !data.authenticated || !['admin', 'super_admin'].includes(data.user?.role)) {
+                    window.location.replace('login.html?redirect=index.html');
+                    return;
+                }
+
+                window.location.replace('dashboard.html');
+            } catch (error) {
+                window.location.replace('login.html?redirect=index.html');
+            }
+        }
+
+        function registerIndexAccessRevalidation() {
+            window.addEventListener('pageshow', () => {
+                enforceIndexAdminAccess();
+            });
+
+            window.addEventListener('focus', () => {
+                enforceIndexAdminAccess();
+            });
+
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible') {
+                    enforceIndexAdminAccess();
+                }
+            });
+        }
+
+        registerIndexAccessRevalidation();
+        enforceIndexAdminAccess();
+    </script>
+</body>
+</html>

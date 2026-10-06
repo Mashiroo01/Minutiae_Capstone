@@ -1,0 +1,18 @@
+Evaluation Area,Performance Indicator,Measured Value,Verbal Interpretation
+"Biometric Accuracy",Accuracy,85.19%,Satisfactory
+"Biometric Accuracy",Precision,78.57%,"Needs Improvement"
+"Biometric Accuracy","Recall / Sensitivity",91.67%,"Very Satisfactory"
+"Biometric Accuracy",F1-Score,84.62%,Fair
+"Biometric Accuracy",FAR,20.00%,"Needs Improvement"
+"Biometric Accuracy",FRR,8.33%,Satisfactory
+"Image Robustness","Low-Quality Match Robustness",87.50%,Satisfactory
+"Image Robustness","Mean AFIS Quality","82.33/100",Fair
+"Matcher Behavior","Mean Genuine Match Score",77.62,"Higher than impostor scores"
+"Matcher Behavior","Mean Impostor Match Score",65.37,"Lower than genuine scores"
+"Matcher Behavior","Score Separation",12.26,"Better discrimination"
+"Matcher Behavior","Adaptive Threshold Stability","68.00 mean / 0.00 std","Stable threshold adjustment"
+"Processing Efficiency","Enrollment Processing Time","0.48 sec",Excellent
+"Processing Efficiency","Probe Processing Time","0.45 sec",Excellent
+"Processing Efficiency","Verification Processing Time","1.71 sec",Excellent
+"Processing Efficiency","Estimated End-to-End Screening Time","2.16 sec",Excellent
+"Processing Efficiency","Service Availability",100.00%,Excellent

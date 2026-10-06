@@ -1,0 +1,3076 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Admin Dashboard - Minutiae Police Clearance System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --pnp-blue: #0038a8;
+            --pnp-blue-deep: #002c80;
+            --pnp-red: #ce1126;
+            --pnp-gold: #f7c948;
+            --pnp-ink: #172338;
+            --pnp-slate: #5d6b84;
+            --pnp-bg: #eef4ff;
+            --panel-bg: rgba(255, 255, 255, 0.94);
+            --panel-border: rgba(0, 56, 168, 0.12);
+            --panel-shadow: 0 20px 50px rgba(15, 33, 76, 0.12);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background:
+                radial-gradient(circle at top left, rgba(247, 201, 72, 0.18), transparent 28%),
+                radial-gradient(circle at 88% 18%, rgba(206, 17, 38, 0.14), transparent 22%),
+                linear-gradient(180deg, #f8fbff 0%, var(--pnp-bg) 58%, #edf3ff 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--pnp-ink);
+        }
+
+        .navbar-admin {
+            background: linear-gradient(100deg, var(--pnp-blue-deep) 0%, var(--pnp-blue) 68%, #0d4cd8 100%);
+            color: white;
+            box-shadow: 0 18px 35px rgba(0, 32, 96, 0.22);
+            padding: 16px 0 18px;
+            position: relative;
+        }
+
+        .navbar-admin::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--pnp-gold), #fff4c4, var(--pnp-red));
+        }
+
+        .navbar-brand {
+            font-weight: 800;
+            font-size: 23px;
+            color: white !important;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            letter-spacing: 0.3px;
+        }
+
+        .top-status {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.88);
+            letter-spacing: 0.3px;
+        }
+
+        .logout-button {
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.26);
+            color: white;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 8px 14px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logout-button:hover,
+        .logout-button:focus {
+            color: white;
+            background: rgba(255, 255, 255, 0.16);
+            border-color: rgba(255, 255, 255, 0.38);
+            box-shadow: none;
+        }
+
+        .sidebar {
+            background: linear-gradient(180deg, rgba(4, 39, 112, 0.96) 0%, rgba(7, 30, 79, 0.97) 100%);
+            min-height: calc(100vh - 92px);
+            box-shadow: 12px 0 34px rgba(8, 26, 68, 0.15);
+            padding: 22px 14px;
+            position: fixed;
+            width: 268px;
+            left: 20px;
+            top: 92px;
+            overflow-y: auto;
+            border-radius: 28px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .sidebar-brand {
+            padding: 12px 14px 22px;
+            color: white;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+            margin-bottom: 14px;
+        }
+
+        .sidebar-brand small {
+            display: block;
+            color: rgba(255, 255, 255, 0.7);
+            text-transform: uppercase;
+            letter-spacing: 1.1px;
+            font-size: 10px;
+            margin-bottom: 8px;
+        }
+
+        .sidebar-brand strong {
+            display: block;
+            font-size: 18px;
+            line-height: 1.35;
+        }
+
+        .main-content {
+            margin-left: 318px;
+            padding: 118px 28px 34px;
+        }
+
+        .content-shell {
+            max-width: 1240px;
+        }
+
+        .admin-hero {
+            display: grid;
+            grid-template-columns: minmax(0, 1.8fr) minmax(280px, 0.95fr);
+            gap: 18px;
+            margin-bottom: 26px;
+        }
+
+        .hero-panel,
+        .hero-sidecard {
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            box-shadow: var(--panel-shadow);
+            border-radius: 26px;
+            backdrop-filter: blur(12px);
+        }
+
+        .hero-panel {
+            padding: 28px 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-panel::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(circle at 12% 18%, rgba(247, 201, 72, 0.2), transparent 24%),
+                radial-gradient(circle at 88% 85%, rgba(0, 56, 168, 0.14), transparent 24%);
+            pointer-events: none;
+        }
+
+        .hero-kicker {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 12px;
+            border-radius: 999px;
+            background: rgba(0, 56, 168, 0.08);
+            color: var(--pnp-blue-deep);
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 14px;
+        }
+
+        .hero-panel h1 {
+            position: relative;
+            font-size: clamp(28px, 4vw, 38px);
+            font-weight: 800;
+            color: var(--pnp-ink);
+            margin-bottom: 12px;
+        }
+
+        .hero-panel p,
+        .hero-sidecard p {
+            position: relative;
+            color: var(--pnp-slate);
+            margin: 0;
+            line-height: 1.6;
+        }
+
+        .hero-sidecard {
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            background: linear-gradient(165deg, rgba(0, 56, 168, 0.96) 0%, rgba(0, 34, 105, 0.98) 100%);
+            color: white;
+            border-color: rgba(255, 255, 255, 0.12);
+        }
+
+        .hero-sidecard span {
+            display: inline-flex;
+            width: fit-content;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.12);
+            color: #fff6cc;
+            font-size: 11px;
+            letter-spacing: 0.9px;
+            text-transform: uppercase;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .hero-sidecard strong {
+            font-size: 20px;
+            line-height: 1.35;
+            margin-bottom: 10px;
+        }
+
+        .fingerprint-preview-panel {
+            display: none;
+            margin-top: 12px;
+            padding: 12px;
+            border: 1px solid #d9e6f8;
+            border-radius: 10px;
+            background: #f8fbff;
+            width: fit-content;
+            max-width: 100%;
+        }
+
+        .fingerprint-preview-panel.show {
+            display: block;
+        }
+
+        .fingerprint-preview-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+            color: var(--pnp-blue-deep);
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .fingerprint-preview-image {
+            display: block;
+            width: min(240px, 100%);
+            height: auto;
+            max-height: 320px;
+            object-fit: contain;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            background: #ffffff;
+        }
+
+        .fingerprint-preview-meta {
+            margin-top: 8px;
+            color: #64748b;
+            font-size: 12px;
+        }
+
+        .fingerprint-preview-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .nav-item {
+            padding: 14px 16px;
+            margin: 6px 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: rgba(255, 255, 255, 0.82);
+            transition: all 0.25s ease;
+            border: 1px solid transparent;
+            border-radius: 16px;
+            font-weight: 600;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: white;
+            transform: translateX(3px);
+        }
+
+        .nav-item.active {
+            background: linear-gradient(90deg, rgba(247, 201, 72, 0.22), rgba(255, 255, 255, 0.1));
+            color: white;
+            border-color: rgba(247, 201, 72, 0.28);
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+        }
+
+        .nav-item i {
+            font-size: 18px;
+            color: #ffe08a;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .page-title {
+            font-size: 31px;
+            font-weight: 800;
+            color: var(--pnp-ink);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            letter-spacing: -0.02em;
+        }
+
+        .page-title i {
+            width: 56px;
+            height: 56px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 18px;
+            color: white;
+            background: linear-gradient(135deg, var(--pnp-blue) 0%, #0d52e0 100%);
+            box-shadow: 0 14px 28px rgba(0, 56, 168, 0.2);
+            font-size: 24px;
+        }
+
+        .page-subtitle {
+            color: var(--pnp-slate);
+            font-size: 14px;
+            margin: -8px 0 20px 72px;
+        }
+
+        .card,
+        .form-card {
+            border: 1px solid var(--panel-border);
+            border-radius: 24px;
+            box-shadow: var(--panel-shadow);
+            margin-bottom: 22px;
+            background: rgba(255, 255, 255, 0.95);
+            overflow: hidden;
+        }
+
+        .card-header {
+            border: none;
+            background: linear-gradient(95deg, var(--pnp-blue-deep) 0%, var(--pnp-blue) 74%, #0e55ea 100%);
+            color: white;
+            padding: 22px 24px;
+            border-radius: 0;
+        }
+
+        .card-body {
+            padding: 22px 24px;
+        }
+
+        .stat-card {
+            padding: 22px;
+            text-align: left;
+            position: relative;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 6px;
+            background: linear-gradient(180deg, var(--pnp-gold) 0%, var(--pnp-blue) 100%);
+        }
+
+        .stat-number {
+            font-size: 34px;
+            font-weight: 800;
+            color: var(--pnp-blue-deep);
+            margin: 10px 0 4px;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: var(--pnp-slate);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.7px;
+        }
+
+        .table {
+            font-size: 13px;
+            margin-bottom: 0;
+        }
+
+        .table-responsive {
+            border: 1px solid rgba(0, 56, 168, 0.08);
+            border-radius: 18px;
+            overflow: hidden;
+        }
+
+        .table thead {
+            background: linear-gradient(180deg, #f6f9ff 0%, #edf3ff 100%);
+            border: none;
+        }
+
+        .table thead th {
+            color: #35507f;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.9px;
+            text-transform: uppercase;
+            border-bottom: 1px solid rgba(0, 56, 168, 0.08);
+            padding: 14px 16px;
+            white-space: nowrap;
+        }
+
+        .table td {
+            vertical-align: middle;
+            border-color: rgba(17, 41, 84, 0.08);
+            padding: 14px 16px;
+            color: #203250;
+        }
+
+        .table tbody tr {
+            transition: background 0.18s ease;
+        }
+
+        .table tbody tr:hover {
+            background: rgba(0, 56, 168, 0.03);
+        }
+
+        .status-approved,
+        .status-rejected,
+        .status-pending,
+        .status-caution,
+        .status-under-review,
+        .status-flagged {
+            display: inline-flex;
+            align-items: center;
+            padding: 7px 12px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+        }
+
+        .status-approved {
+            background: #e8f7ec;
+            color: #156739;
+        }
+
+        .status-rejected {
+            background: #fff0f3;
+            color: #9b1c30;
+        }
+
+        .status-pending {
+            background: #fff8df;
+            color: #8a6110;
+        }
+
+        .status-caution {
+            background: #edf5ff;
+            color: #0c58a7;
+        }
+
+        .status-under-review {
+            background: #e5f0ff;
+            color: #0e57a6;
+        }
+
+        .status-flagged {
+            background: #fff3df;
+            color: #a05f00;
+        }
+
+        .btn-sm {
+            padding: 7px 12px;
+            font-size: 12px;
+            border-radius: 12px;
+            font-weight: 700;
+        }
+
+        .btn-view,
+        .btn-primary-custom {
+            background: linear-gradient(135deg, var(--pnp-blue) 0%, #0c4dde 100%);
+            color: white;
+            border: none;
+            font-weight: 700;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .btn-view:hover,
+        .btn-primary-custom:hover {
+            transform: translateY(-1px);
+            color: white;
+            box-shadow: 0 12px 24px rgba(0, 56, 168, 0.22);
+        }
+
+        .btn-primary-custom {
+            padding: 12px 30px;
+            border-radius: 14px;
+        }
+
+        .form-label {
+            font-weight: 700;
+            color: #21324f;
+            margin-bottom: 10px;
+        }
+
+        .form-control,
+        .form-select {
+            border: 1px solid rgba(0, 56, 168, 0.14);
+            border-radius: 14px;
+            padding: 12px 14px;
+            background: #fbfdff;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: rgba(0, 56, 168, 0.45);
+            box-shadow: 0 0 0 0.22rem rgba(0, 56, 168, 0.12);
+        }
+
+        .password-group .form-control {
+            border-right: none;
+            border-radius: 14px 0 0 14px;
+        }
+
+        .password-toggle {
+            border: 1px solid rgba(0, 56, 168, 0.14);
+            border-left: none;
+            background: #fbfdff;
+            color: #35507f;
+            border-radius: 0 14px 14px 0;
+            min-width: 54px;
+        }
+
+        .password-toggle:hover,
+        .password-toggle:focus {
+            background: #f1f6ff;
+            color: var(--pnp-blue-deep);
+            box-shadow: none;
+        }
+
+        .search-box {
+            margin-bottom: 20px;
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: 1.1fr 1.4fr repeat(4, minmax(120px, 1fr));
+            gap: 12px;
+            align-items: end;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 46px;
+            color: #8191ad;
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            color: #bfd0ef;
+            margin-bottom: 15px;
+        }
+
+        .alert {
+            border: 1px solid rgba(0, 56, 168, 0.08);
+            border-radius: 18px;
+        }
+
+        .system-banner {
+            background: linear-gradient(90deg, rgba(0, 56, 168, 0.08), rgba(247, 201, 72, 0.18));
+            border: 1px solid rgba(0, 56, 168, 0.12);
+            color: #1f365f;
+            box-shadow: 0 14px 28px rgba(15, 33, 76, 0.08);
+        }
+
+        .metric-panel {
+            padding: 22px;
+            border-radius: 18px;
+            border: 1px solid transparent;
+        }
+
+        .metric-panel.success {
+            background: #eaf8ef;
+            color: #145f35;
+            border-color: #cde8d5;
+        }
+
+        .metric-panel.danger {
+            background: #fff0f2;
+            color: #962335;
+            border-color: #f2cad1;
+        }
+
+        .system-info-item {
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0, 56, 168, 0.08);
+            color: #223758;
+        }
+
+        .system-info-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .auth-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 22, 48, 0.76);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 20px;
+        }
+
+        .auth-card {
+            width: min(480px, 100%);
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 251, 255, 0.98) 100%);
+            border: 1px solid rgba(0, 56, 168, 0.12);
+            border-radius: 26px;
+            box-shadow: 0 30px 70px rgba(7, 22, 54, 0.28);
+            padding: 34px 30px;
+        }
+
+        .auth-badge {
+            width: 62px;
+            height: 62px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, var(--pnp-blue) 0%, var(--pnp-red) 100%);
+            color: white;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 27px;
+            margin-bottom: 18px;
+            box-shadow: 0 16px 30px rgba(0, 56, 168, 0.2);
+        }
+
+        .role-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.14);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 7px 11px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+        }
+
+        .restricted-note {
+            background: #eef4ff;
+            border: 1px solid #cfdbfb;
+            border-radius: 16px;
+            padding: 14px 16px;
+            color: #29467a;
+            margin-bottom: 16px;
+        }
+
+        .review-panel {
+            margin-top: 18px;
+            padding: 18px;
+            border: 1px solid rgba(0, 56, 168, 0.1);
+            border-radius: 18px;
+            background: #f9fbff;
+        }
+
+        .alert-list {
+            margin: 0;
+            padding-left: 18px;
+            color: #334155;
+        }
+
+        .modal-content {
+            border: 1px solid rgba(0, 56, 168, 0.12);
+            border-radius: 24px;
+            box-shadow: 0 28px 60px rgba(10, 22, 48, 0.18);
+            overflow: hidden;
+        }
+
+        .modal-header {
+            border-bottom: 1px solid rgba(0, 56, 168, 0.08);
+            background: linear-gradient(180deg, #f9fbff 0%, #f0f5ff 100%);
+        }
+
+        .modal-footer {
+            border-top: 1px solid rgba(0, 56, 168, 0.08);
+        }
+
+        @media (max-width: 1199px) {
+            .admin-hero {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .sidebar {
+                position: static;
+                width: auto;
+                min-height: auto;
+                margin: 104px 16px 0;
+                left: auto;
+                top: auto;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 22px 16px 28px;
+            }
+
+            .content-shell {
+                max-width: none;
+            }
+
+            .filter-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .page-subtitle {
+                margin-left: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .navbar-brand {
+                font-size: 18px;
+            }
+
+            .sidebar {
+                padding: 16px 12px;
+                border-radius: 22px;
+            }
+
+            .nav-item {
+                margin: 4px 0;
+            }
+
+            .page-title {
+                font-size: 26px;
+                align-items: flex-start;
+            }
+
+            .page-title i {
+                width: 50px;
+                height: 50px;
+                font-size: 22px;
+            }
+
+            .card-header,
+            .card-body {
+                padding: 18px;
+            }
+
+            .filter-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-dark navbar-admin fixed-top">
+        <div class="container-fluid">
+            <span class="navbar-brand">
+                <i class="bi bi-shield-lock"></i> MINUTIAE - Admin Panel
+            </span>
+            <div class="d-flex align-items-center gap-2">
+                <span id="authStatusText" class="top-status">Police Clearance System</span>
+                <span id="roleBadge" class="role-badge" style="display: none;"></span>
+                <button id="logoutButton" type="button" class="btn btn-sm logout-button" style="display: none;">
+                    <i class="bi bi-box-arrow-right"></i> Logout
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-brand">
+            <small>Philippine National Police</small>
+            <strong>Biometric Clearance Command Center</strong>
+        </div>
+        <div class="nav-item active" onclick="switchSection('dashboard', event)">
+            <i class="bi bi-speedometer2"></i> Dashboard
+        </div>
+        <div class="nav-item" onclick="switchSection('applications', event)">
+            <i class="bi bi-file-earmark-text"></i> Applications
+        </div>
+        <div class="nav-item" onclick="switchSection('criminals', event)">
+            <i class="bi bi-exclamation-triangle"></i> Criminal Database
+        </div>
+        <div class="nav-item" onclick="switchSection('register-criminal', event)">
+            <i class="bi bi-plus-circle"></i> Register Criminal
+        </div>
+        <div class="nav-item" onclick="switchSection('statistics', event)">
+            <i class="bi bi-bar-chart"></i> Statistics
+        </div>
+        <div class="nav-item" onclick="switchSection('system-status', event)">
+            <i class="bi bi-info-circle"></i> System Status
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="content-shell">
+        <div class="admin-hero">
+            <div class="hero-panel">
+                <div class="hero-kicker">
+                    <i class="bi bi-shield-check"></i> Secure Operations
+                </div>
+                <h1>Philippines National Police Clearance Workspace</h1>
+                <p>Manage applicant history, restricted fingerprint reviews, and criminal database records through a cleaner role-based command interface built for daily screening operations.</p>
+            </div>
+            <div class="hero-sidecard">
+                <span>Access Model</span>
+                <strong>Admins see limited history. Super Admins handle sensitive fingerprint match review.</strong>
+                <p>All actions stay role-restricted and audit-ready for compliance and accountability.</p>
+            </div>
+        </div>
+
+        <!-- Dashboard Section -->
+        <div id="dashboard" class="section active">
+            <div class="page-title">
+                <i class="bi bi-speedometer2"></i> Dashboard
+            </div>
+            <div class="page-subtitle">Operational overview for application intake, decision volume, and biometric screening readiness.</div>
+
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="card stat-card">
+                        <div class="stat-label">Total Applications</div>
+                        <div class="stat-number" id="totalApplications">0</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card stat-card">
+                        <div class="stat-label">Approved</div>
+                        <div class="stat-number" id="approvedCount" style="color: #28a745;">0</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card stat-card">
+                        <div class="stat-label">Rejected</div>
+                        <div class="stat-number" id="rejectedCount" style="color: #dc3545;">0</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card stat-card">
+                        <div class="stat-label">Criminal Records</div>
+                        <div class="stat-number" id="criminalCount">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="alert system-banner mt-4">
+                <i class="bi bi-info-circle"></i>
+                <strong>System Ready:</strong> Bozorth3 fingerprint matching is operational. Last system check at <span id="lastCheck">--:--</span>
+            </div>
+        </div>
+
+        <!-- Application History Section -->
+        <div id="applications" class="section">
+            <div class="page-title">
+                <i class="bi bi-file-earmark-text"></i> Application History
+            </div>
+            <div class="page-subtitle">Search and monitor all submitted applications with status transitions, fingerprint workflow states, and append-only update logs.</div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="filter-grid">
+                        <div>
+                            <strong>Application History Records</strong>
+                        </div>
+                        <div class="search-box" style="margin: 0;">
+                            <input type="text" class="form-control" placeholder="Search by name or ID..." id="applicantSearch">
+                        </div>
+                        <div>
+                            <select id="applicationStatusFilter" class="form-select">
+                                <option value="">All Statuses</option>
+                                <option value="PENDING">Pending</option>
+                                <option value="PENDING_FINGERPRINT">Pending Fingerprint</option>
+                                <option value="UNDER_REVIEW">Processing</option>
+                                <option value="APPROVED">Approved</option>
+                                <option value="REJECTED">Rejected</option>
+                                <option value="FLAGGED">Flagged</option>
+                            </select>
+                        </div>
+                        <div>
+                            <select id="fingerprintStatusFilter" class="form-select">
+                                <option value="">All Fingerprint States</option>
+                                <option value="NOT_STARTED">Not Started</option>
+                                <option value="REQUIRED">Required</option>
+                                <option value="SUBMITTED">Submitted</option>
+                                <option value="NO_MATCH">No Match</option>
+                                <option value="POTENTIAL_MATCH">Potential Match</option>
+                                <option value="CONFIRMED_MATCH">Confirmed Match</option>
+                                <option value="MANUALLY_CLEARED">Manually Cleared</option>
+                                <option value="FLAGGED_FOR_REVIEW">Flagged For Review</option>
+                            </select>
+                        </div>
+                        <div>
+                            <input type="date" id="applicationDateFrom" class="form-control" title="From date">
+                        </div>
+                        <div>
+                            <input type="date" id="applicationDateTo" class="form-control" title="To date">
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="applicationsTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Age</th>
+                                    <th>Sex</th>
+                                    <th>Status</th>
+                                    <th>Fingerprint</th>
+                                    <th>Submitted</th>
+                                    <th>Updated</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="applicationsTableBody">
+                                <tr>
+                                    <td colspan="9" class="text-center text-muted py-4">
+                                        <i class="bi bi-inbox"></i> No applications found
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Criminal Database Section -->
+        <div id="criminals" class="section">
+            <div class="page-title">
+                <i class="bi bi-exclamation-triangle"></i> Criminal Database
+            </div>
+            <div class="page-subtitle">Review criminal records with role-based visibility on biometric data and restricted detail disclosure.</div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="row align-items-center">
+                        <div class="col-md-8 d-flex align-items-center gap-2 flex-wrap">
+                            <strong>Criminal Records</strong>
+                            <button type="button" id="runSeederButton" class="btn btn-sm btn-outline-secondary" style="display: none;">
+                                <i class="bi bi-database-add"></i> Run Seeder (300)
+                            </button>
+                        </div>
+                        <div class="col-md-4 search-box" style="margin: 0;">
+                            <input type="text" class="form-control" placeholder="Search by name..." id="criminalSearch">
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="criminalsTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Age</th>
+                                    <th>Sex</th>
+                                    <th>Case Number</th>
+                                    <th>Fingerprints</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="criminalsTableBody">
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted py-4">
+                                        <i class="bi bi-inbox"></i> No criminal records found
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Register Criminal Section -->
+        <div id="register-criminal" class="section">
+            <div class="page-title">
+                <i class="bi bi-plus-circle"></i> Register Criminal
+            </div>
+            <div class="page-subtitle">Capture new criminal records with clear form structure and controlled downstream fingerprint handling.</div>
+
+            <div class="card form-card">
+                <div class="card-header">
+                    <strong>Add New Criminal Record</strong>
+                </div>
+                <div class="card-body p-4">
+                    <form id="registerCriminalForm">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group mb-3">
+                                    <label class="form-label">Family Name *</label>
+                                    <input type="text" id="adminCriminalFamilyName" class="form-control" required placeholder="Enter family name">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group mb-3">
+                                    <label class="form-label">First Name *</label>
+                                    <input type="text" id="adminCriminalFirstName" class="form-control" required placeholder="Enter first name">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group mb-3">
+                                    <label class="form-label">Middle Name</label>
+                                    <input type="text" id="adminCriminalMiddleName" class="form-control" placeholder="Enter middle name (optional)">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="form-group mb-3">
+                                    <label class="form-label">Age *</label>
+                                    <input type="number" id="adminCriminalAge" class="form-control" required min="18" max="120" placeholder="Age">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group mb-3">
+                                    <label class="form-label">Sex *</label>
+                                    <select id="adminCriminalSex" class="form-select" required>
+                                        <option value="">-- Select --</option>
+                                        <option value="M">Male</option>
+                                        <option value="F">Female</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label class="form-label">Case Number</label>
+                                    <input type="text" id="adminCaseNumber" class="form-control" placeholder="e.g., CASE-2023-001">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-5">
+                                <div class="form-group mb-3">
+                                    <label class="form-label">Fingerprint</label>
+                                    <input type="file" id="adminCriminalFingerprint" class="form-control" accept=".iso,.fmr,.bin,.dat,.txt,.png,.jpg,.jpeg,.bmp,.tif,.tiff,image/tiff">
+                                    <div class="d-flex gap-2 mt-2">
+                                        <button type="button" id="adminScanCriminalFingerprintButton" class="btn btn-outline-success btn-sm">
+                                            <i class="bi bi-fingerprint"></i> Scan with ZK9500
+                                        </button>
+                                    </div>
+                                    <small id="adminCriminalFingerprintName" class="text-muted">No fingerprint file selected.</small>
+                                    <div id="adminCriminalFingerprintPreview" class="fingerprint-preview-panel" aria-live="polite">
+                                        <div class="fingerprint-preview-title">
+                                            <i class="bi bi-image"></i> Captured Fingerprint Preview
+                                        </div>
+                                        <img id="adminCriminalFingerprintPreviewImage" class="fingerprint-preview-image" alt="Captured criminal fingerprint preview">
+                                        <div id="adminCriminalFingerprintPreviewMeta" class="fingerprint-preview-meta"></div>
+                                        <div class="fingerprint-preview-actions">
+                                            <button type="button" id="adminCriminalFingerprintDownloadButton" class="btn btn-outline-primary btn-sm" onclick="downloadCriminalFingerprintImage('add')" hidden>
+                                                <i class="bi bi-download"></i> Download PNG
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group mb-3">
+                                    <label class="form-label">Finger Position</label>
+                                    <select id="adminCriminalFingerPosition" class="form-select">
+                                        <option value="RIGHT_INDEX">Right Index</option>
+                                        <option value="LEFT_INDEX">Left Index</option>
+                                        <option value="RIGHT_THUMB">Right Thumb</option>
+                                        <option value="LEFT_THUMB">Left Thumb</option>
+                                        <option value="UNSPECIFIED">Unspecified</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group mb-3">
+                                    <label class="form-label">Format</label>
+                                    <select id="adminCriminalTemplateFormat" class="form-select">
+                                        <option value="ISO">ISO</option>
+                                        <option value="RAW">RAW</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i>
+                            <strong>Note:</strong> Fingerprint upload is optional during registration, but recommended for immediate matching readiness.
+                        </div>
+
+                        <button type="submit" class="btn btn-primary-custom">
+                            <i class="bi bi-check-circle"></i> Register Criminal
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Section -->
+        <div id="statistics" class="section">
+            <div class="page-title">
+                <i class="bi bi-bar-chart"></i> Statistics
+            </div>
+            <div class="page-subtitle">Track clearance decision patterns and monitor the health of the screening environment.</div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">Clearance Decisions</div>
+                        <div class="card-body">
+                            <div class="row text-center">
+                                <div class="col-md-6">
+                                    <div class="metric-panel success">
+                                        <div style="font-size: 24px; font-weight: 700; color: #155724;" id="statApproved">0</div>
+                                        <div style="font-size: 12px; color: #155724;">Approved</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="metric-panel danger">
+                                        <div style="font-size: 24px; font-weight: 700; color: #721c24;" id="statRejected">0</div>
+                                        <div style="font-size: 12px; color: #721c24;">Rejected</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">System Information</div>
+                        <div class="card-body">
+                            <div style="padding: 15px;">
+                                <div class="system-info-item">
+                                    <strong>Bozorth3 Status:</strong>
+                                    <span id="bozorth3Status" class="badge bg-success">Operational</span>
+                                </div>
+                                <div class="system-info-item">
+                                    <strong>Database:</strong>
+                                    <span id="dbStatus" class="badge bg-success">Connected</span>
+                                </div>
+                                <div class="system-info-item">
+                                    <strong>System Version:</strong>
+                                    <span class="badge bg-info">1.0.0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Status Section -->
+        <div id="system-status" class="section">
+            <div class="page-title">
+                <i class="bi bi-info-circle"></i> System Status
+            </div>
+            <div class="page-subtitle">Inspect backend readiness, connectivity status, and service condition in one view.</div>
+
+            <div class="card">
+                <div class="card-header">System Information</div>
+                <div class="card-body">
+                    <div id="systemStatusContent" style="padding: 20px;">
+                        Loading system information...
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="recordViewModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="recordViewModalLabel">Record Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="recordViewContent">
+                    Loading...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="editCriminalModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editCriminalModalLabel">Edit Criminal Record</h5>
+                    <button type="button" class="btn-close" id="editCriminalCloseButton" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="editCriminalForm">
+                    <div class="modal-body">
+                        <input type="hidden" id="editCriminalId">
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group mb-3">
+                                    <label class="form-label">Family Name *</label>
+                                    <input type="text" id="editCriminalFamilyName" class="form-control" required placeholder="Enter family name">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group mb-3">
+                                    <label class="form-label">First Name *</label>
+                                    <input type="text" id="editCriminalFirstName" class="form-control" required placeholder="Enter first name">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group mb-3">
+                                    <label class="form-label">Middle Name</label>
+                                    <input type="text" id="editCriminalMiddleName" class="form-control" placeholder="Enter middle name (optional)">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="form-group mb-3">
+                                    <label class="form-label">Age *</label>
+                                    <input type="number" id="editCriminalAge" class="form-control" required min="18" max="120" placeholder="Age">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group mb-3">
+                                    <label class="form-label">Sex *</label>
+                                    <select id="editCriminalSex" class="form-select" required>
+                                        <option value="">-- Select --</option>
+                                        <option value="M">Male</option>
+                                        <option value="F">Female</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label class="form-label">Case Number</label>
+                                    <input type="text" id="editCriminalCaseNumber" class="form-control" placeholder="e.g., CASE-2026-001">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-5">
+                                <div class="form-group mb-3">
+                                    <label class="form-label">Replace Fingerprint</label>
+                                    <input type="file" id="editCriminalFingerprint" class="form-control" accept=".iso,.fmr,.bin,.dat,.txt,.png,.jpg,.jpeg,.bmp,.tif,.tiff,image/tiff">
+                                    <div class="d-flex gap-2 mt-2">
+                                        <button type="button" id="editScanCriminalFingerprintButton" class="btn btn-outline-success btn-sm">
+                                            <i class="bi bi-fingerprint"></i> Scan with ZK9500
+                                        </button>
+                                    </div>
+                                    <small id="editCriminalFingerprintName" class="text-muted">No new fingerprint file selected.</small>
+                                    <div id="editCriminalFingerprintPreview" class="fingerprint-preview-panel" aria-live="polite">
+                                        <div class="fingerprint-preview-title">
+                                            <i class="bi bi-image"></i> Captured Fingerprint Preview
+                                        </div>
+                                        <img id="editCriminalFingerprintPreviewImage" class="fingerprint-preview-image" alt="Captured replacement fingerprint preview">
+                                        <div id="editCriminalFingerprintPreviewMeta" class="fingerprint-preview-meta"></div>
+                                        <div class="fingerprint-preview-actions">
+                                            <button type="button" id="editCriminalFingerprintDownloadButton" class="btn btn-outline-primary btn-sm" onclick="downloadCriminalFingerprintImage('edit')" hidden>
+                                                <i class="bi bi-download"></i> Download PNG
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group mb-3">
+                                    <label class="form-label">Finger Position</label>
+                                    <select id="editCriminalFingerPosition" class="form-select">
+                                        <option value="RIGHT_INDEX">Right Index</option>
+                                        <option value="LEFT_INDEX">Left Index</option>
+                                        <option value="RIGHT_THUMB">Right Thumb</option>
+                                        <option value="LEFT_THUMB">Left Thumb</option>
+                                        <option value="UNSPECIFIED">Unspecified</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group mb-3">
+                                    <label class="form-label">Format</label>
+                                    <select id="editCriminalTemplateFormat" class="form-select">
+                                        <option value="ISO">ISO</option>
+                                        <option value="RAW">RAW</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info mb-0">
+                            <i class="bi bi-info-circle"></i>
+                            <strong>Current fingerprint:</strong>
+                            <span id="editCriminalCurrentFingerprint">No active fingerprint template stored.</span><br>
+                            Upload or scan a new fingerprint only if you want to replace or add the criminal fingerprint template.
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" id="editCriminalCancelButton" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary-custom" id="editCriminalSaveButton">
+                            <i class="bi bi-save"></i> Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="superAdminAlertModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-bell-fill text-danger"></i> Super Admin Match Alert
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p style="margin-bottom: 12px; color: #334155;">
+                        New fingerprint matches are waiting for manual super admin review. These alerts are not shown to regular admins.
+                    </p>
+                    <div id="superAdminAlertSummary" class="restricted-note" style="margin-bottom: 14px;">
+                        Checking for pending biometric review alerts...
+                    </div>
+                    <div id="superAdminAlertList"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Dismiss</button>
+                    <button type="button" id="openAlertsReviewButton" class="btn btn-primary-custom">Open Application History</button>
+                </div>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <div id="authOverlay" class="auth-overlay">
+        <div class="auth-card">
+            <div style="margin-bottom: 24px;">
+                <div class="auth-badge">
+                    <i class="bi bi-person-lock"></i>
+                </div>
+                <h3 style="margin-bottom: 8px; color: #1f2937; font-weight: 800;">Admin Access Required</h3>
+                <p style="margin: 0; color: #64748b; font-size: 14px;">Sign in with an authorized officer, admin, or super admin account. Biometric visibility and actions are restricted by role.</p>
+            </div>
+
+            <div id="authError" class="alert alert-danger" style="display: none;"></div>
+
+            <form id="loginForm">
+                <div class="mb-3">
+                    <label class="form-label" for="loginUsername">Username</label>
+                    <input type="text" id="loginUsername" class="form-control" autocomplete="username" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="loginPassword">Password</label>
+                    <div class="input-group password-group">
+                        <input type="password" id="loginPassword" class="form-control" autocomplete="current-password" required>
+                        <button type="button" class="btn password-toggle" id="toggleAdminPassword" aria-label="Show password" aria-pressed="false">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary-custom w-100">
+                    <i class="bi bi-box-arrow-in-right"></i> Sign In
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        let currentUser = null;
+        let recordModal = null;
+        let editCriminalModal = null;
+        let adminPanelInitialized = false;
+
+        const authOverlay = document.getElementById('authOverlay');
+        const authError = document.getElementById('authError');
+        const loginForm = document.getElementById('loginForm');
+        const loginPasswordInput = document.getElementById('loginPassword');
+        const toggleAdminPasswordButton = document.getElementById('toggleAdminPassword');
+        const logoutButton = document.getElementById('logoutButton');
+        const authStatusText = document.getElementById('authStatusText');
+        const roleBadge = document.getElementById('roleBadge');
+        const runSeederButton = document.getElementById('runSeederButton');
+
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, (char) => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            }[char]));
+        }
+
+        function formatSex(sex) {
+            if (sex === 'M') return 'Male';
+            if (sex === 'F') return 'Female';
+            return sex || 'N/A';
+        }
+
+        function formatStatusLabel(status) {
+            return String(status || 'PENDING').replace(/_/g, ' ');
+        }
+
+        function parseStructuredCriminalName(name) {
+            const raw = String(name || '').trim();
+            if (!raw) {
+                return {
+                    familyName: '',
+                    firstName: '',
+                    middleName: ''
+                };
+            }
+
+            if (raw.includes(',')) {
+                const parts = raw.split(',');
+                const familyName = String(parts.shift() || '').trim();
+                const givenNames = parts.join(',').trim().split(/\s+/).filter(Boolean);
+                return {
+                    familyName,
+                    firstName: givenNames.shift() || '',
+                    middleName: givenNames.join(' ')
+                };
+            }
+
+            const tokens = raw.split(/\s+/).filter(Boolean);
+            return {
+                familyName: tokens.shift() || '',
+                firstName: tokens.shift() || '',
+                middleName: tokens.join(' ')
+            };
+        }
+
+        function buildStructuredCriminalName(familyName, firstName, middleName) {
+            const family = String(familyName || '').trim();
+            const first = String(firstName || '').trim();
+            const middle = String(middleName || '').trim();
+            if (!family || !first) {
+                return '';
+            }
+            return middle ? `${family}, ${first} ${middle}` : `${family}, ${first}`;
+        }
+
+        function hasRole(...roles) {
+            if (!currentUser || !currentUser.role) {
+                return false;
+            }
+            return roles.includes(currentUser.role);
+        }
+
+        function setSectionVisibility(sectionId, visible) {
+            const section = document.getElementById(sectionId);
+            if (section) {
+                section.style.display = visible ? '' : 'none';
+            }
+            const navItem = document.querySelector(`.nav-item[onclick*="'${sectionId}'"]`);
+            if (navItem) {
+                navItem.style.display = visible ? '' : 'none';
+            }
+        }
+
+        function applyRoleRestrictions() {
+            const role = currentUser?.role || '';
+            const canAccessDashboard = role !== 'officer';
+            const canViewApplications = role !== 'officer';
+            const canRegisterCriminal = role === 'admin' || role === 'super_admin';
+            const canAccessStatistics = role !== 'officer';
+            const canAccessSystemStatus = role !== 'officer';
+            const canViewCriminals = role === 'officer' || role === 'admin' || role === 'super_admin';
+            const canRunSeeder = role === 'admin' || role === 'super_admin';
+
+            setSectionVisibility('dashboard', canAccessDashboard);
+            setSectionVisibility('applications', canViewApplications);
+            setSectionVisibility('register-criminal', canRegisterCriminal);
+            setSectionVisibility('statistics', canAccessStatistics);
+            setSectionVisibility('system-status', canAccessSystemStatus);
+            setSectionVisibility('criminals', canViewCriminals);
+            if (runSeederButton) {
+                runSeederButton.style.display = canRunSeeder ? 'inline-flex' : 'none';
+            }
+
+            if (role === 'officer') {
+                switchSection('criminals');
+            }
+        }
+
+        function updatePasswordToggleState(input, button) {
+            const isVisible = input.type === 'text';
+            button.setAttribute('aria-pressed', String(isVisible));
+            button.setAttribute('aria-label', isVisible ? 'Hide password' : 'Show password');
+            button.innerHTML = `<i class="bi ${isVisible ? 'bi-eye-slash' : 'bi-eye'}"></i>`;
+        }
+
+        function getApplicationHistoryFilters() {
+            return {
+                search: document.getElementById('applicantSearch')?.value?.trim() || '',
+                status: document.getElementById('applicationStatusFilter')?.value || '',
+                fingerprint_status: document.getElementById('fingerprintStatusFilter')?.value || '',
+                date_from: document.getElementById('applicationDateFrom')?.value || '',
+                date_to: document.getElementById('applicationDateTo')?.value || ''
+            };
+        }
+
+        function showAuthOverlay(message = '') {
+            authOverlay.style.display = 'flex';
+            authError.style.display = message ? 'block' : 'none';
+            authError.textContent = message;
+        }
+
+        function hideAuthOverlay() {
+            authOverlay.style.display = 'none';
+            authError.style.display = 'none';
+            authError.textContent = '';
+        }
+
+        function updateAuthUI() {
+            if (!currentUser) {
+                authStatusText.textContent = 'Police Clearance System';
+                roleBadge.style.display = 'none';
+                logoutButton.style.display = 'none';
+                return;
+            }
+
+            authStatusText.textContent = `${currentUser.full_name || currentUser.username} (${currentUser.username})`;
+            roleBadge.textContent = currentUser.role.replace('_', ' ');
+            roleBadge.style.display = 'inline-flex';
+            logoutButton.style.display = 'inline-block';
+        }
+
+        async function requestJson(url, options = {}) {
+            const response = await fetch(url, {
+                cache: 'no-store',
+                credentials: 'same-origin',
+                ...options
+            });
+
+            let data = {};
+            try {
+                data = await response.json();
+            } catch (error) {
+                data = {};
+            }
+
+            if (response.status === 401) {
+                currentUser = null;
+                updateAuthUI();
+                showAuthOverlay('Your session has expired. Please sign in again.');
+                throw new Error(data.error || 'Authentication required.');
+            }
+
+            if (!response.ok || data.error) {
+                throw new Error(data.error || 'Request failed.');
+            }
+
+            return data;
+        }
+
+        function isAnyModalOpen() {
+            return document.querySelector('.modal.show') !== null;
+        }
+
+        function cleanupModalArtifacts() {
+            const openModalCount = document.querySelectorAll('.modal.show').length;
+            const backdrops = Array.from(document.querySelectorAll('.modal-backdrop'));
+
+            if (openModalCount === 0) {
+                backdrops.forEach((backdrop) => backdrop.remove());
+                document.body.classList.remove('modal-open');
+                document.body.style.removeProperty('padding-right');
+                return;
+            }
+
+            if (backdrops.length > 1) {
+                backdrops.slice(0, -1).forEach((backdrop) => backdrop.remove());
+            }
+        }
+
+        function closeEditCriminalModal() {
+            const modalElement = document.getElementById('editCriminalModal');
+            const instance = bootstrap.Modal.getInstance(modalElement) || editCriminalModal;
+            if (instance) {
+                instance.hide();
+            }
+
+            window.setTimeout(cleanupModalArtifacts, 180);
+        }
+
+        function getFriendlyRequestError(error, fallbackMessage) {
+            const message = String(error?.message || '').trim();
+            if (!message) {
+                return fallbackMessage;
+            }
+
+            if (/failed to fetch/i.test(message)) {
+                return 'Unable to reach the fingerprint conversion service. Please make sure the local fingerprint service is running, then try the upload again.';
+            }
+
+            return message;
+        }
+
+        async function initializeAdminPanel({ refreshData = null } = {}) {
+            if (!adminPanelInitialized) {
+                recordModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('recordViewModal'));
+                editCriminalModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('editCriminalModal'));
+                adminPanelInitialized = true;
+            }
+
+            const shouldRefreshData = refreshData === null ? !isAnyModalOpen() : refreshData;
+
+            try {
+                const response = await fetch('backend/auth.php?action=session', { cache: 'no-store' });
+                const data = await response.json();
+
+                if (data.authenticated && ['officer', 'admin', 'super_admin'].includes(data.user?.role)) {
+                    currentUser = data.user;
+                    hideAuthOverlay();
+                    updateAuthUI();
+                    applyRoleRestrictions();
+                    if (shouldRefreshData) {
+                        await refreshAllData();
+                    }
+                } else if (data.authenticated && data.user) {
+                    window.location.replace('login.html?redirect=admin.html');
+                } else {
+                    showAuthOverlay();
+                }
+            } catch (error) {
+                showAuthOverlay('Unable to verify the current session right now.');
+            }
+        }
+
+        async function refreshAllData() {
+            if (!currentUser) {
+                return;
+            }
+
+            if (currentUser.role === 'officer') {
+                await loadCriminals();
+                return;
+            }
+
+            await Promise.all([
+                loadDashboardData(),
+                loadApplications(),
+                loadCriminals()
+            ]);
+        }
+
+        async function handleLogout() {
+            try {
+                await requestJson('backend/auth.php?action=logout', { method: 'POST' });
+            } catch (error) {
+                console.error(error);
+            } finally {
+                currentUser = null;
+                loginPasswordInput.type = 'password';
+                updatePasswordToggleState(loginPasswordInput, toggleAdminPasswordButton);
+                updateAuthUI();
+                showAuthOverlay();
+            }
+        }
+
+        toggleAdminPasswordButton.addEventListener('click', () => {
+            loginPasswordInput.type = loginPasswordInput.type === 'password' ? 'text' : 'password';
+            updatePasswordToggleState(loginPasswordInput, toggleAdminPasswordButton);
+            loginPasswordInput.focus();
+            loginPasswordInput.setSelectionRange(loginPasswordInput.value.length, loginPasswordInput.value.length);
+        });
+
+        updatePasswordToggleState(loginPasswordInput, toggleAdminPasswordButton);
+
+        loginForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                const data = await requestJson('backend/auth.php?action=login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                if (!['officer', 'admin', 'super_admin'].includes(data.user?.role)) {
+                    throw new Error('This account is not permitted to access this module.');
+                }
+
+                currentUser = data.user;
+                loginForm.reset();
+                hideAuthOverlay();
+                updateAuthUI();
+                applyRoleRestrictions();
+                await refreshAllData();
+            } catch (error) {
+                showAuthOverlay(error.message);
+            }
+        });
+
+        logoutButton.addEventListener('click', handleLogout);
+
+        // Navigation
+        function switchSection(sectionId, event) {
+            if (currentUser?.role === 'officer' && sectionId !== 'criminals') {
+                sectionId = 'criminals';
+            }
+
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+
+            // Show selected section
+            document.getElementById(sectionId).classList.add('active');
+            const clicked = event?.target?.closest('.nav-item');
+            if (clicked) {
+                clicked.classList.add('active');
+            } else {
+                const fallback = document.querySelector(`.nav-item[onclick*="'${sectionId}'"]`);
+                if (fallback) fallback.classList.add('active');
+            }
+
+            // Load data
+            if (sectionId === 'dashboard') {
+                loadDashboardData();
+            } else if (sectionId === 'applications') {
+                loadApplications();
+            } else if (sectionId === 'criminals') {
+                loadCriminals();
+            } else if (sectionId === 'statistics') {
+                loadStatistics();
+            } else if (sectionId === 'system-status') {
+                loadSystemStatus();
+            }
+        }
+
+        // Load Dashboard Data
+        async function loadDashboardData() {
+            try {
+                const [criminalData, applicantData] = await Promise.all([
+                    requestJson('backend/criminal_record.php?action=stats'),
+                    requestJson('backend/applicant_info.php?action=stats')
+                ]);
+
+                document.getElementById('totalApplications').textContent = applicantData.total || '0';
+                document.getElementById('approvedCount').textContent = applicantData.approved || '0';
+                document.getElementById('rejectedCount').textContent = applicantData.rejected || '0';
+                document.getElementById('criminalCount').textContent = criminalData.total_criminals || '0';
+                document.getElementById('lastCheck').textContent = new Date().toLocaleTimeString();
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+            }
+        }
+
+        // Load Applications
+        async function loadApplications() {
+            try {
+                const filters = getApplicationHistoryFilters();
+                const params = new URLSearchParams(filters);
+                const data = await requestJson(`backend/applicant_info.php?action=history&${params.toString()}`);
+                const applications = data.applicants || [];
+
+                const tbody = document.getElementById('applicationsTableBody');
+                if (applications.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted py-4"><i class="bi bi-inbox"></i> No application history found</td></tr>';
+                } else {
+                    tbody.innerHTML = applications.map(app => `
+                        <tr>
+                            <td>${app.id}</td>
+                            <td>${escapeHtml(app.name || 'N/A')}</td>
+                            <td>${escapeHtml(app.age || 'N/A')}</td>
+                            <td>${app.sex === 'M' ? '👨 Male' : '👩 Female'}</td>
+                            <td><span class="status-${getStatusClass(app.clearance_status)}">${escapeHtml(formatStatusLabel(app.clearance_status))}</span></td>
+                            <td style="font-size: 12px;">${new Date(app.submitted_at).toLocaleDateString()}</td>
+                            <td><button class="btn btn-view btn-sm" onclick="viewApplicant(${app.id})">View</button></td>
+                        </tr>
+                    `).join('').replace(/ðŸ‘¨ Male/g, 'Male').replace(/ðŸ‘© Female/g, 'Female');
+                }
+            } catch (error) {
+                const tbody = document.getElementById('applicationsTableBody');
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center text-danger py-4">Failed to load applications: ${escapeHtml(error.message)}</td></tr>`;
+            }
+        }
+
+        // Load Criminals
+        async function loadCriminals() {
+            try {
+                const data = await requestJson('backend/criminal_info.php?action=list');
+                const criminals = data.criminals || [];
+
+                const tbody = document.getElementById('criminalsTableBody');
+                if (criminals.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4"><i class="bi bi-inbox"></i> No criminal records found</td></tr>';
+                } else {
+                    tbody.innerHTML = criminals.map(criminal => `
+                        <tr>
+                            <td>${criminal.id}</td>
+                            <td>${escapeHtml(criminal.name || 'N/A')}</td>
+                            <td>${escapeHtml(criminal.age || 'N/A')}</td>
+                            <td>${criminal.sex === 'M' ? '👨 Male' : '👩 Female'}</td>
+                            <td>${escapeHtml(criminal.case_number || '-')}</td>
+                            <td><span class="badge bg-info">${criminal.fingerprint_count || 0}</span></td>
+                            <td>
+                                <div class="d-flex gap-2 flex-wrap">
+                                    <button class="btn btn-view btn-sm" onclick="viewCriminal(${criminal.id})">View</button>
+                                    ${hasRole('admin', 'super_admin')
+                                        ? `<button class="btn btn-sm btn-outline-primary" onclick="openEditCriminal(${Number(criminal.id)})"><i class="bi bi-pencil"></i> Edit</button>`
+                                        : ''
+                                    }
+                                    ${hasRole('admin', 'super_admin')
+                                        ? `<button class="btn btn-sm btn-outline-danger" onclick="deleteCriminalRecord(${Number(criminal.id)}, '${escapeHtml(String(criminal.name || '').replace(/'/g, '&#39;'))}')"><i class="bi bi-trash"></i> Delete</button>`
+                                        : ''
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    `).join('').replace(/ðŸ‘¨ Male/g, 'Male').replace(/ðŸ‘© Female/g, 'Female');
+                }
+            } catch (error) {
+                const tbody = document.getElementById('criminalsTableBody');
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center text-danger py-4">Failed to load criminal records: ${escapeHtml(error.message)}</td></tr>`;
+            }
+        }
+
+        async function viewCriminal(criminalId) {
+            try {
+                const data = await requestJson(`backend/criminal_info.php?action=get&id=${criminalId}`);
+                const record = data.record || {};
+                const canDeleteFingerprint = hasRole('admin', 'super_admin')
+                    && (data.permissions?.can_delete_fingerprint ?? true);
+                const restrictedHtml = data.biometric_access === 'restricted'
+                    ? '<div class="restricted-note"><strong>Restricted biometric view.</strong> Fingerprint template metadata and actions are limited to authorized admin roles.</div>'
+                    : '';
+                const fpRows = (data.fingerprints || []).length
+                    ? data.fingerprints.map(fp => `
+                        <tr>
+                            <td>${escapeHtml(fp.finger_position || '-')}</td>
+                            <td>${escapeHtml(fp.template_format || 'ISO')}</td>
+                            <td>${escapeHtml(fp.quality_score ?? 0)}</td>
+                            <td>${escapeHtml(fp.fingerprint_filename || '-')}</td>
+                            <td>${escapeHtml(fp.captured_at || '-')}</td>
+                            <td>
+                                ${canDeleteFingerprint && Number(fp.is_active ?? 1) === 1
+                                    ? `<button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteCriminalFingerprint(${Number(fp.id)}, ${Number(criminalId)})"><i class="bi bi-trash"></i> Delete</button>`
+                                    : (Number(fp.is_active ?? 1) !== 1
+                                        ? '<span class="text-muted">Deleted</span>'
+                                        : '<span class="text-muted">Restricted</span>')
+                                }
+                            </td>
+                        </tr>
+                    `).join('')
+                    : '<tr><td colspan="6" class="text-center text-muted">No fingerprint details available</td></tr>';
+
+                const html = `
+                    <div class="row mb-3">
+                        <div class="col-md-6"><strong>Name:</strong> ${escapeHtml(record.name || 'N/A')}</div>
+                        <div class="col-md-3"><strong>Age:</strong> ${escapeHtml(record.age ?? 'N/A')}</div>
+                        <div class="col-md-3"><strong>Sex:</strong> ${escapeHtml(formatSex(record.sex))}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6"><strong>Case Number:</strong> ${escapeHtml(record.case_number || '-')}</div>
+                        <div class="col-md-6"><strong>Record Date:</strong> ${escapeHtml(record.record_date || '-')}</div>
+                    </div>
+                    ${hasRole('admin', 'super_admin')
+                        ? `<div class="mb-3"><button type="button" class="btn btn-sm btn-outline-primary" onclick="openEditCriminal(${Number(criminalId)})"><i class="bi bi-pencil"></i> Edit Criminal</button></div>`
+                        : ''
+                    }
+                    ${restrictedHtml}
+                    <h6>Fingerprint Templates</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Finger</th>
+                                    <th>Format</th>
+                                    <th>Quality</th>
+                                    <th>File Name</th>
+                                    <th>Captured At</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>${fpRows}</tbody>
+                        </table>
+                    </div>
+                `;
+
+                document.getElementById('recordViewModalLabel').textContent = `Criminal Record #${criminalId}`;
+                document.getElementById('recordViewContent').innerHTML = html;
+                recordModal.show();
+            } catch (error) {
+                alert('View failed: ' + error.message);
+            }
+        }
+
+        async function openEditCriminal(criminalId) {
+            if (!hasRole('admin', 'super_admin')) {
+                alert('Only authorized admin roles can edit criminal records.');
+                return;
+            }
+
+            try {
+                const data = await requestJson(`backend/criminal_info.php?action=get&id=${criminalId}`);
+                const record = data.record || {};
+                const parsedName = parseStructuredCriminalName(record.name || '');
+                const activeFingerprint = (data.fingerprints || []).find(fp => Number(fp.is_active ?? 1) === 1) || (data.fingerprints || [])[0] || null;
+
+                document.getElementById('editCriminalId').value = Number(criminalId);
+                document.getElementById('editCriminalFamilyName').value = parsedName.familyName || '';
+                document.getElementById('editCriminalFirstName').value = parsedName.firstName || '';
+                document.getElementById('editCriminalMiddleName').value = parsedName.middleName || '';
+                document.getElementById('editCriminalAge').value = record.age ?? '';
+                document.getElementById('editCriminalSex').value = record.sex || '';
+                document.getElementById('editCriminalCaseNumber').value = record.case_number || '';
+                document.getElementById('editCriminalFingerPosition').value = activeFingerprint?.finger_position || 'RIGHT_INDEX';
+                document.getElementById('editCriminalTemplateFormat').value = activeFingerprint?.template_format || 'ISO';
+                document.getElementById('editCriminalCurrentFingerprint').textContent = activeFingerprint
+                    ? `${activeFingerprint.fingerprint_filename || 'Unnamed fingerprint file'} (${activeFingerprint.finger_position || 'UNSPECIFIED'})`
+                    : 'No active fingerprint template stored.';
+                editCriminalFingerprintName.textContent = 'No new fingerprint file selected.';
+                document.getElementById('editCriminalModalLabel').textContent = `Edit Criminal #${criminalId}`;
+
+                const recordModalElement = document.getElementById('recordViewModal');
+                const showEditModal = () => {
+                    cleanupModalArtifacts();
+                    editCriminalModal.show();
+                };
+
+                if (recordModal && recordModalElement.classList.contains('show')) {
+                    const onHidden = () => {
+                        recordModalElement.removeEventListener('hidden.bs.modal', onHidden);
+                        showEditModal();
+                    };
+                    recordModalElement.addEventListener('hidden.bs.modal', onHidden);
+                    recordModal.hide();
+                } else {
+                    showEditModal();
+                }
+            } catch (error) {
+                alert('Edit failed: ' + error.message);
+            }
+        }
+
+        async function deleteCriminalFingerprint(fingerprintId, criminalId) {
+            if (!hasRole('admin', 'super_admin')) {
+                alert('Only authorized admin roles can delete fingerprint templates.');
+                return;
+            }
+
+            const confirmed = window.confirm('Delete this fingerprint template? This action removes biometric matching use for this template and is logged for audit.');
+            if (!confirmed) {
+                return;
+            }
+
+            const reason = window.prompt('Enter a deletion reason for the audit log (optional):', 'Template removed by authorized user.');
+            if (reason === null) {
+                return;
+            }
+
+            try {
+                await requestJson('backend/criminal_info.php?action=delete_fingerprint', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        fingerprint_id: Number(fingerprintId),
+                        reason: String(reason || '').trim()
+                    })
+                });
+
+                await loadCriminals();
+                await viewCriminal(criminalId);
+                if (currentUser?.role !== 'officer') {
+                    await loadDashboardData();
+                }
+                alert('Fingerprint template deleted successfully.');
+            } catch (error) {
+                alert('Delete failed: ' + error.message);
+            }
+        }
+
+        async function deleteCriminalRecord(criminalId, criminalName) {
+            if (!hasRole('admin', 'super_admin')) {
+                alert('Only authorized admin roles can delete criminal records.');
+                return;
+            }
+
+            const label = String(criminalName || `#${criminalId}`);
+            const confirmed = window.confirm(`Delete criminal record ${label}? This will remove it from active searches and screening results.`);
+            if (!confirmed) {
+                return;
+            }
+
+            const reason = window.prompt('Enter a deletion reason for the audit log (optional):', 'Criminal record removed by authorized user.');
+            if (reason === null) {
+                return;
+            }
+
+            try {
+                await requestJson('backend/criminal_info.php?action=delete_record', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        criminal_id: Number(criminalId),
+                        reason: String(reason || '').trim()
+                    })
+                });
+
+                recordModal.hide();
+                await loadCriminals();
+                if (currentUser?.role !== 'officer') {
+                    await loadDashboardData();
+                }
+                alert('Criminal record deleted successfully.');
+            } catch (error) {
+                alert('Delete failed: ' + error.message);
+            }
+        }
+
+        async function runCriminalSeeder() {
+            if (!hasRole('admin', 'super_admin')) {
+                alert('Only authorized admin roles can run the seeder.');
+                return;
+            }
+
+            const confirmed = window.confirm('Run the criminal seeder and generate or refresh 300 CASE-2026 records?');
+            if (!confirmed) {
+                return;
+            }
+
+            try {
+                const response = await fetch('seeder.php', {
+                    cache: 'no-store',
+                    credentials: 'same-origin'
+                });
+                const text = await response.text();
+                if (!response.ok) {
+                    throw new Error(text || 'Seeder execution failed.');
+                }
+
+                await loadCriminals();
+                if (currentUser?.role !== 'officer') {
+                    await loadDashboardData();
+                }
+                alert(text);
+            } catch (error) {
+                alert('Seeder failed: ' + error.message);
+            }
+        }
+
+        async function viewApplicant(applicantId) {
+            try {
+                const data = await requestJson('backend/applicant_info.php?action=get', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ applicant_id: applicantId })
+                });
+
+                const record = data.record || {};
+                const reviewSummary = data.review_summary || {};
+                const restrictedHtml = data.biometric_access === 'restricted'
+                    ? '<div class="restricted-note"><strong>Restricted biometric disclosure.</strong> This panel intentionally shows a neutral review state only. Full fingerprint match details and manual decisions are limited to super admins.</div>'
+                    : '';
+
+                const fingerprintHtml = data.biometric_access === 'full'
+                    ? `
+                        <h6>Fingerprint Templates</h6>
+                        <div class="table-responsive mb-3">
+                            <table class="table table-sm table-bordered">
+                                <thead><tr><th>Finger</th><th>Format</th><th>Quality</th><th>Submitted At</th></tr></thead>
+                                <tbody>
+                                    ${(data.fingerprints || []).length
+                                        ? data.fingerprints.map(fp => `
+                                            <tr>
+                                                <td>${escapeHtml(fp.finger_position || '-')}</td>
+                                                <td>${escapeHtml(fp.template_format || 'ISO')}</td>
+                                                <td>${escapeHtml(fp.quality_score ?? 0)}</td>
+                                                <td>${escapeHtml(fp.submitted_at || '-')}</td>
+                                            </tr>
+                                        `).join('')
+                                        : '<tr><td colspan="4" class="text-center text-muted">No fingerprints stored</td></tr>'
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    `
+                    : '';
+
+                const historyHtml = data.biometric_access === 'full'
+                    ? `
+                        <h6>Fingerprint Match History</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered">
+                                <thead><tr><th>Matched Record</th><th>Score</th><th>Result</th><th>Review</th><th>Date</th></tr></thead>
+                                <tbody>
+                                    ${(data.match_history || []).length
+                                        ? data.match_history.map(item => `
+                                            <tr>
+                                                <td>${escapeHtml(item.criminal_name || item.criminal_id || '-')}</td>
+                                                <td>${escapeHtml(item.match_score ?? 0)}</td>
+                                                <td>${item.is_match == 1 ? 'MATCH' : 'NO MATCH'}</td>
+                                                <td>${escapeHtml(formatStatusLabel(item.review_status || 'CLEAR'))}${item.review_outcome ? ` / ${escapeHtml(formatStatusLabel(item.review_outcome))}` : ''}</td>
+                                                <td>${escapeHtml(item.matched_at || '-')}</td>
+                                            </tr>
+                                        `).join('')
+                                        : '<tr><td colspan="5" class="text-center text-muted">No match history</td></tr>'
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    `
+                    : `
+                        <h6>Review Status</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered">
+                                <thead><tr><th>Pending Reviews</th><th>Positive Matches</th><th>Best Score</th></tr></thead>
+                                <tbody>
+                                    <tr>
+                                        <td>${escapeHtml(reviewSummary.pending_reviews ?? 0)}</td>
+                                        <td>${escapeHtml(reviewSummary.positive_matches ?? 0)}</td>
+                                        <td>${escapeHtml(reviewSummary.best_score ?? 0)}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+
+                const reviewPanel = data.review_actions?.can_review && data.review_actions?.requires_review
+                    ? `
+                        <div class="review-panel">
+                            <h6 style="margin-bottom: 10px;">Super Admin Match Review</h6>
+                            <p style="font-size: 13px; color: #64748b;">Manual confirmation is required before any final disposition is applied to this matched applicant.</p>
+                            <label class="form-label" for="reviewNotes">Review Notes</label>
+                            <textarea id="reviewNotes" class="form-control" rows="3" placeholder="Add verification notes, justification, or instructions."></textarea>
+                            <div class="d-flex gap-2 flex-wrap mt-3">
+                                <button type="button" class="btn btn-success btn-sm" onclick="submitReviewDecision('approve', ${applicantId})">Approve</button>
+                                <button type="button" class="btn btn-danger btn-sm" onclick="submitReviewDecision('reject', ${applicantId})">Reject</button>
+                                <button type="button" class="btn btn-warning btn-sm" onclick="submitReviewDecision('flag', ${applicantId})">Flag</button>
+                            </div>
+                        </div>
+                    `
+                    : '';
+
+                const html = `
+                    <div class="row mb-3">
+                        <div class="col-md-6"><strong>Name:</strong> ${escapeHtml(record.name || 'N/A')}</div>
+                        <div class="col-md-3"><strong>Age:</strong> ${escapeHtml(record.age ?? 'N/A')}</div>
+                        <div class="col-md-3"><strong>Sex:</strong> ${escapeHtml(formatSex(record.sex))}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6"><strong>Email:</strong> ${escapeHtml(record.email || '-')}</div>
+                        <div class="col-md-6"><strong>Status:</strong> <span class="status-${getStatusClass(record.clearance_status)}">${escapeHtml(formatStatusLabel(record.clearance_status))}</span></div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6"><strong>Submitted:</strong> ${escapeHtml(record.submitted_at || '-')}</div>
+                        <div class="col-md-6"><strong>Consent Version:</strong> ${escapeHtml(record.privacy_notice_version || '-')}</div>
+                    </div>
+                    ${restrictedHtml}
+                    ${fingerprintHtml}
+                    ${historyHtml}
+                    ${reviewPanel}
+                `;
+                document.getElementById('recordViewModalLabel').textContent = `Applicant Record #${applicantId}`;
+                document.getElementById('recordViewContent').innerHTML = html;
+                recordModal.show();
+            } catch (error) {
+                alert('View failed: ' + error.message);
+            }
+        }
+
+        async function submitReviewDecision(decision, applicantId) {
+            const notes = document.getElementById('reviewNotes')?.value?.trim() || '';
+
+            try {
+                await requestJson('backend/applicant_info.php?action=review', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ applicant_id: applicantId, decision, notes })
+                });
+
+                await loadApplications();
+                await loadDashboardData();
+                await loadStatistics();
+                await viewApplicant(applicantId);
+            } catch (error) {
+                alert('Review update failed: ' + error.message);
+            }
+        }
+
+        // Load Statistics
+        async function loadStatistics() {
+            try {
+                const stats = await requestJson('backend/applicant_info.php?action=stats');
+                document.getElementById('statApproved').textContent = stats.approved || 0;
+                document.getElementById('statRejected').textContent = stats.rejected || 0;
+            } catch (error) {
+                document.getElementById('statApproved').textContent = '0';
+                document.getElementById('statRejected').textContent = '0';
+            }
+        }
+
+        // Load System Status
+        async function loadSystemStatus() {
+            try {
+                const data = await requestJson('backend/criminal_record.php?action=status');
+
+                let html = `
+                    <div style="padding: 20px;">
+                        <div style="margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #e0e0e0;">
+                            <strong>System Name:</strong> ${escapeHtml(data.system_name || 'Minutiae')}<br>
+                            <strong>Version:</strong> 1.0.0
+                        </div>
+
+                        <div style="margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #e0e0e0;">
+                            <strong>Bozorth3 Status:</strong><br>
+                            Installed: <span class="badge ${data.bozorth3_status?.installed ? 'bg-success' : 'bg-danger'}">${data.bozorth3_status?.installed ? 'Yes' : 'No'}</span><br>
+                            Path: <code>${escapeHtml(data.bozorth3_status?.path || 'Not configured')}</code><br>
+                            Message: ${escapeHtml(data.bozorth3_status?.message || 'Unknown')}
+                        </div>
+
+                        <div>
+                            <strong>Database Status:</strong><br>
+                            Connected: <span class="badge ${data.database_status?.connected ? 'bg-success' : 'bg-danger'}">${data.database_status?.connected ? 'Yes' : 'No'}</span><br>
+                            Message: ${escapeHtml(data.database_status?.message || 'Unknown')}
+                        </div>
+                    </div>
+                `;
+
+                document.getElementById('systemStatusContent').innerHTML = html;
+            } catch (error) {
+                console.error('Error loading system status:', error);
+                document.getElementById('systemStatusContent').innerHTML = '<div class="alert alert-danger">Error loading system status</div>';
+            }
+        }
+
+        // Register criminal from admin panel (demographics only).
+        const adminCriminalFingerprintInput = document.getElementById('adminCriminalFingerprint');
+        const adminCriminalFingerprintName = document.getElementById('adminCriminalFingerprintName');
+        const adminScanCriminalFingerprintButton = document.getElementById('adminScanCriminalFingerprintButton');
+        const adminCriminalFingerprintPreview = document.getElementById('adminCriminalFingerprintPreview');
+        const adminCriminalFingerprintPreviewImage = document.getElementById('adminCriminalFingerprintPreviewImage');
+        const adminCriminalFingerprintPreviewMeta = document.getElementById('adminCriminalFingerprintPreviewMeta');
+        const adminCriminalFingerprintDownloadButton = document.getElementById('adminCriminalFingerprintDownloadButton');
+        const editCriminalForm = document.getElementById('editCriminalForm');
+        const editCriminalFingerprintInput = document.getElementById('editCriminalFingerprint');
+        const editCriminalFingerprintName = document.getElementById('editCriminalFingerprintName');
+        const editScanCriminalFingerprintButton = document.getElementById('editScanCriminalFingerprintButton');
+        const editCriminalFingerprintPreview = document.getElementById('editCriminalFingerprintPreview');
+        const editCriminalFingerprintPreviewImage = document.getElementById('editCriminalFingerprintPreviewImage');
+        const editCriminalFingerprintPreviewMeta = document.getElementById('editCriminalFingerprintPreviewMeta');
+        const editCriminalFingerprintDownloadButton = document.getElementById('editCriminalFingerprintDownloadButton');
+        const editCriminalSaveButton = document.getElementById('editCriminalSaveButton');
+        let adminCriminalScannedFingerprint = null;
+        let adminCriminalScannedImage = null;
+        let editCriminalScannedFingerprint = null;
+        let editCriminalScannedImage = null;
+
+        function getFingerprintPreviewElements(mode) {
+            const isEdit = mode === 'edit';
+            return {
+                preview: isEdit ? editCriminalFingerprintPreview : adminCriminalFingerprintPreview,
+                image: isEdit ? editCriminalFingerprintPreviewImage : adminCriminalFingerprintPreviewImage,
+                meta: isEdit ? editCriminalFingerprintPreviewMeta : adminCriminalFingerprintPreviewMeta,
+                downloadButton: isEdit ? editCriminalFingerprintDownloadButton : adminCriminalFingerprintDownloadButton
+            };
+        }
+
+        function clearFingerprintPreview(mode) {
+            const { preview, image, meta, downloadButton } = getFingerprintPreviewElements(mode);
+            if (preview) {
+                preview.classList.remove('show');
+            }
+            if (image) {
+                image.removeAttribute('src');
+            }
+            if (meta) {
+                meta.textContent = '';
+            }
+            if (downloadButton) {
+                downloadButton.hidden = true;
+            }
+        }
+
+        function normalizeFingerprintImageSrc(imageBase64) {
+            if (!imageBase64) {
+                return '';
+            }
+
+            const value = String(imageBase64).trim();
+            return value.startsWith('data:image/')
+                ? value
+                : ('data:image/png;base64,' + value);
+        }
+
+        function sanitizeDatasetFilenamePart(value, fallback = 'unknown') {
+            const cleaned = String(value || '')
+                .trim()
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, '_')
+                .replace(/^_+|_+$/g, '');
+            return cleaned || fallback;
+        }
+
+        function getDatasetTimestamp() {
+            return new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
+        }
+
+        function downloadFingerprintImage(imageBase64, filename) {
+            const imageSrc = normalizeFingerprintImageSrc(imageBase64);
+            if (!imageSrc) {
+                return false;
+            }
+
+            const link = document.createElement('a');
+            link.href = imageSrc;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            return true;
+        }
+
+        function buildCriminalFingerprintFilename(mode) {
+            const prefix = mode === 'edit' ? 'editCriminal' : 'adminCriminal';
+            const familyName = document.getElementById(`${prefix}FamilyName`)?.value;
+            const firstName = document.getElementById(`${prefix}FirstName`)?.value;
+            const middleName = document.getElementById(`${prefix}MiddleName`)?.value;
+            const age = document.getElementById(`${prefix}Age`)?.value;
+            const sex = document.getElementById(`${prefix}Sex`)?.value;
+            const fingerPosition = document.getElementById(`${prefix}FingerPosition`)?.value;
+            const name = sanitizeDatasetFilenamePart([familyName, firstName, middleName].filter(Boolean).join('_'), 'criminal');
+            const agePart = sanitizeDatasetFilenamePart(age, 'age_unknown');
+            const sexPart = sanitizeDatasetFilenamePart(sex, 'sex_unknown');
+            const fingerPart = sanitizeDatasetFilenamePart(fingerPosition, 'finger_unknown');
+
+            return `zkteco_criminal_${name}_${agePart}_${sexPart}_${fingerPart}_${getDatasetTimestamp()}.png`;
+        }
+
+        function downloadCriminalFingerprintImage(mode) {
+            const image = mode === 'edit' ? editCriminalScannedImage : adminCriminalScannedImage;
+            const downloaded = downloadFingerprintImage(image, buildCriminalFingerprintFilename(mode));
+            if (!downloaded) {
+                alert('No scanned fingerprint image is available to download yet.');
+            }
+        }
+
+        function showFingerprintPreview(mode, imageBase64, metaText) {
+            if (!imageBase64) {
+                clearFingerprintPreview(mode);
+                return;
+            }
+
+            const { preview, image, meta, downloadButton } = getFingerprintPreviewElements(mode);
+            if (!preview || !image) {
+                return;
+            }
+
+            const imageSrc = normalizeFingerprintImageSrc(imageBase64);
+
+            image.onload = function() {
+                if (meta) {
+                    const dimensions = image.naturalWidth && image.naturalHeight
+                        ? ` • ${image.naturalWidth} x ${image.naturalHeight}`
+                        : '';
+                    meta.textContent = `${metaText || 'ZK9500 scan preview'}${dimensions}`;
+                }
+            };
+            image.src = imageSrc;
+            preview.classList.add('show');
+            if (downloadButton) {
+                downloadButton.hidden = false;
+            }
+        }
+
+        function resetEditCriminalFormState() {
+            editCriminalForm.reset();
+            editCriminalFingerprintName.textContent = 'No new fingerprint file selected.';
+            document.getElementById('editCriminalCurrentFingerprint').textContent = 'No active fingerprint template stored.';
+            editCriminalScannedFingerprint = null;
+            editCriminalScannedImage = null;
+            clearFingerprintPreview('edit');
+        }
+
+        adminCriminalFingerprintInput.addEventListener('change', () => {
+            const selected = adminCriminalFingerprintInput.files && adminCriminalFingerprintInput.files[0];
+            if (selected) {
+                adminCriminalScannedFingerprint = null;
+                adminCriminalScannedImage = null;
+                clearFingerprintPreview('add');
+            }
+            adminCriminalFingerprintName.textContent = selected
+                ? `Selected: ${selected.name}`
+                : 'No fingerprint file selected.';
+        });
+
+        editCriminalFingerprintInput.addEventListener('change', () => {
+            const selected = editCriminalFingerprintInput.files && editCriminalFingerprintInput.files[0];
+            if (selected) {
+                editCriminalScannedFingerprint = null;
+                editCriminalScannedImage = null;
+                clearFingerprintPreview('edit');
+            }
+            editCriminalFingerprintName.textContent = selected
+                ? `Selected: ${selected.name}`
+                : 'No new fingerprint file selected.';
+        });
+
+        async function scanCriminalFingerprintForForm(mode) {
+            const isEdit = mode === 'edit';
+            const button = isEdit ? editScanCriminalFingerprintButton : adminScanCriminalFingerprintButton;
+            const label = isEdit ? editCriminalFingerprintName : adminCriminalFingerprintName;
+            const fileInput = isEdit ? editCriminalFingerprintInput : adminCriminalFingerprintInput;
+            const originalHtml = button.innerHTML;
+            let scanTimeout = null;
+
+            try {
+                button.disabled = true;
+                button.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Scanning...';
+                label.textContent = 'Waiting for scanner capture...';
+
+                const controller = new AbortController();
+                scanTimeout = setTimeout(() => controller.abort(), 40000);
+
+                const response = await fetch('http://localhost:9000/scan', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ type: 'criminal' }),
+                    signal: controller.signal
+                });
+                clearTimeout(scanTimeout);
+                const data = await response.json();
+
+                if (!response.ok || !data.success) {
+                    throw new Error(data.error || 'Fingerprint scan failed.');
+                }
+
+                if (fileInput) {
+                    fileInput.value = '';
+                }
+
+                if (isEdit) {
+                    editCriminalScannedFingerprint = data.templateBase64 || data.template || null;
+                    editCriminalScannedImage = data.image || data.normalizedImage || data.enhancedImage || data.originalImage || null;
+                } else {
+                    adminCriminalScannedFingerprint = data.templateBase64 || data.template || null;
+                    adminCriminalScannedImage = data.image || data.normalizedImage || data.enhancedImage || data.originalImage || null;
+                }
+
+                label.textContent = `Scanned from ${data.source || 'ZKTeco ZK9500 optical scanner'}; quality ${data.afisQuality ?? data.quality ?? '-'}/100.`;
+                showFingerprintPreview(mode, isEdit ? editCriminalScannedImage : adminCriminalScannedImage, label.textContent);
+            } catch (error) {
+                label.textContent = isEdit ? 'No new fingerprint file selected.' : 'No fingerprint file selected.';
+                clearFingerprintPreview(mode);
+                const message = error.name === 'AbortError'
+                    ? 'ZKTeco ZK9500 scanner timed out. Lift your finger, place it flat on the scanner, and try again.'
+                    : getFriendlyRequestError(error, error.message);
+                alert('Fingerprint scan failed: ' + message);
+            } finally {
+                if (scanTimeout) {
+                    clearTimeout(scanTimeout);
+                }
+                button.disabled = false;
+                button.innerHTML = originalHtml;
+            }
+        }
+
+        adminScanCriminalFingerprintButton.addEventListener('click', () => scanCriminalFingerprintForForm('add'));
+        editScanCriminalFingerprintButton.addEventListener('click', () => scanCriminalFingerprintForForm('edit'));
+
+        runSeederButton.addEventListener('click', runCriminalSeeder);
+
+        document.getElementById('editCriminalModal').addEventListener('hidden.bs.modal', () => {
+            resetEditCriminalFormState();
+            cleanupModalArtifacts();
+        });
+
+        document.getElementById('recordViewModal').addEventListener('hidden.bs.modal', () => {
+            cleanupModalArtifacts();
+        });
+
+        document.getElementById('editCriminalCloseButton').addEventListener('click', closeEditCriminalModal);
+        document.getElementById('editCriminalCancelButton').addEventListener('click', closeEditCriminalModal);
+
+        document.getElementById('registerCriminalForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const familyName = document.getElementById('adminCriminalFamilyName').value.trim();
+            const firstName = document.getElementById('adminCriminalFirstName').value.trim();
+            const middleName = document.getElementById('adminCriminalMiddleName').value.trim();
+            const age = document.getElementById('adminCriminalAge').value;
+            const sex = document.getElementById('adminCriminalSex').value;
+            const caseNumber = document.getElementById('adminCaseNumber').value.trim();
+            const fingerprintFile = adminCriminalFingerprintInput.files && adminCriminalFingerprintInput.files[0];
+            const fingerPosition = document.getElementById('adminCriminalFingerPosition').value || 'RIGHT_INDEX';
+            const templateFormat = document.getElementById('adminCriminalTemplateFormat').value || 'ISO';
+            const name = middleName
+                ? `${familyName}, ${firstName} ${middleName}`
+                : `${familyName}, ${firstName}`;
+
+            if (!familyName || !firstName || !age || !sex) {
+                alert('Please provide family name, first name, age, and sex.');
+                return;
+            }
+
+            try {
+                const formData = new FormData();
+                formData.append('name', name);
+                formData.append('age', age);
+                formData.append('sex', sex);
+                formData.append('case_number', caseNumber);
+                formData.append('finger_position', fingerPosition);
+                formData.append('template_format', templateFormat);
+                if (fingerprintFile) {
+                    formData.append('fingerprint_filename', fingerprintFile.name);
+                    formData.append('fingerprint', fingerprintFile, fingerprintFile.name);
+                } else if (adminCriminalScannedFingerprint) {
+                    formData.append('fingerprint_filename', 'live-criminal-scan.png');
+                    formData.append('fingerprint_data', adminCriminalScannedFingerprint);
+                    if (adminCriminalScannedImage) {
+                        formData.append('fingerprint_image', adminCriminalScannedImage);
+                    }
+                }
+
+                const response = await fetch('backend/criminal_info.php?action=add', {
+                    method: 'POST',
+                    body: formData,
+                    cache: 'no-store'
+                });
+                let data = {};
+                try {
+                    data = await response.json();
+                } catch (error) {
+                    data = {};
+                }
+
+                if (!response.ok || data.error) {
+                    if (data.code === 'DUPLICATE_FINGERPRINT' && data.duplicate) {
+                        throw new Error(
+                            `Duplicate fingerprint detected. It already exists under Criminal #${data.duplicate.criminal_id} (${data.duplicate.criminal_name || 'Unknown'}).`
+                        );
+                    }
+                    throw new Error(data.error || 'Registration failed.');
+                }
+
+                const fingerprintsStored = Number(data.fingerprints_stored || 0);
+                if ((fingerprintFile || adminCriminalScannedFingerprint) && fingerprintsStored > 0) {
+                    alert('Criminal registered successfully with fingerprint.');
+                } else if ((fingerprintFile || adminCriminalScannedFingerprint) && fingerprintsStored === 0) {
+                    alert('Criminal record saved, but fingerprint was not stored. Please verify template format.');
+                } else {
+                    alert('Criminal registered successfully.');
+                }
+                document.getElementById('registerCriminalForm').reset();
+                adminCriminalFingerprintName.textContent = 'No fingerprint file selected.';
+                adminCriminalScannedFingerprint = null;
+                adminCriminalScannedImage = null;
+                clearFingerprintPreview('add');
+                await loadDashboardData();
+                await loadCriminals();
+                switchSection('criminals');
+            } catch (error) {
+                alert('Registration failed: ' + error.message);
+            }
+        });
+
+        editCriminalForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const criminalId = Number(document.getElementById('editCriminalId').value || 0);
+            const familyName = document.getElementById('editCriminalFamilyName').value.trim();
+            const firstName = document.getElementById('editCriminalFirstName').value.trim();
+            const middleName = document.getElementById('editCriminalMiddleName').value.trim();
+            const age = document.getElementById('editCriminalAge').value;
+            const sex = document.getElementById('editCriminalSex').value;
+            const caseNumber = document.getElementById('editCriminalCaseNumber').value.trim();
+            const fingerprintFile = editCriminalFingerprintInput.files && editCriminalFingerprintInput.files[0];
+            const fingerPosition = document.getElementById('editCriminalFingerPosition').value || 'RIGHT_INDEX';
+            const templateFormat = document.getElementById('editCriminalTemplateFormat').value || 'ISO';
+            const name = buildStructuredCriminalName(familyName, firstName, middleName);
+
+            if (!criminalId || !familyName || !firstName || !age || !sex || !name) {
+                alert('Please provide family name, first name, age, and sex.');
+                return;
+            }
+
+            const submittedFingerprint = !!(fingerprintFile || editCriminalScannedFingerprint);
+
+            try {
+                editCriminalSaveButton.disabled = true;
+                editCriminalSaveButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Saving...';
+
+                const formData = new FormData();
+                formData.append('criminal_id', String(criminalId));
+                formData.append('name', name);
+                formData.append('age', age);
+                formData.append('sex', sex);
+                formData.append('case_number', caseNumber);
+                formData.append('finger_position', fingerPosition);
+                formData.append('template_format', templateFormat);
+
+                if (fingerprintFile) {
+                    formData.append('fingerprint_filename', fingerprintFile.name);
+                    formData.append('fingerprint', fingerprintFile, fingerprintFile.name);
+                } else if (editCriminalScannedFingerprint) {
+                    formData.append('fingerprint_filename', 'live-criminal-scan.png');
+                    formData.append('fingerprint_data', editCriminalScannedFingerprint);
+                    if (editCriminalScannedImage) {
+                        formData.append('fingerprint_image', editCriminalScannedImage);
+                    }
+                }
+
+                const response = await fetch('backend/criminal_info.php?action=update', {
+                    method: 'POST',
+                    body: formData,
+                    cache: 'no-store',
+                    credentials: 'same-origin'
+                });
+                let data = {};
+                try {
+                    data = await response.json();
+                } catch (error) {
+                    data = {};
+                }
+
+                if (!response.ok || data.error) {
+                    if (data.code === 'DUPLICATE_FINGERPRINT' && data.duplicate) {
+                        throw new Error(
+                            `Duplicate fingerprint detected. It already exists under Criminal #${data.duplicate.criminal_id} (${data.duplicate.criminal_name || 'Unknown'}).`
+                        );
+                    }
+                    throw new Error(data.error || 'Update failed.');
+                }
+
+                closeEditCriminalModal();
+                editCriminalScannedFingerprint = null;
+                editCriminalScannedImage = null;
+                await loadCriminals();
+                if (currentUser?.role !== 'officer') {
+                    await loadDashboardData();
+                }
+
+                if (submittedFingerprint && Number(data.fingerprints_stored || 0) > 0) {
+                    alert('Criminal record updated and fingerprint saved successfully.');
+                } else if (submittedFingerprint) {
+                    alert('Criminal record updated, but fingerprint was not stored. Please verify the uploaded file.');
+                } else {
+                    alert('Criminal record updated successfully.');
+                }
+            } catch (error) {
+                alert('Update failed: ' + getFriendlyRequestError(error, 'Unable to update the criminal record.'));
+            } finally {
+                editCriminalSaveButton.disabled = false;
+                editCriminalSaveButton.innerHTML = '<i class="bi bi-save"></i> Save Changes';
+            }
+        });
+
+        // Utility Functions
+        function getStatusClass(status) {
+            switch(status) {
+                case 'APPROVED':
+                    return 'approved';
+                case 'REJECTED':
+                    return 'rejected';
+                case 'APPROVED_WITH_CAUTION':
+                    return 'caution';
+                case 'UNDER_REVIEW':
+                    return 'under-review';
+                case 'FLAGGED':
+                    return 'flagged';
+                default:
+                    return 'pending';
+            }
+        }
+
+        window.viewApplicant = viewApplicant;
+        window.viewCriminal = viewCriminal;
+        window.openEditCriminal = openEditCriminal;
+        window.deleteCriminalFingerprint = deleteCriminalFingerprint;
+        window.deleteCriminalRecord = deleteCriminalRecord;
+        window.submitReviewDecision = submitReviewDecision;
+
+        function registerAdminSessionRevalidation() {
+            const revalidate = () => {
+                if (isAnyModalOpen()) {
+                    return;
+                }
+
+                initializeAdminPanel({ refreshData: false });
+            };
+
+            window.addEventListener('pageshow', () => {
+                revalidate();
+            });
+
+            window.addEventListener('focus', () => {
+                revalidate();
+            });
+
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible') {
+                    revalidate();
+                }
+            });
+        }
+
+        registerAdminSessionRevalidation();
+        initializeAdminPanel();
+    </script>
+    <script>
+        let superAdminAlertModalInstance = null;
+        let superAdminAlertInterval = null;
+        let lastSuperAdminAlertSignature = '';
+
+        function buildSuperAdminAlertSignature(alertData) {
+            if (!alertData || !alertData.count) {
+                return '';
+            }
+
+            const topAlert = alertData.alerts?.[0];
+            return `${alertData.count}:${topAlert?.applicant_id || '0'}:${topAlert?.latest_match_at || ''}`;
+        }
+
+        function renderSuperAdminAlerts(alertData) {
+            const summary = document.getElementById('superAdminAlertSummary');
+            const list = document.getElementById('superAdminAlertList');
+            const alerts = alertData.alerts || [];
+
+            if (!alerts.length) {
+                summary.textContent = 'There are no pending fingerprint-match alerts right now.';
+                list.innerHTML = '';
+                return;
+            }
+
+            summary.innerHTML = `<strong>${alerts.length}</strong> applicant match alert${alerts.length === 1 ? '' : 's'} require manual super admin verification.`;
+            list.innerHTML = `
+                <ul class="alert-list">
+                    ${alerts.slice(0, 5).map((alert) => `
+                        <li>
+                            Applicant #${alert.applicant_id} - ${escapeHtml(alert.name || 'Unknown')}
+                            (${escapeHtml(formatStatusLabel(alert.clearance_status || 'UNDER_REVIEW'))},
+                            best score: ${escapeHtml(alert.best_score ?? 0)},
+                            latest: ${escapeHtml(alert.latest_match_at || '-')})
+                        </li>
+                    `).join('')}
+                </ul>
+            `;
+        }
+
+        async function checkSuperAdminAlerts(forceShow = false) {
+            if (!currentUser || currentUser.role !== 'super_admin') {
+                return;
+            }
+
+            try {
+                const alertData = await requestJson('backend/applicant_info.php?action=alerts&limit=5');
+                const signature = buildSuperAdminAlertSignature(alertData);
+                const lastSeen = sessionStorage.getItem('minutiae_super_admin_alert_signature') || '';
+
+                renderSuperAdminAlerts(alertData);
+
+                if (forceShow && alertData.count > 0) {
+                    superAdminAlertModalInstance.show();
+                    return;
+                }
+
+                if (signature && signature !== lastSeen && signature !== lastSuperAdminAlertSignature) {
+                    lastSuperAdminAlertSignature = signature;
+                    sessionStorage.setItem('minutiae_super_admin_alert_signature', signature);
+                    superAdminAlertModalInstance.show();
+                }
+            } catch (error) {
+                if (error.message !== 'Authentication required.') {
+                    console.error('Super admin alert check failed:', error);
+                }
+            }
+        }
+
+        function startSuperAdminAlertPolling() {
+            if (superAdminAlertInterval) {
+                clearInterval(superAdminAlertInterval);
+                superAdminAlertInterval = null;
+            }
+
+            if (!currentUser || currentUser.role !== 'super_admin') {
+                return;
+            }
+
+            checkSuperAdminAlerts();
+            superAdminAlertInterval = window.setInterval(() => {
+                checkSuperAdminAlerts();
+            }, 30000);
+        }
+
+        function stopSuperAdminAlertPolling() {
+            if (superAdminAlertInterval) {
+                clearInterval(superAdminAlertInterval);
+                superAdminAlertInterval = null;
+            }
+        }
+
+        bindApplicationHistoryFilters();
+        superAdminAlertModalInstance = new bootstrap.Modal(document.getElementById('superAdminAlertModal'));
+        document.getElementById('openAlertsReviewButton').addEventListener('click', async () => {
+            superAdminAlertModalInstance.hide();
+            switchSection('applications');
+            await loadApplications();
+        });
+        logoutButton.addEventListener('click', stopSuperAdminAlertPolling);
+
+        function bindApplicationHistoryFilters() {
+            ['applicantSearch', 'applicationStatusFilter', 'fingerprintStatusFilter', 'applicationDateFrom', 'applicationDateTo']
+                .forEach((id) => {
+                    const element = document.getElementById(id);
+                    if (!element || element.dataset.bound === 'true') {
+                        return;
+                    }
+
+                    const eventName = id === 'applicantSearch' ? 'input' : 'change';
+                    element.addEventListener(eventName, () => {
+                        loadApplications();
+                    });
+                    element.dataset.bound = 'true';
+                });
+        }
+
+        loadApplications = async function loadApplicationsOverride() {
+            try {
+                const filters = getApplicationHistoryFilters();
+                const params = new URLSearchParams(filters);
+                const data = await requestJson(`backend/applicant_info.php?action=history&${params.toString()}`);
+                const applications = data.applicants || [];
+                const tbody = document.getElementById('applicationsTableBody');
+
+                if (!applications.length) {
+                    tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted py-4"><i class="bi bi-inbox"></i> No application history found</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = applications.map((app) => `
+                    <tr>
+                        <td>${app.id}</td>
+                        <td>${escapeHtml(app.name || 'N/A')}</td>
+                        <td>${escapeHtml(app.age || 'N/A')}</td>
+                        <td>${escapeHtml(formatSex(app.sex))}</td>
+                        <td><span class="status-${getStatusClass(app.clearance_status)}">${escapeHtml(formatStatusLabel(app.clearance_status))}</span></td>
+                        <td>${escapeHtml(formatStatusLabel(app.fingerprint_verification_status || 'NOT_STARTED'))}</td>
+                        <td style="font-size: 12px;">${app.submitted_at ? new Date(app.submitted_at).toLocaleString() : '-'}</td>
+                        <td style="font-size: 12px;">${app.last_updated_at ? new Date(app.last_updated_at).toLocaleString() : '-'}</td>
+                        <td><button class="btn btn-view btn-sm" onclick="viewApplicant(${app.id})">View</button></td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                document.getElementById('applicationsTableBody').innerHTML = `<tr><td colspan="9" class="text-center text-danger py-4">Failed to load application history: ${escapeHtml(error.message)}</td></tr>`;
+            }
+        };
+
+        viewApplicant = async function viewApplicantOverride(applicantId) {
+            try {
+                const data = await requestJson('backend/applicant_info.php?action=get', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ applicant_id: applicantId })
+                });
+
+                const record = data.record || {};
+                const reviewSummary = data.review_summary || {};
+                const restrictedHtml = data.biometric_access === 'restricted'
+                    ? '<div class="restricted-note"><strong>Restricted history view.</strong> Admins can review status history and update activity, but full biometric and match detail disclosure is limited to super admins.</div>'
+                    : '';
+
+                const fingerprintSummaryHtml = `
+                    <div class="row mb-3">
+                        <div class="col-md-6"><strong>Application Status:</strong> <span class="status-${getStatusClass(record.clearance_status)}">${escapeHtml(formatStatusLabel(record.clearance_status))}</span></div>
+                        <div class="col-md-6"><strong>Fingerprint Verification:</strong> ${escapeHtml(formatStatusLabel(record.fingerprint_verification_status || 'NOT_STARTED'))}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6"><strong>Submitted:</strong> ${escapeHtml(record.submitted_at || '-')}</div>
+                        <div class="col-md-6"><strong>Last Updated:</strong> ${escapeHtml(record.last_updated_at || '-')}</div>
+                    </div>
+                `;
+
+                const historyHtml = data.biometric_access === 'full'
+                    ? `
+                        <h6>Fingerprint Templates</h6>
+                        <div class="table-responsive mb-3">
+                            <table class="table table-sm table-bordered">
+                                <thead><tr><th>Finger</th><th>Format</th><th>Quality</th><th>Submitted At</th></tr></thead>
+                                <tbody>
+                                    ${(data.fingerprints || []).length
+                                        ? data.fingerprints.map((fp) => `
+                                            <tr>
+                                                <td>${escapeHtml(fp.finger_position || '-')}</td>
+                                                <td>${escapeHtml(fp.template_format || 'ISO')}</td>
+                                                <td>${escapeHtml(fp.quality_score ?? 0)}</td>
+                                                <td>${escapeHtml(fp.submitted_at || '-')}</td>
+                                            </tr>
+                                        `).join('')
+                                        : '<tr><td colspan="4" class="text-center text-muted">No fingerprints stored</td></tr>'
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        <h6>Fingerprint Match History</h6>
+                        <div class="table-responsive mb-3">
+                            <table class="table table-sm table-bordered">
+                                <thead><tr><th>Matched Record</th><th>Score</th><th>Result</th><th>Review</th><th>Date</th></tr></thead>
+                                <tbody>
+                                    ${(data.match_history || []).length
+                                        ? data.match_history.map((item) => `
+                                            <tr>
+                                                <td>${escapeHtml(item.criminal_name || item.criminal_id || '-')}</td>
+                                                <td>${escapeHtml(item.match_score ?? 0)}</td>
+                                                <td>${item.is_match == 1 ? 'MATCH' : 'NO MATCH'}</td>
+                                                <td>${escapeHtml(formatStatusLabel(item.review_status || 'CLEAR'))}${item.review_outcome ? ` / ${escapeHtml(formatStatusLabel(item.review_outcome))}` : ''}</td>
+                                                <td>${escapeHtml(item.matched_at || '-')}</td>
+                                            </tr>
+                                        `).join('')
+                                        : '<tr><td colspan="5" class="text-center text-muted">No match history</td></tr>'
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    `
+                    : `
+                        <h6>Fingerprint Review Summary</h6>
+                        <div class="table-responsive mb-3">
+                            <table class="table table-sm table-bordered">
+                                <thead><tr><th>Pending Reviews</th><th>Positive Matches</th><th>Best Score</th></tr></thead>
+                                <tbody>
+                                    <tr>
+                                        <td>${escapeHtml(reviewSummary.pending_reviews ?? 0)}</td>
+                                        <td>${escapeHtml(reviewSummary.positive_matches ?? 0)}</td>
+                                        <td>${escapeHtml(reviewSummary.best_score ?? 0)}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+
+                const updateLogsHtml = `
+                    <h6>Application Update Log</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>When</th>
+                                    <th>Change</th>
+                                    <th>Status</th>
+                                    <th>Fingerprint</th>
+                                    <th>Actor</th>
+                                    <th>Note</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${(data.update_logs || []).length
+                                    ? data.update_logs.map((entry) => `
+                                        <tr>
+                                            <td>${escapeHtml(entry.changed_at || '-')}</td>
+                                            <td>${escapeHtml(formatStatusLabel(entry.change_type || '-'))}</td>
+                                            <td>${escapeHtml(formatStatusLabel(entry.new_status || record.clearance_status || '-'))}</td>
+                                            <td>${escapeHtml(formatStatusLabel(entry.new_fingerprint_status || record.fingerprint_verification_status || '-'))}</td>
+                                            <td>${escapeHtml(entry.actor_name || entry.actor_role || '-')}</td>
+                                            <td>${escapeHtml(entry.note || '-')}</td>
+                                        </tr>
+                                    `).join('')
+                                    : '<tr><td colspan="6" class="text-center text-muted">No update log entries recorded yet</td></tr>'
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+
+                const reviewPanel = data.review_actions?.can_review && data.review_actions?.requires_review
+                    ? `
+                        <div class="review-panel">
+                            <h6 style="margin-bottom: 10px;">Super Admin Match Review</h6>
+                            <p style="font-size: 13px; color: #64748b;">Manual confirmation is required before any final disposition is applied to this matched applicant.</p>
+                            <label class="form-label" for="reviewNotes">Review Notes</label>
+                            <textarea id="reviewNotes" class="form-control" rows="3" placeholder="Add verification notes, justification, or instructions."></textarea>
+                            <div class="d-flex gap-2 flex-wrap mt-3">
+                                <button type="button" class="btn btn-success btn-sm" onclick="submitReviewDecision('approve', ${applicantId})">Approve</button>
+                                <button type="button" class="btn btn-danger btn-sm" onclick="submitReviewDecision('reject', ${applicantId})">Reject</button>
+                                <button type="button" class="btn btn-warning btn-sm" onclick="submitReviewDecision('flag', ${applicantId})">Flag</button>
+                            </div>
+                        </div>
+                    `
+                    : '';
+
+                document.getElementById('recordViewModalLabel').textContent = `Application History #${applicantId}`;
+                document.getElementById('recordViewContent').innerHTML = `
+                    <div class="row mb-3">
+                        <div class="col-md-6"><strong>Name:</strong> ${escapeHtml(record.name || 'N/A')}</div>
+                        <div class="col-md-3"><strong>Age:</strong> ${escapeHtml(record.age ?? 'N/A')}</div>
+                        <div class="col-md-3"><strong>Sex:</strong> ${escapeHtml(formatSex(record.sex))}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6"><strong>Email:</strong> ${escapeHtml(record.email || '-')}</div>
+                        <div class="col-md-6"><strong>Consent Version:</strong> ${escapeHtml(record.privacy_notice_version || '-')}</div>
+                    </div>
+                    ${restrictedHtml}
+                    ${fingerprintSummaryHtml}
+                    ${historyHtml}
+                    ${updateLogsHtml}
+                    ${reviewPanel}
+                `;
+                recordModal.show();
+            } catch (error) {
+                alert('View failed: ' + error.message);
+            }
+        };
+
+        window.viewApplicant = viewApplicant;
+        const originalRefreshAllData = refreshAllData;
+        refreshAllData = async function refreshAllDataWithAlerts() {
+            await originalRefreshAllData();
+            startSuperAdminAlertPolling();
+        };
+
+        const originalHandleLogout = handleLogout;
+        handleLogout = async function handleLogoutWithAlerts() {
+            stopSuperAdminAlertPolling();
+            await originalHandleLogout();
+        };
+
+        window.setTimeout(() => {
+            if (currentUser?.role === 'super_admin') {
+                startSuperAdminAlertPolling();
+            }
+        }, 600);
+    </script>
+</body>
+</html>

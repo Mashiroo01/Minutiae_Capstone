@@ -1,0 +1,2305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minutiae Service Test Lab</title>
+    <style>
+        :root {
+            --pnp-blue: #0038a8;
+            --pnp-blue-deep: #072b73;
+            --pnp-red: #ce1126;
+            --pnp-gold: #f7c948;
+            --ink: #172338;
+            --muted: #6b7a90;
+            --panel: #ffffff;
+            --line: rgba(7, 43, 115, 0.12);
+            --soft: #f4f7fc;
+            --success: #18794e;
+            --warning: #b06b00;
+            --danger: #b42318;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background:
+                radial-gradient(circle at top left, rgba(247, 201, 72, 0.16), transparent 22%),
+                radial-gradient(circle at top right, rgba(206, 17, 38, 0.12), transparent 20%),
+                linear-gradient(180deg, #eef4ff 0%, #f9fbff 100%);
+            color: var(--ink);
+        }
+
+        body.auth-pending {
+            display: none;
+        }
+
+        .shell {
+            max-width: 1500px;
+            margin: 0 auto;
+            padding: 28px;
+        }
+
+        .hero {
+            background: linear-gradient(135deg, rgba(7, 43, 115, 0.98) 0%, rgba(0, 56, 168, 0.96) 58%, rgba(206, 17, 38, 0.93) 100%);
+            color: white;
+            border-radius: 28px;
+            padding: 28px 30px;
+            box-shadow: 0 30px 60px rgba(17, 32, 70, 0.18);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--pnp-gold), #fff5cb, var(--pnp-red));
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.12);
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .hero h1 {
+            margin: 16px 0 10px;
+            font-size: clamp(30px, 4vw, 46px);
+            line-height: 1.05;
+        }
+
+        .hero p {
+            margin: 0;
+            max-width: 840px;
+            line-height: 1.7;
+            color: rgba(255, 255, 255, 0.86);
+        }
+
+        .hero-actions {
+            margin-top: 24px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .button,
+        button,
+        input[type="file"]::file-selector-button {
+            appearance: none;
+            border: none;
+            border-radius: 14px;
+            padding: 12px 16px;
+            font: inherit;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+        }
+
+        button:hover,
+        .button:hover,
+        input[type="file"]::file-selector-button:hover {
+            transform: translateY(-1px);
+        }
+
+        .button-primary {
+            background: linear-gradient(135deg, var(--pnp-gold), #ffd878);
+            color: #402500;
+            box-shadow: 0 16px 30px rgba(247, 201, 72, 0.22);
+        }
+
+        .button-secondary {
+            background: rgba(255, 255, 255, 0.12);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.16);
+        }
+
+        .button-danger {
+            background: #ffe5e6;
+            color: var(--danger);
+        }
+
+        .button-soft {
+            background: #eef3ff;
+            color: var(--pnp-blue-deep);
+        }
+
+        .status-row,
+        .cards,
+        .workspace,
+        .compare-layout,
+        .footer-grid {
+            display: grid;
+            gap: 18px;
+        }
+
+        .status-row {
+            margin-top: 22px;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        }
+
+        .cards {
+            margin-top: 22px;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        }
+
+        .workspace {
+            margin-top: 24px;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .compare-layout,
+        .footer-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            margin-top: 24px;
+        }
+
+        .panel,
+        .stat-card {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 24px;
+            box-shadow: 0 18px 38px rgba(18, 34, 66, 0.08);
+        }
+
+        .panel {
+            padding: 22px;
+        }
+
+        .stat-card {
+            padding: 18px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--muted);
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 30px;
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        .stat-help {
+            margin-top: 8px;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .panel-head {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: flex-start;
+            margin-bottom: 18px;
+        }
+
+        .panel-head h2,
+        .panel-head h3 {
+            margin: 0;
+        }
+
+        .panel-head p {
+            margin: 6px 0 0;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        .stack {
+            display: grid;
+            gap: 14px;
+        }
+
+        .control-row {
+            display: grid;
+            gap: 12px;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            margin-bottom: 14px;
+        }
+
+        .file-input {
+            width: 100%;
+            border: 1px dashed rgba(0, 56, 168, 0.22);
+            border-radius: 16px;
+            padding: 10px;
+            background: #fbfdff;
+        }
+
+        .file-input::file-selector-button {
+            margin-right: 12px;
+            background: #edf3ff;
+            color: var(--pnp-blue-deep);
+        }
+
+        .mini-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .mini-card {
+            padding: 14px;
+            border-radius: 18px;
+            background: var(--soft);
+            border: 1px solid rgba(7, 43, 115, 0.08);
+        }
+
+        .mini-card strong {
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .trace-chip,
+        .status-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .trace-chip {
+            background: #eef3ff;
+            color: var(--pnp-blue-deep);
+        }
+
+        .status-chip.success {
+            background: #e9f7ef;
+            color: var(--success);
+        }
+
+        .status-chip.warning {
+            background: #fff4e5;
+            color: var(--warning);
+        }
+
+        .status-chip.danger {
+            background: #feecec;
+            color: var(--danger);
+        }
+
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        figure {
+            margin: 0;
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            overflow: hidden;
+            background: #fcfdff;
+        }
+
+        figure img {
+            display: block;
+            width: 100%;
+            min-height: 220px;
+            max-height: 280px;
+            object-fit: contain;
+            background:
+                linear-gradient(45deg, #f4f7fc 25%, #fbfdff 25%, #fbfdff 50%, #f4f7fc 50%, #f4f7fc 75%, #fbfdff 75%, #fbfdff 100%);
+            background-size: 24px 24px;
+        }
+
+        figcaption {
+            padding: 10px 12px;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--pnp-blue-deep);
+            border-top: 1px solid var(--line);
+        }
+
+        .kv {
+            display: grid;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        .kv-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(7, 43, 115, 0.08);
+            font-size: 14px;
+        }
+
+        .kv-row:last-child {
+            border-bottom: none;
+        }
+
+        .kv-row span:first-child {
+            color: var(--muted);
+        }
+
+        .empty {
+            padding: 24px;
+            border-radius: 18px;
+            border: 1px dashed rgba(0, 56, 168, 0.22);
+            background: #fbfdff;
+            color: var(--muted);
+            line-height: 1.7;
+        }
+
+        .empty.warning {
+            border-color: rgba(176, 107, 0, 0.28);
+            background: #fff9ef;
+            color: var(--warning);
+        }
+
+        .empty.danger {
+            border-color: rgba(180, 35, 24, 0.28);
+            background: #fff5f5;
+            color: var(--danger);
+        }
+
+        .image-placeholder {
+            min-height: 220px;
+            display: grid;
+            place-items: center;
+            padding: 18px;
+            color: var(--muted);
+            text-align: center;
+            background:
+                linear-gradient(45deg, #f4f7fc 25%, #fbfdff 25%, #fbfdff 50%, #f4f7fc 50%, #f4f7fc 75%, #fbfdff 75%, #fbfdff 100%);
+            background-size: 24px 24px;
+        }
+
+        pre {
+            margin: 0;
+            padding: 16px;
+            border-radius: 18px;
+            background: #0f172a;
+            color: #dbe5ff;
+            overflow: auto;
+            font-size: 12px;
+            line-height: 1.6;
+            max-height: 420px;
+        }
+
+        .trace-list {
+            display: grid;
+            gap: 10px;
+            max-height: 560px;
+            overflow: auto;
+            padding-right: 4px;
+        }
+
+        .trace-item {
+            padding: 14px;
+            border-radius: 18px;
+            border: 1px solid var(--line);
+            background: #fbfdff;
+        }
+
+        .trace-item strong {
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .trace-meta {
+            color: var(--muted);
+            font-size: 12px;
+            margin-bottom: 8px;
+        }
+
+        .trace-data {
+            font-size: 12px;
+            color: #314362;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .service-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .shared-comparison-panel {
+            margin-top: 22px;
+        }
+
+        .comparison-canvas {
+            display: block;
+            width: 100%;
+            max-height: 620px;
+            border: 1px solid var(--line);
+            border-radius: 20px;
+            background: #eef2f8;
+        }
+
+        .comparison-canvas .pair-line {
+            stroke: rgba(0, 56, 168, 0.32);
+            stroke-width: 1.5;
+        }
+
+        .comparison-canvas .pair-marker {
+            cursor: pointer;
+        }
+
+        .comparison-canvas .pair-marker:focus .marker-shape,
+        .comparison-canvas .pair-marker:hover .marker-shape {
+            stroke: var(--pnp-gold);
+            stroke-width: 4;
+        }
+
+        .comparison-canvas .pair-label {
+            font: 700 12px "Segoe UI", sans-serif;
+            fill: #071c49;
+            paint-order: stroke;
+            stroke: white;
+            stroke-width: 4px;
+            stroke-linejoin: round;
+            pointer-events: none;
+        }
+
+        .comparison-canvas .image-label {
+            font: 800 20px "Segoe UI", sans-serif;
+            fill: #071c49;
+        }
+
+        .minutia-detail {
+            min-height: 52px;
+            padding: 12px 14px;
+            border-radius: 14px;
+            background: #eef3ff;
+            color: #314362;
+            line-height: 1.6;
+        }
+
+        .matcher-result-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .matcher-result-card {
+            padding: 16px;
+            border-radius: 18px;
+            border: 1px solid var(--line);
+            background: #fbfdff;
+        }
+
+        .matcher-result-card h4 {
+            margin: 0 0 12px;
+        }
+
+        .matcher-result-card dl {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 7px 12px;
+            margin: 0;
+            font-size: 14px;
+        }
+
+        .matcher-result-card dt {
+            color: var(--muted);
+        }
+
+        .matcher-result-card dd {
+            margin: 0;
+            font-weight: 700;
+        }
+
+        .threshold-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(150px, 1fr));
+            gap: 12px;
+            margin: 16px 0;
+        }
+
+        .threshold-field {
+            display: grid;
+            gap: 7px;
+            color: var(--muted);
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .threshold-field input {
+            width: 100%;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 10px 12px;
+            font: inherit;
+            color: var(--ink);
+            background: white;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            border: 1px solid var(--line);
+            border-radius: 18px;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 680px;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 13px 15px;
+            border-bottom: 1px solid var(--line);
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        .comparison-table th {
+            color: var(--muted);
+            font-size: 12px;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            background: var(--soft);
+        }
+
+        .comparison-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .score-note {
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .matched-visualization {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+        .fingerprint-overlay {
+            position: relative;
+            overflow: hidden;
+            border-radius: 16px 16px 0 0;
+            background: #f2f5fb;
+            aspect-ratio: 1 / 1;
+        }
+
+        .fingerprint-overlay img,
+        .fingerprint-overlay svg {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .fingerprint-overlay img {
+            object-fit: contain;
+        }
+
+        .fingerprint-overlay svg {
+            overflow: visible;
+        }
+
+        .fingerprint-overlay text {
+            font: 700 12px "Segoe UI", sans-serif;
+            fill: #071c49;
+            paint-order: stroke;
+            stroke: white;
+            stroke-width: 4px;
+            stroke-linejoin: round;
+        }
+
+        .minutiae-legend,
+        .correspondence-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 16px;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .matcher-visualization-notes {
+            display: grid;
+            gap: 10px;
+        }
+
+        .matcher-visualization-note {
+            padding: 12px 14px;
+            border-radius: 14px;
+            background: var(--soft);
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
+        .alignment-preview-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .alignment-preview-card {
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            overflow: hidden;
+            background: white;
+        }
+
+        .alignment-preview-card h4 {
+            margin: 0;
+            padding: 11px 14px;
+            background: var(--soft);
+        }
+
+        .alignment-preview-card svg {
+            display: block;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            background: #f8fafc;
+        }
+
+        .toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .comparison-inspector {
+            display: grid;
+            gap: 16px;
+        }
+
+        .correspondence-count-heading {
+            display: inline-flex;
+            width: fit-content;
+            align-items: center;
+            padding: 10px 14px;
+            border-radius: 999px;
+            background: linear-gradient(135deg, #eef4ff, #e5edff);
+            color: var(--pnp-blue-deep);
+            font-size: 15px;
+            font-weight: 800;
+        }
+
+        .alignment-summary {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .alignment-pill,
+        .correspondence-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 10px;
+            border-radius: 999px;
+            background: #eef3ff;
+            color: var(--pnp-blue-deep);
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .visualization-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            padding: 12px;
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            background: #fbfdff;
+        }
+
+        .overlay-controls,
+        .view-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .overlay-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            min-height: 38px;
+            padding: 8px 10px;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            background: white;
+            color: #314362;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .overlay-toggle:has(input:disabled) {
+            opacity: 0.48;
+        }
+
+        .view-button {
+            min-height: 38px;
+            padding: 8px 12px;
+            border-radius: 10px;
+            background: #eef3ff;
+            color: var(--pnp-blue-deep);
+            font-size: 13px;
+        }
+
+        .comparison-viewport {
+            position: relative;
+            overflow: hidden;
+            min-height: 420px;
+            border: 1px solid var(--line);
+            border-radius: 20px;
+            background: #e9eef7;
+            cursor: grab;
+            touch-action: none;
+        }
+
+        .comparison-viewport.dragging {
+            cursor: grabbing;
+        }
+
+        .comparison-transform-layer {
+            width: 100%;
+            transform-origin: 0 0;
+            will-change: transform;
+        }
+
+        .comparison-viewport .comparison-canvas {
+            max-height: none;
+            border: 0;
+            border-radius: 0;
+            background: transparent;
+        }
+
+        .comparison-canvas .pair-line {
+            transition: opacity 0.15s ease, stroke-width 0.15s ease, stroke 0.15s ease;
+        }
+
+        .comparison-canvas .pair-group {
+            transition: opacity 0.15s ease;
+        }
+
+        .comparison-canvas.has-selection .pair-group:not(.selected),
+        .comparison-canvas.has-selection .pair-line:not(.selected) {
+            opacity: 0.16;
+        }
+
+        .comparison-canvas .pair-line.selected {
+            stroke: var(--pnp-gold);
+            stroke-width: 4;
+            opacity: 1;
+        }
+
+        .comparison-canvas .pair-group.selected .marker-shape {
+            stroke: var(--pnp-gold);
+            stroke-width: 4;
+            filter: drop-shadow(0 2px 4px rgba(7, 43, 115, 0.3));
+        }
+
+        .comparison-canvas .direction-indicator {
+            stroke: #172338;
+            stroke-width: 1.6;
+            stroke-linecap: round;
+            pointer-events: none;
+        }
+
+        .minutiae-legend {
+            align-items: center;
+            padding: 10px 12px;
+            border-radius: 14px;
+            background: var(--soft);
+        }
+
+        .legend-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .legend-symbol {
+            display: inline-grid;
+            width: 20px;
+            height: 20px;
+            place-items: center;
+            color: var(--pnp-blue-deep);
+            font-weight: 900;
+        }
+
+        .inspection-grid {
+            display: grid;
+            grid-template-columns: minmax(240px, 0.8fr) minmax(0, 1.6fr);
+            gap: 14px;
+        }
+
+        .minutia-detail {
+            margin: 0;
+            min-height: 180px;
+            background: #f8faff;
+            border: 1px solid var(--line);
+        }
+
+        .minutia-detail h3 {
+            margin: 0 0 12px;
+            color: var(--pnp-blue-deep);
+        }
+
+        .pair-detail-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .pair-detail-card {
+            padding: 10px;
+            border-radius: 12px;
+            background: white;
+            border: 1px solid var(--line);
+        }
+
+        .pair-detail-card strong {
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .correspondence-panel {
+            min-width: 0;
+        }
+
+        .correspondence-details,
+        .technical-details {
+            min-width: 0;
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            background: #fbfdff;
+            overflow: hidden;
+        }
+
+        .correspondence-details > summary,
+        .technical-details > summary {
+            cursor: pointer;
+            padding: 14px 16px;
+            color: var(--pnp-blue-deep);
+            font-weight: 800;
+        }
+
+        .correspondence-details[open] > summary,
+        .technical-details[open] > summary {
+            border-bottom: 1px solid var(--line);
+            background: #f3f6fd;
+        }
+
+        .correspondence-details .correspondence-panel {
+            padding: 14px;
+        }
+
+        .technical-details {
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .technical-details p {
+            margin: 0;
+            padding: 14px 16px;
+            line-height: 1.6;
+        }
+
+        .correspondence-panel-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .correspondence-table {
+            width: 100%;
+            min-width: 620px;
+            border-collapse: collapse;
+        }
+
+        .correspondence-table th,
+        .correspondence-table td {
+            padding: 11px 12px;
+            border-bottom: 1px solid var(--line);
+            text-align: left;
+            font-size: 13px;
+        }
+
+        .correspondence-table th {
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            background: var(--soft);
+            color: var(--muted);
+            font-size: 11px;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .correspondence-table tbody tr {
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+
+        .correspondence-table tbody tr:hover,
+        .correspondence-table tbody tr.selected {
+            background: #eef3ff;
+        }
+
+        .correspondence-scroll {
+            max-height: 330px;
+            overflow: auto;
+            border: 1px solid var(--line);
+            border-radius: 14px;
+        }
+
+        .shared-comparison-panel:fullscreen {
+            overflow: auto;
+            padding: 24px;
+            border-radius: 0;
+            background: white;
+        }
+
+        @media (max-width: 1100px) {
+            .workspace,
+            .compare-layout,
+            .footer-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 760px) {
+            .shell {
+                padding: 18px;
+            }
+
+            .image-grid,
+            .mini-grid,
+            .threshold-grid,
+            .matched-visualization,
+            .alignment-preview-grid,
+            .matcher-result-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .comparison-inspector,
+            .inspection-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .visualization-toolbar {
+                align-items: stretch;
+            }
+
+            .overlay-controls,
+            .view-controls {
+                width: 100%;
+            }
+
+            .comparison-viewport {
+                min-height: 560px;
+            }
+
+            .pair-detail-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body class="auth-pending">
+    <div class="shell">
+        <section class="hero">
+            <div class="eyebrow">Fingerprint Service Lab</div>
+            <h1>Academic Fingerprint Matcher Comparison</h1>
+            <p>Run the same probe and reference through Bozorth3, SourceAFIS, OpenAFIS, MCC, and Jiang Matcher. Each matcher keeps its native score scale, threshold, decision, minutiae count, and processing time.</p>
+            <div class="hero-actions">
+                <button id="refreshHealthButton" class="button-primary">Refresh Service Status</button>
+                <button id="refreshTraceButton" class="button-secondary">Refresh Trace Feed</button>
+                <button id="clearTraceButton" class="button-secondary">Clear Trace Feed</button>
+                <a class="button button-secondary" href="admin.html" style="text-decoration: none;">Back to Admin</a>
+            </div>
+
+            <div class="status-row">
+                <div class="stat-card">
+                    <div class="stat-label">Service Status</div>
+                    <div id="serviceStatusValue" class="stat-value">Checking</div>
+                    <div id="serviceStatusHelp" class="stat-help">Waiting for fingerprint service response.</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Scanner</div>
+                    <div id="scannerStatusValue" class="stat-value">Unknown</div>
+                    <div id="scannerStatusHelp" class="stat-help">The lab supports both upload and live scan paths.</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Active Trace</div>
+                    <div id="activeTraceValue" class="stat-value" style="font-size: 18px; line-height: 1.3;">None yet</div>
+                    <div class="stat-help">The trace feed filters to the latest process or compare request.</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel shared-comparison-panel" aria-labelledby="correspondenceVisualizationTitle">
+            <div class="panel-head">
+                <div>
+                    <h2 id="correspondenceVisualizationTitle">Fingerprint Correspondence Visualization</h2>
+                    <p>Visual comparison of the probe and reference fingerprints based on detected minutiae correspondences.</p>
+                </div>
+            </div>
+            <div id="comparisonInspector" class="comparison-inspector">
+                <div id="correspondenceMessage" class="empty" aria-live="polite">Process both fingerprints and run the comparison to inspect detected correspondence data.</div>
+                <div id="correspondenceCountHeading" class="correspondence-count-heading" aria-live="polite">0 matched minutiae correspondences detected</div>
+                <div class="visualization-toolbar" aria-label="Fingerprint visualization controls">
+                    <div class="overlay-controls">
+                        <label class="overlay-toggle"><input id="toggleMinutiae" type="checkbox" checked> Show Minutiae</label>
+                        <label class="overlay-toggle"><input id="toggleMatchedPairs" type="checkbox" checked> Show Correspondences</label>
+                        <label class="overlay-toggle"><input id="toggleDirections" type="checkbox"> Show Directions</label>
+                    </div>
+                    <div class="view-controls">
+                        <button id="zoomOutButton" class="view-button" type="button" aria-label="Zoom out">− Zoom</button>
+                        <span id="zoomLevel" class="correspondence-status">100%</span>
+                        <button id="zoomInButton" class="view-button" type="button" aria-label="Zoom in">+ Zoom</button>
+                        <button id="resetViewButton" class="view-button" type="button">Reset View</button>
+                        <button id="fullscreenComparisonButton" class="view-button" type="button">View Fullscreen</button>
+                    </div>
+                </div>
+                <div id="primaryFingerprintComparison"></div>
+                <div class="minutiae-legend" aria-label="Minutiae legend">
+                    <span class="legend-item"><span class="legend-symbol">●</span> Ridge Ending</span>
+                    <span class="legend-item"><span class="legend-symbol">▲</span> Bifurcation</span>
+                    <span class="legend-item"><span class="legend-symbol">◎</span> Matched Minutia</span>
+                </div>
+                <div class="inspection-grid">
+                    <aside id="minutiaDetail" class="minutia-detail" aria-live="polite">Select a matched pair to inspect the backend-provided minutia data.</aside>
+                    <details id="correspondenceDetails" class="correspondence-details">
+                        <summary>View Correspondence Details</summary>
+                        <div class="correspondence-panel">
+                            <div class="correspondence-panel-head">
+                                <div id="correspondenceStatus" class="correspondence-status">No matched minutiae correspondences detected.</div>
+                                <button id="viewAllCorrespondences" class="view-button" type="button" hidden>View all</button>
+                            </div>
+                            <div id="primaryCorrespondenceList" class="correspondence-scroll"></div>
+                        </div>
+                    </details>
+                </div>
+                <details class="technical-details">
+                    <summary>Technical Details</summary>
+                    <p>Correspondence visualization source: <strong>OpenAFIS</strong></p>
+                </details>
+            </div>
+        </section>
+
+        <div class="cards">
+            <div class="stat-card">
+                <div class="stat-label">Probe Quality</div>
+                <div id="probeQualityCard" class="stat-value">-</div>
+                <div class="stat-help">Quality score from the processed probe fingerprint.</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Reference Quality</div>
+                <div id="candidateQualityCard" class="stat-value">-</div>
+                <div class="stat-help">Quality score from the processed candidate fingerprint.</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Matchers Completed</div>
+                <div id="finalScoreCard" class="stat-value">-</div>
+                <div class="stat-help">Successful engines returned by the independent comparison route.</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Independent Decisions</div>
+                <div id="thresholdCard" class="stat-value">-</div>
+                <div class="stat-help">No raw scores are averaged or compared across algorithms.</div>
+            </div>
+        </div>
+
+        <section class="workspace">
+            <article class="panel">
+                <div class="panel-head">
+                    <div>
+                        <h2>Probe Fingerprint</h2>
+                        <p>Use this as the applicant or incoming fingerprint. You can upload an image or ask the service to scan one.</p>
+                    </div>
+                    <div id="probeTraceChip" class="trace-chip">Trace: waiting</div>
+                </div>
+
+                <div class="stack">
+                    <div class="control-row">
+                        <input id="probeFile" class="file-input" type="file" accept=".png,.jpg,.jpeg,.bmp,.tif,.tiff,image/*">
+                        <button id="probeUploadButton" class="button-soft" type="button">Process Upload</button>
+                        <button id="probeScanButton" class="button-soft" type="button">Scan Applicant</button>
+                    </div>
+                    <div id="probeSummary" class="empty">No probe fingerprint processed yet.</div>
+                    <div id="probeImages" class="image-grid"></div>
+                    <pre id="probeJson">No probe result yet.</pre>
+                </div>
+            </article>
+
+            <article class="panel">
+                <div class="panel-head">
+                    <div>
+                        <h2>Reference Fingerprint</h2>
+                        <p>Use this as the enrolled or comparison fingerprint. The same input pair is supplied to all five independent matchers.</p>
+                    </div>
+                    <div id="candidateTraceChip" class="trace-chip">Trace: waiting</div>
+                </div>
+
+                <div class="stack">
+                    <div class="control-row">
+                        <input id="candidateFile" class="file-input" type="file" accept=".png,.jpg,.jpeg,.bmp,.tif,.tiff,image/*">
+                        <button id="candidateUploadButton" class="button-soft" type="button">Process Upload</button>
+                        <button id="candidateScanButton" class="button-soft" type="button">Scan Criminal</button>
+                    </div>
+                    <div id="candidateSummary" class="empty">No reference fingerprint processed yet.</div>
+                    <div id="candidateImages" class="image-grid"></div>
+                    <pre id="candidateJson">No candidate result yet.</pre>
+                </div>
+            </article>
+        </section>
+
+        <section class="compare-layout">
+            <article class="panel">
+                <div class="panel-head">
+                    <div>
+                        <h3>Bozorth3 · SourceAFIS · OpenAFIS · MCC · Jiang Matcher</h3>
+                        <p>Configure each threshold independently. Scores remain on their algorithm-specific scales.</p>
+                    </div>
+                    <div class="service-actions">
+                        <button id="compareButton" class="button-primary" type="button">Compare Fingerprints</button>
+                    </div>
+                </div>
+
+                <div class="threshold-grid" aria-label="Matcher thresholds">
+                    <label class="threshold-field">Bozorth3 threshold
+                        <input id="bozorth3Threshold" type="number" min="0" step="1" value="20">
+                    </label>
+                    <label class="threshold-field">SourceAFIS threshold
+                        <input id="sourceAfisThreshold" type="number" min="0" step="0.1" value="40">
+                    </label>
+                    <label class="threshold-field">OpenAFIS threshold
+                        <input id="openAfisThreshold" type="number" min="0" max="100" step="1" value="6">
+                    </label>
+                    <label class="threshold-field">MCC threshold
+                        <input id="mccThreshold" type="number" min="0" max="1" step="0.01" value="0.04">
+                    </label>
+                    <label class="threshold-field">Jiang Matcher threshold
+                        <input id="jiangThreshold" type="number" min="0" max="1" step="0.005" value="0.245">
+                    </label>
+                </div>
+
+                <div id="compareSummary" class="empty">Process both sides first, then run the comparison to see the full decision breakdown.</div>
+                <div id="compareMetrics"></div>
+                <div id="matchedMinutiaeVisualization"></div>
+                <pre id="compareJson">No comparison result yet.</pre>
+            </article>
+
+            <article class="panel">
+                <div class="panel-head">
+                    <div>
+                        <h3>Service Trace Feed</h3>
+                        <p>Every stage logged by the Node fingerprint service appears here. This lets you follow the route, preprocessing phases, and compare decision flow in order.</p>
+                    </div>
+                    <div class="service-actions">
+                        <label class="toggle">
+                            <input id="autoRefreshToggle" type="checkbox" checked>
+                            Auto refresh
+                        </label>
+                    </div>
+                </div>
+
+                <div class="mini-card" style="margin-bottom: 14px;">
+                    <strong>Trace Filter</strong>
+                    <div id="traceFilterLabel" style="color: var(--muted); margin-top: 6px;">Showing the latest request when available.</div>
+                </div>
+                <div id="traceList" class="trace-list">
+                    <div class="empty">Trace events will appear here after the first service request.</div>
+                </div>
+            </article>
+        </section>
+
+        <section class="footer-grid">
+            <article class="panel">
+                <div class="panel-head">
+                    <div>
+                        <h3>Pipeline Configuration</h3>
+                        <p>This is the live matcher configuration the service is using right now.</p>
+                    </div>
+                </div>
+                <pre id="configJson">Loading configuration...</pre>
+            </article>
+
+            <article class="panel">
+                <div class="panel-head">
+                    <div>
+                        <h3>How To Read It</h3>
+                        <p>This view is meant to show the full service behavior, not just the pass or fail result.</p>
+                    </div>
+                </div>
+                <div class="kv">
+                    <div class="kv-row"><span>Original</span><span>Input fingerprint used for upload or scan.</span></div>
+                    <div class="kv-row"><span>Normalized</span><span>Image normalized into the service pipeline shape before extraction.</span></div>
+                    <div class="kv-row"><span>Enhanced</span><span>Ridge-oriented enhancement with orientation and frequency guidance.</span></div>
+                    <div class="kv-row"><span>Thinned</span><span>Zhang-Suen skeleton used to extract minutiae more cleanly.</span></div>
+                    <div class="kv-row"><span>Trace Feed</span><span>Stage-by-stage logs from the Node service with timings and scores.</span></div>
+                    <div class="kv-row"><span>Matcher Scores</span><span>Native values are interpreted only against each matcher&apos;s own configurable threshold.</span></div>
+                    <div class="kv-row"><span>OpenAFIS Input</span><span>Actual ridge endings and bifurcations extracted by this service and converted to OpenAFIS CSV.</span></div>
+                </div>
+            </article>
+        </section>
+    </div>
+
+    <script>
+        const SERVICE_BASE = 'http://localhost:9000';
+        const state = {
+            probe: { inputDataUrl: '', result: null },
+            candidate: { inputDataUrl: '', result: null },
+            compare: null,
+            selectedPairId: '',
+            visualization: {
+                showMinutiae: true,
+                showMatchedPairs: true,
+                showDirections: false,
+                showAllPairs: false,
+                zoom: 1,
+                panX: 0,
+                panY: 0,
+                dragging: false,
+                pointerX: 0,
+                pointerY: 0
+            },
+            activeTraceId: '',
+            traceTimer: null
+        };
+
+        async function enforceLabAccess() {
+            const response = await fetch('backend/auth.php?action=session', { cache: 'no-store' });
+            const data = await response.json();
+            if (!response.ok || !data.authenticated || !['admin', 'super_admin'].includes(data.user?.role)) {
+                window.location.replace('login.html?redirect=service-test.html');
+                return false;
+            }
+            document.body.classList.remove('auth-pending');
+            return true;
+        }
+
+        function toPngSrc(base64) {
+            const value = String(base64 || '').trim();
+            if (!value) {
+                return '';
+            }
+            return value.startsWith('data:') ? value : `data:image/png;base64,${value}`;
+        }
+
+        function canRenderImageSrc(src) {
+            if (!src) {
+                return false;
+            }
+
+            if (!src.startsWith('data:')) {
+                return true;
+            }
+
+            const lower = src.slice(0, 64).toLowerCase();
+            return lower.startsWith('data:image/png')
+                || lower.startsWith('data:image/jpeg')
+                || lower.startsWith('data:image/jpg')
+                || lower.startsWith('data:image/webp')
+                || lower.startsWith('data:image/gif')
+                || lower.startsWith('data:image/bmp');
+        }
+
+        function resolveOriginalPreviewSrc(panel, result) {
+            const serviceOriginal = toPngSrc(result.originalImage);
+            if (serviceOriginal) {
+                return serviceOriginal;
+            }
+
+            if (canRenderImageSrc(panel.inputDataUrl)) {
+                return panel.inputDataUrl;
+            }
+
+            return toPngSrc(result.normalizedImage || result.image);
+        }
+
+        function renderFigure(src, caption, alt) {
+            const safeCaption = escapeHtml(caption);
+            const safeAlt = escapeHtml(alt);
+            const safeSrc = String(src || '').replace(/"/g, '&quot;');
+            const content = safeSrc
+                ? `<img src="${safeSrc}" alt="${safeAlt}" loading="lazy">`
+                : `<div class="image-placeholder">No ${safeCaption.toLowerCase()} image returned.</div>`;
+
+            return `<figure>${content}<figcaption>${safeCaption}</figcaption></figure>`;
+        }
+
+        function setPanelStatus(side, message, tone = '') {
+            const key = side === 'probe' ? 'probe' : 'candidate';
+            const summaryEl = document.getElementById(`${key}Summary`);
+            const jsonEl = document.getElementById(`${key}Json`);
+            const traceChip = document.getElementById(`${key}TraceChip`);
+
+            summaryEl.className = `empty${tone ? ` ${tone}` : ''}`;
+            summaryEl.textContent = message;
+            jsonEl.textContent = message;
+            traceChip.textContent = tone === 'danger' ? 'Trace: failed' : 'Trace: working';
+        }
+
+        function setButtonsDisabled(disabled) {
+            [
+                'probeUploadButton',
+                'candidateUploadButton',
+                'probeScanButton',
+                'candidateScanButton',
+                'compareButton',
+                'refreshHealthButton',
+                'refreshTraceButton',
+                'clearTraceButton'
+            ].forEach((id) => {
+                const button = document.getElementById(id);
+                if (button) {
+                    button.disabled = disabled;
+                }
+            });
+        }
+
+        function formatJson(value) {
+            return JSON.stringify(value, null, 2);
+        }
+
+        function setActiveTrace(traceId) {
+            state.activeTraceId = traceId || '';
+            document.getElementById('activeTraceValue').textContent = state.activeTraceId || 'None yet';
+            document.getElementById('traceFilterLabel').textContent = state.activeTraceId
+                ? `Filtering to trace ${state.activeTraceId}`
+                : 'Showing the latest request when available.';
+        }
+
+        async function requestService(path, options = {}) {
+            const response = await fetch(`${SERVICE_BASE}${path}`, options);
+            const data = await response.json();
+            if (!response.ok || data.error) {
+                const error = new Error(data.error || `Request failed for ${path}`);
+                error.payload = data;
+                throw error;
+            }
+            return data;
+        }
+
+        async function refreshHealth() {
+            try {
+                const health = await requestService('/health');
+                document.getElementById('serviceStatusValue').textContent = String(health.status || 'unknown').toUpperCase();
+                document.getElementById('serviceStatusHelp').textContent = `Node service running on port ${health.port}.`;
+                if (health.scanner_available) {
+                    document.getElementById('scannerStatusValue').textContent = 'READY';
+                    document.getElementById('scannerStatusHelp').textContent = `${health.scanner_name || 'ZKTeco ZK9500'} ready through provider: ${health.scanner_provider || 'unknown'}.`;
+                } else if (health.simulation_allowed) {
+                    document.getElementById('scannerStatusValue').textContent = 'SIMULATION';
+                    document.getElementById('scannerStatusHelp').textContent = 'Simulation is explicitly enabled for lab testing.';
+                } else {
+                    document.getElementById('scannerStatusValue').textContent = 'NOT READY';
+                    document.getElementById('scannerStatusHelp').textContent = 'Build/configure the ZKTeco ZK9500 SDK adapter and connect the optical scanner.';
+                }
+            } catch (error) {
+                document.getElementById('serviceStatusValue').textContent = 'OFFLINE';
+                document.getElementById('serviceStatusHelp').textContent = error.message;
+                document.getElementById('scannerStatusValue').textContent = 'UNKNOWN';
+                document.getElementById('scannerStatusHelp').textContent = 'Unable to reach the fingerprint service.';
+            }
+        }
+
+        async function refreshConfig() {
+            try {
+                const config = await requestService('/debug/config');
+                document.getElementById('configJson').textContent = formatJson(config);
+            } catch (error) {
+                document.getElementById('configJson').textContent = error.message;
+            }
+        }
+
+        function fileToDataUrl(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = () => reject(new Error('Unable to read selected file.'));
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function renderFingerprint(side) {
+            const key = side === 'probe' ? 'probe' : 'candidate';
+            const panel = state[key];
+            const result = panel.result;
+            const summaryEl = document.getElementById(`${key}Summary`);
+            const imagesEl = document.getElementById(`${key}Images`);
+            const jsonEl = document.getElementById(`${key}Json`);
+            const traceChip = document.getElementById(`${key}TraceChip`);
+
+            if (!result) {
+                summaryEl.className = 'empty';
+                summaryEl.textContent = `No ${key} fingerprint processed yet.`;
+                imagesEl.innerHTML = '';
+                jsonEl.textContent = `No ${key} result yet.`;
+                traceChip.textContent = 'Trace: waiting';
+                renderPrimaryComparison();
+                return;
+            }
+
+            traceChip.textContent = `Trace: ${result.traceId || 'n/a'}`;
+
+            const quality = result.afisQuality ?? result.quality ?? 0;
+            const minutiaeCount = Array.isArray(result.minutiae) ? result.minutiae.length : (result.minutiaeCount || 0);
+            const qualityMetrics = result.qualityMetrics || {};
+            const blockMetrics = result.blockMetrics || {};
+
+            summaryEl.className = 'stack';
+            summaryEl.innerHTML = `
+                <div class="mini-grid">
+                    <div class="mini-card"><strong>Source</strong><span>${result.source || 'Uploaded image'}</span></div>
+                    <div class="mini-card"><strong>Trace ID</strong><span>${result.traceId || 'Not available'}</span></div>
+                    <div class="mini-card"><strong>AFIS Quality</strong><span>${quality}/100</span></div>
+                    <div class="mini-card"><strong>Minutiae</strong><span>${minutiaeCount}</span></div>
+                    <div class="mini-card"><strong>Block Quality</strong><span>${qualityMetrics.meanBlockQuality ?? blockMetrics.meanBlockQuality ?? '-'}</span></div>
+                    <div class="mini-card"><strong>Foreground Ratio</strong><span>${qualityMetrics.foregroundRatio ?? blockMetrics.foregroundRatio ?? '-'}</span></div>
+                </div>
+            `;
+
+            const originalSrc = resolveOriginalPreviewSrc(panel, result);
+            const normalizedSrc = toPngSrc(result.normalizedImage || result.image);
+            const enhancedSrc = toPngSrc(result.enhancedImage);
+            const thinnedSrc = toPngSrc(result.thinnedImage);
+
+            imagesEl.innerHTML = [
+                renderFigure(originalSrc, 'Original Input', `${key} original`),
+                renderFigure(normalizedSrc, 'Normalized PNG', `${key} normalized`),
+                renderFigure(enhancedSrc, 'Enhanced Ridges', `${key} enhanced`),
+                renderFigure(thinnedSrc, 'Zhang-Suen Thinning', `${key} thinned`)
+            ].join('');
+
+            jsonEl.textContent = formatJson(result);
+            renderPrimaryComparison();
+        }
+
+        function formatMatcherNumber(value) {
+            if (value === null || value === undefined || value === '') return '-';
+            if (!Number.isFinite(Number(value))) return '-';
+            const number = Number(value);
+            return Number.isInteger(number) ? String(number) : number.toFixed(3).replace(/0+$/, '').replace(/\.$/, '');
+        }
+
+        function formatMinutiaType(type) {
+            if (type === 'ending') return 'Ridge Ending';
+            if (type === 'bifurcation') return 'Bifurcation';
+            return type || 'Unknown';
+        }
+
+        function comparisonLayout() {
+            const mobile = window.matchMedia('(max-width: 760px)').matches;
+            return mobile
+                ? {
+                    mobile,
+                    width: 500,
+                    height: 1114,
+                    imageSize: 500,
+                    probe: { x: 0, y: 34, labelX: 0, labelY: 23 },
+                    reference: { x: 0, y: 614, labelX: 0, labelY: 603 }
+                }
+                : {
+                    mobile,
+                    width: 1080,
+                    height: 534,
+                    imageSize: 500,
+                    probe: { x: 0, y: 34, labelX: 0, labelY: 23 },
+                    reference: { x: 580, y: 34, labelX: 580, labelY: 23 }
+                };
+        }
+
+        function comparisonPoint(point, side, fingerprint, layout = comparisonLayout()) {
+            const offset = layout[side];
+            const sourceWidth = Number(fingerprint?.width) || 500;
+            const sourceHeight = Number(fingerprint?.height) || 500;
+            return {
+                x: offset.x + ((Number(point?.x) || 0) / sourceWidth) * layout.imageSize,
+                y: offset.y + ((Number(point?.y) || 0) / sourceHeight) * layout.imageSize
+            };
+        }
+
+        function pointAngleRadians(point) {
+            const radians = Number(point?.directionRad ?? point?.angle);
+            if (Number.isFinite(radians)) return radians;
+            const degrees = Number(point?.directionDeg);
+            return Number.isFinite(degrees) ? degrees * Math.PI / 180 : null;
+        }
+
+        function markerShape(point, plotted, options = {}) {
+            const { matched = false, showDirection = false } = options;
+            const fill = point?.type === 'bifurcation' ? '#ce1126' : '#0038a8';
+            const base = point?.type === 'bifurcation'
+                ? `<polygon class="marker-shape" points="${plotted.x},${plotted.y - 7} ${plotted.x - 7},${plotted.y + 6} ${plotted.x + 7},${plotted.y + 6}" fill="${fill}" stroke="white" stroke-width="2"/>`
+                : `<circle class="marker-shape" cx="${plotted.x}" cy="${plotted.y}" r="6" fill="${fill}" stroke="white" stroke-width="2"/>`;
+            const matchedRing = matched
+                ? `<circle cx="${plotted.x}" cy="${plotted.y}" r="10" fill="none" stroke="#f7c948" stroke-width="2" stroke-dasharray="3 2"/>`
+                : '';
+            const angle = pointAngleRadians(point);
+            const direction = showDirection && Number.isFinite(angle)
+                ? `<line class="direction-indicator" x1="${plotted.x}" y1="${plotted.y}" x2="${plotted.x + Math.cos(angle) * 17}" y2="${plotted.y + Math.sin(angle) * 17}"/>`
+                : '';
+            return `${matchedRing}${base}${direction}`;
+        }
+
+        function pointIdentity(point, prefix) {
+            if (point?.id !== undefined && point?.id !== null) return String(point.id);
+            if (Number.isFinite(Number(point?.index))) return `${prefix}${Number(point.index) + 1}`;
+            return '-';
+        }
+
+        function circularDirectionDifference(probeDirection, referenceDirection) {
+            const probe = Number(probeDirection);
+            const reference = Number(referenceDirection);
+            if (!Number.isFinite(probe) || !Number.isFinite(reference)) return null;
+            const difference = Math.abs(((probe - reference + 540) % 360) - 180);
+            return Math.round(difference * 100) / 100;
+        }
+
+        function pairTooltip(pair) {
+            const values = [
+                `Matched Pair ${pair.id}`,
+                `Probe: ${pointIdentity(pair.probe, 'P')}`,
+                `Reference: ${pointIdentity(pair.reference, 'R')}`
+            ];
+            if (pair.probe?.type) values.push(`Probe Type: ${formatMinutiaType(pair.probe.type)}`);
+            if (pair.reference?.type) values.push(`Reference Type: ${formatMinutiaType(pair.reference.type)}`);
+            if (Number.isFinite(Number(pair.probe?.x)) && Number.isFinite(Number(pair.probe?.y))) values.push(`Probe X/Y: ${formatMatcherNumber(pair.probe.x)}, ${formatMatcherNumber(pair.probe.y)}`);
+            if (Number.isFinite(Number(pair.reference?.x)) && Number.isFinite(Number(pair.reference?.y))) values.push(`Reference X/Y: ${formatMatcherNumber(pair.reference.x)}, ${formatMatcherNumber(pair.reference.y)}`);
+            if (Number.isFinite(Number(pair.probe?.directionDeg))) values.push(`Probe Direction: ${formatMatcherNumber(pair.probe.directionDeg)}°`);
+            if (Number.isFinite(Number(pair.reference?.directionDeg))) values.push(`Reference Direction: ${formatMatcherNumber(pair.reference.directionDeg)}°`);
+            if (Number.isFinite(Number(pair.similarity))) values.push(`Correspondence Score: ${formatMatcherNumber(pair.similarity)}`);
+            return values.join('\n');
+        }
+
+        function pairDetailHtml(pair) {
+            if (!pair) return 'Select a matched pair to inspect the backend-provided minutia data.';
+            const renderPoint = (point, label, prefix) => {
+                const rows = [`<div><strong>ID:</strong> ${escapeHtml(pointIdentity(point, prefix))}</div>`];
+                if (Number.isFinite(Number(point?.x))) rows.push(`<div><strong>X:</strong> ${formatMatcherNumber(point.x)}</div>`);
+                if (Number.isFinite(Number(point?.y))) rows.push(`<div><strong>Y:</strong> ${formatMatcherNumber(point.y)}</div>`);
+                if (Number.isFinite(Number(point?.directionDeg))) rows.push(`<div><strong>Angle:</strong> ${formatMatcherNumber(point.directionDeg)}°</div>`);
+                if (point?.type) rows.push(`<div><strong>Type:</strong> ${escapeHtml(formatMinutiaType(point.type))}</div>`);
+                return `<div class="pair-detail-card"><strong>${label}</strong>${rows.join('')}</div>`;
+            };
+            const similarity = Number.isFinite(Number(pair.similarity))
+                ? `<div class="score-note" style="margin-top: 10px;"><strong>Correspondence score:</strong> ${formatMatcherNumber(pair.similarity)}</div>`
+                : '';
+            return `<h3>Matched Pair ${escapeHtml(pair.id)}</h3><div class="pair-detail-grid">${renderPoint(pair.probe, 'Probe', 'P')}${renderPoint(pair.reference, 'Reference', 'R')}</div>${similarity}`;
+        }
+
+        function applyVisualizationTransform() {
+            const layer = document.querySelector('.comparison-transform-layer');
+            if (layer) {
+                layer.style.transform = `translate(${state.visualization.panX}px, ${state.visualization.panY}px) scale(${state.visualization.zoom})`;
+            }
+            const zoomLevel = document.getElementById('zoomLevel');
+            if (zoomLevel) zoomLevel.textContent = `${Math.round(state.visualization.zoom * 100)}%`;
+        }
+
+        function setVisualizationZoom(nextZoom) {
+            state.visualization.zoom = Math.min(3, Math.max(0.75, Math.round(nextZoom * 100) / 100));
+            if (state.visualization.zoom === 1) {
+                state.visualization.panX = 0;
+                state.visualization.panY = 0;
+            }
+            applyVisualizationTransform();
+        }
+
+        function resetVisualizationView() {
+            state.visualization.zoom = 1;
+            state.visualization.panX = 0;
+            state.visualization.panY = 0;
+            applyVisualizationTransform();
+        }
+
+        function correspondencePairData() {
+            const matcher = state.compare?.matchers?.find((item) => item.algorithm === 'OpenAFIS');
+            const pairs = matcher?.matchedMinutiae?.available && Array.isArray(matcher.matchedMinutiae.pairs)
+                ? matcher.matchedMinutiae.pairs
+                : [];
+            return { matcher, pairs };
+        }
+
+        function highlightCorrespondence(pairId) {
+            const normalizedId = pairId || '';
+            const canvas = document.querySelector('.comparison-canvas');
+            if (canvas) canvas.classList.toggle('has-selection', Boolean(normalizedId));
+            document.querySelectorAll('[data-pair-id]').forEach((element) => {
+                element.classList.toggle('selected', element.dataset.pairId === normalizedId);
+            });
+            const pair = correspondencePairData().pairs.find((item) => String(item.id) === normalizedId);
+            document.getElementById('minutiaDetail').innerHTML = pairDetailHtml(pair);
+        }
+
+        function wireCorrespondenceInteractions() {
+            document.querySelectorAll('[data-pair-id]').forEach((element) => {
+                const pairId = element.dataset.pairId;
+                element.addEventListener('mouseenter', () => highlightCorrespondence(pairId));
+                element.addEventListener('mouseleave', () => highlightCorrespondence(state.selectedPairId));
+                element.addEventListener('focus', () => highlightCorrespondence(pairId));
+                element.addEventListener('blur', () => highlightCorrespondence(state.selectedPairId));
+                element.addEventListener('click', () => {
+                    state.selectedPairId = state.selectedPairId === pairId ? '' : pairId;
+                    highlightCorrespondence(state.selectedPairId);
+                });
+                element.addEventListener('keydown', (event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        state.selectedPairId = state.selectedPairId === pairId ? '' : pairId;
+                        highlightCorrespondence(state.selectedPairId);
+                    }
+                });
+            });
+            highlightCorrespondence(state.selectedPairId);
+        }
+
+        function renderPrimaryComparison() {
+            const container = document.getElementById('primaryFingerprintComparison');
+            const message = document.getElementById('correspondenceMessage');
+            const countHeading = document.getElementById('correspondenceCountHeading');
+            const list = document.getElementById('primaryCorrespondenceList');
+            const detail = document.getElementById('minutiaDetail');
+            const status = document.getElementById('correspondenceStatus');
+            const viewAllButton = document.getElementById('viewAllCorrespondences');
+            const result = state.compare;
+            const probe = result?.probe || (state.probe.result ? {
+                image: state.probe.result.normalizedImage || state.probe.result.image,
+                width: state.probe.result.inputMetrics?.normalizedWidth || 500,
+                height: state.probe.result.inputMetrics?.normalizedHeight || 500
+            } : null);
+            const reference = result?.reference || (state.candidate.result ? {
+                image: state.candidate.result.normalizedImage || state.candidate.result.image,
+                width: state.candidate.result.inputMetrics?.normalizedWidth || 500,
+                height: state.candidate.result.inputMetrics?.normalizedHeight || 500
+            } : null);
+            const matcher = result?.matchers?.find((item) => item.algorithm === 'OpenAFIS');
+            const allPairs = matcher?.matchedMinutiae?.available && Array.isArray(matcher.matchedMinutiae.pairs)
+                ? matcher.matchedMinutiae.pairs
+                : [];
+            const displayLimit = 24;
+            const pairs = state.visualization.showAllPairs ? allPairs : allPairs.slice(0, displayLimit);
+            const directionAvailable = allPairs.flatMap((pair) => [pair.probe, pair.reference])
+                .some((point) => Number.isFinite(pointAngleRadians(point)));
+
+            const directionToggle = document.getElementById('toggleDirections');
+            const pairToggle = document.getElementById('toggleMatchedPairs');
+            directionToggle.disabled = !directionAvailable;
+            directionToggle.checked = directionAvailable && state.visualization.showDirections;
+            pairToggle.disabled = !allPairs.length;
+            pairToggle.checked = !pairToggle.disabled && state.visualization.showMatchedPairs;
+            document.getElementById('toggleMinutiae').checked = state.visualization.showMinutiae;
+            countHeading.textContent = `${allPairs.length} matched minutiae correspondences detected`;
+
+            if (!probe || !reference) {
+                container.innerHTML = '<div class="empty">The Probe Fingerprint and Reference Fingerprint will appear here after both are processed.</div>';
+                message.className = 'empty';
+                message.textContent = 'Process both fingerprints and run the comparison to inspect detected correspondence data.';
+                list.innerHTML = '';
+                detail.innerHTML = pairDetailHtml(null);
+                status.textContent = 'No correspondences displayed';
+                viewAllButton.hidden = true;
+                return;
+            }
+
+            if (!result) {
+                message.className = 'empty';
+                message.textContent = 'The fingerprint pair is ready. Run the comparison to detect minutiae correspondences.';
+            } else if (!matcher) {
+                message.className = 'empty danger';
+                message.textContent = 'Correspondence data was not returned for this comparison.';
+            } else if (matcher.status !== 'ok') {
+                message.className = 'empty danger';
+                message.textContent = `UNAVAILABLE — ${matcher.error || 'The matcher did not complete.'}`;
+            } else if (!matcher.matchedMinutiae?.available) {
+                message.className = 'empty';
+                message.textContent = matcher.matchedMinutiae?.message || 'Detailed minutiae correspondence is not exposed by this matcher.';
+            } else if (!allPairs.length) {
+                message.className = 'empty';
+                message.textContent = 'No matched minutiae correspondences were detected for this fingerprint pair.';
+            } else {
+                message.className = 'score-note';
+                message.textContent = 'Select any numbered correspondence on the image or in the details table to inspect it.';
+            }
+
+            const layout = comparisonLayout();
+            const probeSrc = toPngSrc(probe.image);
+            const referenceSrc = toPngSrc(reference.image);
+            const lines = state.visualization.showMatchedPairs ? pairs.map((pair) => {
+                const p = comparisonPoint(pair.probe, 'probe', probe, layout);
+                const r = comparisonPoint(pair.reference, 'reference', reference, layout);
+                return `<line class="pair-line" data-pair-id="${escapeHtml(pair.id)}" x1="${p.x}" y1="${p.y}" x2="${r.x}" y2="${r.y}"/>`;
+            }).join('') : '';
+            const markers = state.visualization.showMinutiae ? pairs.map((pair) => ['probe', 'reference'].map((side) => {
+                const fingerprint = side === 'probe' ? probe : reference;
+                const plotted = comparisonPoint(pair[side], side, fingerprint, layout);
+                const title = escapeHtml(pairTooltip(pair));
+                return `<g class="pair-marker pair-group" tabindex="0" role="button" data-pair-id="${escapeHtml(pair.id)}" aria-label="${escapeHtml(pair.id)} ${escapeHtml(side)} matched minutia">
+                    <title>${title}</title>
+                    ${markerShape(pair[side], plotted, { matched: true, showDirection: state.visualization.showDirections })}
+                    <text class="pair-label" x="${plotted.x + 9}" y="${plotted.y - 8}">${escapeHtml(pair.id)}</text>
+                </g>`;
+            }).join('')).join('') : '';
+
+            container.innerHTML = `
+                <div class="comparison-viewport" aria-label="Zoomable fingerprint comparison">
+                    <div class="comparison-transform-layer">
+                        <svg class="comparison-canvas" viewBox="0 0 ${layout.width} ${layout.height}" role="img" aria-label="Probe Fingerprint and Reference Fingerprint with detected correspondence overlay">
+                            <text class="image-label" x="${layout.probe.labelX}" y="${layout.probe.labelY}">Probe Fingerprint</text>
+                            <text class="image-label" x="${layout.reference.labelX}" y="${layout.reference.labelY}">Reference Fingerprint</text>
+                            <rect x="${layout.probe.x}" y="${layout.probe.y}" width="${layout.imageSize}" height="${layout.imageSize}" rx="12" fill="white"/>
+                            <rect x="${layout.reference.x}" y="${layout.reference.y}" width="${layout.imageSize}" height="${layout.imageSize}" rx="12" fill="white"/>
+                            <image href="${String(probeSrc || '').replace(/"/g, '&quot;')}" x="${layout.probe.x}" y="${layout.probe.y}" width="${layout.imageSize}" height="${layout.imageSize}" preserveAspectRatio="xMidYMid meet"/>
+                            <image href="${String(referenceSrc || '').replace(/"/g, '&quot;')}" x="${layout.reference.x}" y="${layout.reference.y}" width="${layout.imageSize}" height="${layout.imageSize}" preserveAspectRatio="xMidYMid meet"/>
+                            ${lines}${markers}
+                        </svg>
+                    </div>
+                </div>
+            `;
+            const hasType = pairs.some((pair) => pair.probe?.type || pair.reference?.type);
+            const hasDirectionDifference = pairs.some((pair) => Number.isFinite(circularDirectionDifference(pair.probe?.directionDeg, pair.reference?.directionDeg)));
+            list.innerHTML = pairs.length ? `<table class="correspondence-table"><thead><tr><th>Pair</th><th>Probe</th><th>Reference</th>${hasType ? '<th>Type</th>' : ''}${hasDirectionDifference ? '<th>Direction Δ</th>' : ''}</tr></thead><tbody>${pairs.map((pair) => {
+                const probeType = pair.probe?.type;
+                const referenceType = pair.reference?.type;
+                const type = probeType && referenceType && probeType !== referenceType
+                    ? `${formatMinutiaType(probeType)} / ${formatMinutiaType(referenceType)}`
+                    : formatMinutiaType(probeType || referenceType);
+                const directionDifference = circularDirectionDifference(pair.probe?.directionDeg, pair.reference?.directionDeg);
+                return `<tr tabindex="0" role="button" data-pair-id="${escapeHtml(pair.id)}" aria-label="Inspect matched pair ${escapeHtml(pair.id)}"><td><strong>${escapeHtml(pair.id)}</strong></td><td>${escapeHtml(pointIdentity(pair.probe, 'P'))}</td><td>${escapeHtml(pointIdentity(pair.reference, 'R'))}</td>${hasType ? `<td>${probeType || referenceType ? escapeHtml(type) : '-'}</td>` : ''}${hasDirectionDifference ? `<td>${Number.isFinite(directionDifference) ? `${formatMatcherNumber(directionDifference)}°` : '-'}</td>` : ''}</tr>`;
+            }).join('')}</tbody></table>` : `<div class="empty">${escapeHtml(matcher?.matchedMinutiae?.message || 'Detailed minutiae correspondence is not exposed by this matcher.')}</div>`;
+            status.textContent = allPairs.length
+                ? (pairs.length === allPairs.length ? `${allPairs.length} detected correspondences displayed` : `Showing ${pairs.length} of ${allPairs.length} detected correspondences`)
+                : 'No correspondences detected';
+            viewAllButton.hidden = state.visualization.showAllPairs || allPairs.length <= displayLimit;
+            if (state.selectedPairId && !pairs.some((pair) => String(pair.id) === state.selectedPairId)) state.selectedPairId = '';
+            detail.innerHTML = pairDetailHtml(null);
+            applyVisualizationTransform();
+            wireCorrespondenceInteractions();
+        }
+
+        function renderMatchedMinutiae(result) {
+            const container = document.getElementById('matchedMinutiaeVisualization');
+            const matchers = Array.isArray(result.matchers) ? result.matchers : [];
+            const openAfis = matchers.find((matcher) => matcher.algorithm === 'OpenAFIS');
+            const pairs = openAfis?.matchedMinutiae?.available && Array.isArray(openAfis.matchedMinutiae.pairs)
+                ? openAfis.matchedMinutiae.pairs
+                : [];
+            const openAfisAlignment = openAfis?.matcherDiagnostics?.alignment;
+            const notes = matchers.map((matcher) => {
+                if (!matcher.matchedMinutiae?.available) {
+                    return `<div class="matcher-visualization-note"><strong>${escapeHtml(matcher.algorithm)}:</strong> ${escapeHtml(matcher.matchedMinutiae?.message || 'Detailed correspondence visualization unavailable for this matcher.')}</div>`;
+                }
+                return `<div class="matcher-visualization-note"><strong>${escapeHtml(matcher.algorithm)}:</strong> ${pairs.length ? `${pairs.length} real correspondence${pairs.length === 1 ? '' : 's'} returned.` : 'No matched minutiae were reported.'}</div>`;
+            }).join('');
+
+            const diagnosticsRows = matchers.map((matcher) => {
+                const alignment = matcher.matcherDiagnostics?.alignment;
+                const available = alignment?.available === true;
+                const unavailable = alignment?.message
+                    || (matcher.algorithm === 'Bozorth3' || matcher.algorithm === 'SourceAFIS'
+                        ? 'The matcher API does not expose its selected rigid transform.'
+                        : 'Not exposed by this matcher.');
+                return `<tr>
+                    <td><strong>${escapeHtml(matcher.algorithm)}</strong></td>
+                    <td>${available ? `${formatMatcherNumber(alignment.estimatedRotationDeg)}°` : 'Not exposed'}</td>
+                    <td>${available ? formatMatcherNumber(alignment.estimatedXTranslationPx) : 'Not exposed'}</td>
+                    <td>${available ? formatMatcherNumber(alignment.estimatedYTranslationPx) : 'Not exposed'}</td>
+                    <td>${available ? formatMatcherNumber(alignment.matchedMinutiaeCount) : 'Not exposed'}</td>
+                    <td>${formatMatcherNumber(matcher.score)}</td>
+                    <td><span class="status-chip ${matcher.result === 'MATCH' ? 'success' : matcher.result === 'NO MATCH' ? 'warning' : 'danger'}">${escapeHtml(matcher.result)}</span>${available ? '' : `<div class="score-note">${escapeHtml(unavailable)}</div>`}</td>
+                </tr>`;
+            }).join('');
+
+            const inlierPairs = pairs.filter((pair) => pair.alignmentInlier !== false);
+            const alignmentCanvas = openAfis?.matcherDiagnostics?.isotropicCanvas || { width: result.probe?.width || 500, height: result.probe?.height || 500 };
+            const point = (x, y) => ({
+                x: (Number(x) / (Number(alignmentCanvas.width) || 500)) * 500,
+                y: (Number(y) / (Number(alignmentCanvas.height) || 500)) * 500
+            });
+            const beforeMarks = inlierPairs.map((pair) => {
+                const probePoint = point(pair.probe?.x, pair.probe?.y);
+                const referencePoint = point(pair.reference?.x, pair.reference?.y);
+                return `<line x1="${probePoint.x}" y1="${probePoint.y}" x2="${referencePoint.x}" y2="${referencePoint.y}" stroke="#94a3b8" stroke-width="1"/><circle cx="${probePoint.x}" cy="${probePoint.y}" r="4" fill="#0038a8"/><circle cx="${referencePoint.x}" cy="${referencePoint.y}" r="4" fill="#ce1126"/>`;
+            }).join('');
+            const afterMarks = inlierPairs.map((pair) => {
+                const probePoint = point(pair.probe?.x, pair.probe?.y);
+                const alignedPoint = point(pair.reference?.alignedX, pair.reference?.alignedY);
+                return `<line x1="${probePoint.x}" y1="${probePoint.y}" x2="${alignedPoint.x}" y2="${alignedPoint.y}" stroke="#16a34a" stroke-width="1.5"/><circle cx="${probePoint.x}" cy="${probePoint.y}" r="4" fill="#0038a8"/><circle cx="${alignedPoint.x}" cy="${alignedPoint.y}" r="4" fill="#16a34a"/>`;
+            }).join('');
+            const alignmentPreview = openAfisAlignment?.available && inlierPairs.length
+                ? `<div class="stack">
+                    <h3 style="margin: 0;">OpenAFIS visual alignment preview</h3>
+                    <div class="score-note">Blue = probe · Red = candidate before alignment · Green = candidate after the rigid transform. Every line uses a real OpenAFIS correspondence; outlier pairs are omitted from the transform preview.</div>
+                    <div class="alignment-preview-grid">
+                        <div class="alignment-preview-card"><h4>Before alignment</h4><svg viewBox="0 0 500 500" role="img" aria-label="OpenAFIS minutiae before alignment">${beforeMarks}</svg></div>
+                        <div class="alignment-preview-card"><h4>After alignment</h4><svg viewBox="0 0 500 500" role="img" aria-label="OpenAFIS minutiae after alignment">${afterMarks}</svg></div>
+                    </div>
+                </div>`
+                : `<div class="matcher-visualization-note"><strong>OpenAFIS alignment preview:</strong> ${escapeHtml(openAfisAlignment?.message || 'No real correspondence-backed transform is available for this pair.')}</div>`;
+
+            container.innerHTML = `
+                <div class="stack" style="margin-top: 16px;">
+                    <h3 style="margin: 0;">Rotation and translation diagnostics</h3>
+                    <div class="score-note">Transformation values are shown only when the matcher exposes real correspondences. Values are never borrowed from another matcher.</div>
+                    <div class="table-wrap"><table class="comparison-table"><thead><tr><th>Matcher</th><th>Rotation</th><th>X shift (px)</th><th>Y shift (px)</th><th>Matched after alignment</th><th>Raw score</th><th>Decision</th></tr></thead><tbody>${diagnosticsRows}</tbody></table></div>
+                    ${alignmentPreview}
+                    <h3 style="margin: 0;">Matcher visualization availability</h3>
+                    <div class="score-note">The main correspondence view uses OpenAFIS because it is the available source of point-to-point correspondence data.</div>
+                    <div class="matcher-visualization-notes">${notes}</div>
+                </div>
+            `;
+        }
+
+        function renderCompare() {
+            const result = state.compare;
+            const summaryEl = document.getElementById('compareSummary');
+            const metricsEl = document.getElementById('compareMetrics');
+            const jsonEl = document.getElementById('compareJson');
+            const visualizationEl = document.getElementById('matchedMinutiaeVisualization');
+
+            if (!result) {
+                summaryEl.className = 'empty';
+                summaryEl.textContent = 'Process both sides first, then run the comparison to see the full decision breakdown.';
+                metricsEl.innerHTML = '';
+                visualizationEl.innerHTML = '';
+                jsonEl.textContent = 'No comparison result yet.';
+                document.getElementById('finalScoreCard').textContent = '-';
+                document.getElementById('thresholdCard').textContent = '-';
+                renderPrimaryComparison();
+                return;
+            }
+
+            const matchers = Array.isArray(result.matchers) ? result.matchers : [];
+            const inputDiagnostics = result.inputDiagnostics || {};
+            const sharedMinutiae = result.sharedMinutiaeDiagnostics || {};
+            const completed = matchers.filter((matcher) => matcher.status === 'ok').length;
+            const matches = matchers.filter((matcher) => matcher.result === 'MATCH').length;
+            const nonMatches = matchers.filter((matcher) => matcher.result === 'NO MATCH').length;
+            const errors = matchers.filter((matcher) => matcher.status !== 'ok').length;
+
+            summaryEl.className = 'stack';
+            summaryEl.innerHTML = `
+                <div class="mini-grid">
+                    <div class="mini-card"><strong>Purpose</strong><span>${escapeHtml(result.purpose || 'Academic comparison')}</span></div>
+                    <div class="mini-card"><strong>Trace ID</strong><span>${result.traceId || 'Not available'}</span></div>
+                    <div class="mini-card"><strong>Score Fusion</strong><span>${result.scoreFusion ? 'Enabled' : 'Disabled'}</span></div>
+                    <div class="mini-card"><strong>Matcher Errors</strong><span>${errors}</span></div>
+                    <div class="mini-card"><strong>Probe ID / Hash</strong><span>${escapeHtml(inputDiagnostics.probe?.fingerprintId || '-')} · ${escapeHtml((inputDiagnostics.probe?.imageHash || '-').slice(0, 16))}</span></div>
+                    <div class="mini-card"><strong>Candidate ID / Hash</strong><span>${escapeHtml(inputDiagnostics.candidate?.fingerprintId || '-')} · ${escapeHtml((inputDiagnostics.candidate?.imageHash || '-').slice(0, 16))}</span></div>
+                    <div class="mini-card"><strong>Probe Finger / Source</strong><span>${escapeHtml(inputDiagnostics.probe?.fingerPosition || '-')} · ${escapeHtml(inputDiagnostics.probe?.filePath || '-')}</span></div>
+                    <div class="mini-card"><strong>Candidate Finger / Source</strong><span>${escapeHtml(inputDiagnostics.candidate?.fingerPosition || '-')} · ${escapeHtml(inputDiagnostics.candidate?.filePath || '-')}</span></div>
+                    <div class="mini-card"><strong>Probe Input</strong><span>${formatMatcherNumber(inputDiagnostics.probe?.imageWidth)} × ${formatMatcherNumber(inputDiagnostics.probe?.imageHeight)} · ${formatMatcherNumber(inputDiagnostics.probe?.dpi)} DPI</span></div>
+                    <div class="mini-card"><strong>Candidate Input</strong><span>${formatMatcherNumber(inputDiagnostics.candidate?.imageWidth)} × ${formatMatcherNumber(inputDiagnostics.candidate?.imageHeight)} · ${formatMatcherNumber(inputDiagnostics.candidate?.dpi)} DPI</span></div>
+                    <div class="mini-card"><strong>Shared Feature Extraction</strong><span>${escapeHtml(sharedMinutiae.status || 'not reported')} · Probe ${formatMatcherNumber(sharedMinutiae.probeCount)} · Candidate ${formatMatcherNumber(sharedMinutiae.referenceCount)}</span></div>
+                </div>
+                <div class="score-note">${escapeHtml(result.scoreNotice || 'Raw scores are interpreted only on their matcher-specific scales.')}</div>
+            `;
+
+            metricsEl.innerHTML = `
+                <div class="matcher-result-grid" style="margin-bottom: 14px;">
+                    ${matchers.map((matcher) => {
+                        const tone = matcher.result === 'MATCH' ? 'success' : (matcher.result === 'NO MATCH' || matcher.result === 'BORDERLINE') ? 'warning' : 'danger';
+                        const normalized = matcher.normalizedSimilarity !== null
+                            && matcher.normalizedSimilarity !== undefined
+                            && Number.isFinite(Number(matcher.normalizedSimilarity))
+                            ? `${formatMatcherNumber(matcher.normalizedSimilarity)}%`
+                            : 'Not available';
+                        const quality = matcher.quality && typeof matcher.quality === 'object'
+                            ? `Probe ${formatMatcherNumber(matcher.quality.probe)} · Reference ${formatMatcherNumber(matcher.quality.reference)}`
+                            : 'Not provided';
+                        const minutiae = matcher.inputMinutiae && typeof matcher.inputMinutiae === 'object'
+                            ? `Probe ${formatMatcherNumber(matcher.inputMinutiae.probeUsed)} · Reference ${formatMatcherNumber(matcher.inputMinutiae.referenceUsed)}`
+                            : matcher.minutiaeCount && typeof matcher.minutiaeCount === 'object'
+                                ? `Probe ${formatMatcherNumber(matcher.minutiaeCount.probe)} · Reference ${formatMatcherNumber(matcher.minutiaeCount.reference)}`
+                                : 'Not provided';
+                        const minutiaeFormat = matcher.inputMinutiae?.format || matcher.imageInput?.format || 'Matcher-native input';
+                        const coordinateConvention = matcher.inputMinutiae?.coordinateConvention || (matcher.algorithm === 'SourceAFIS' ? 'SourceAFIS internal extraction' : 'Not reported');
+                        const angleConvention = matcher.inputMinutiae?.angleConvention || (matcher.algorithm === 'SourceAFIS' ? 'SourceAFIS internal extraction' : 'Not reported');
+                        const templateStatus = matcher.templateStatus
+                            ? `Probe ${matcher.templateStatus.probeCreated ? 'created' : 'failed'} · Candidate ${matcher.templateStatus.candidateCreated ? 'created' : 'failed'} · Distinct ${matcher.templateStatus.distinctObjects ? 'yes' : 'no'}`
+                            : 'Not applicable';
+                        const warnings = Array.isArray(matcher.warnings) ? matcher.warnings.filter(Boolean) : [];
+                        const diagnostics = matcher.matcherDiagnostics && typeof matcher.matcherDiagnostics === 'object'
+                            ? formatJson(matcher.matcherDiagnostics)
+                            : 'Not reported';
+                        const bozorthDiagnostics = matcher.algorithm === 'Bozorth3'
+                            ? `<details class="technical-details" style="margin-top: 12px;">
+                                <summary>Bozorth3 Diagnostics</summary>
+                                <dl>
+                                    <dt>Quality Gate</dt><dd>${escapeHtml(matcher.qualityGate?.message || (matcher.qualityGate?.passed ? 'Passed' : 'Not reported'))}</dd>
+                                    <dt>Decision State</dt><dd>${escapeHtml(matcher.decisionState || 'not reported')}${matcher.reviewRecommended ? ' · review recommended' : ''}</dd>
+                                    <dt>Template SHA-256</dt><dd><span style="overflow-wrap: anywhere;">Probe ${escapeHtml(matcher.templates?.probe?.sha256 || '-')}<br>Candidate ${escapeHtml(matcher.templates?.reference?.sha256 || '-')}</span></dd>
+                                    <dt>Native Command</dt><dd><span style="overflow-wrap: anywhere;">${escapeHtml(matcher.execution?.command || '-')}</span></dd>
+                                    <dt>Exit / stderr</dt><dd>Exit ${formatMatcherNumber(matcher.execution?.exitCode)} · ${escapeHtml(matcher.execution?.stderr || 'no stderr')}</dd>
+                                    <dt>Probe XYT sample</dt><dd><span style="white-space: pre-wrap;">${escapeHtml((matcher.templates?.probe?.sample || []).join('\n') || '-')}</span></dd>
+                                    <dt>Candidate XYT sample</dt><dd><span style="white-space: pre-wrap;">${escapeHtml((matcher.templates?.reference?.sample || []).join('\n') || '-')}</span></dd>
+                                </dl>
+                            </details>`
+                            : '';
+                        return `<section class="matcher-result-card" aria-label="${escapeHtml(matcher.algorithm)} result">
+                            <h4>${escapeHtml(matcher.algorithm)}</h4>
+                            <dl>
+                                <dt>Raw Score</dt><dd>${formatMatcherNumber(matcher.score)}</dd>
+                                <dt>Score Direction</dt><dd>${escapeHtml(matcher.scoreDirection || 'not reported')}</dd>
+                                <dt>Normalized Similarity</dt><dd>${normalized}</dd>
+                                <dt>Threshold</dt><dd>${formatMatcherNumber(matcher.threshold)}</dd>
+                                <dt>Decision</dt><dd><span class="status-chip ${tone}">${escapeHtml(matcher.result)}</span></dd>
+                                <dt>Processing Time</dt><dd>${formatMatcherNumber(matcher.processingTimeMs)} ms</dd>
+                                <dt>Minutiae Used</dt><dd>${minutiae}</dd>
+                                <dt>Quality</dt><dd>${quality}</dd>
+                                <dt>Input Format</dt><dd>${escapeHtml(minutiaeFormat)}</dd>
+                                <dt>Coordinates</dt><dd>${escapeHtml(coordinateConvention)}</dd>
+                                <dt>Angles</dt><dd>${escapeHtml(angleConvention)}</dd>
+                                <dt>Template Status</dt><dd>${escapeHtml(templateStatus)}</dd>
+                                <dt>Matcher Diagnostics</dt><dd><span style="white-space: pre-wrap;">${escapeHtml(diagnostics)}</span></dd>
+                            </dl>
+                            ${warnings.map((warning) => `<div class="score-note" style="margin-top: 6px;"><strong>Warning:</strong> ${escapeHtml(warning)}</div>`).join('')}
+                            ${matcher.error ? `<div class="score-note" style="margin-top: 10px;"><strong>${escapeHtml(matcher.error)}</strong></div>` : ''}
+                            ${matcher.statusMessage && matcher.statusMessage !== matcher.error ? `<div class="score-note" style="margin-top: 6px;">${escapeHtml(matcher.statusMessage)}</div>` : ''}
+                            ${bozorthDiagnostics}
+                        </section>`;
+                    }).join('')}
+                </div>
+                <div class="table-wrap">
+                    <table class="comparison-table">
+                        <thead><tr><th>Matcher</th><th>Raw Score</th><th>Normalized Similarity</th><th>Threshold</th><th>Decision</th><th>Processing Time</th></tr></thead>
+                        <tbody>
+                            ${matchers.map((matcher) => {
+                                const tone = matcher.result === 'MATCH' ? 'success' : matcher.result === 'NO MATCH' ? 'warning' : 'danger';
+                                const normalized = matcher.normalizedSimilarity !== null
+                                    && matcher.normalizedSimilarity !== undefined
+                                    && Number.isFinite(Number(matcher.normalizedSimilarity))
+                                    ? `${formatMatcherNumber(matcher.normalizedSimilarity)}%`
+                                    : '-';
+                                return `<tr>
+                                    <td><strong>${escapeHtml(matcher.algorithm)}</strong><div class="score-note">${escapeHtml(matcher.scoreScale || matcher.error || '')}</div></td>
+                                    <td>${formatMatcherNumber(matcher.score)}</td>
+                                    <td>${normalized}</td>
+                                    <td>${formatMatcherNumber(matcher.threshold)}</td>
+                                    <td><span class="status-chip ${tone}">${escapeHtml(matcher.result)}</span>${matcher.error ? `<div class="score-note">${escapeHtml(matcher.error)}</div>` : ''}</td>
+                                    <td>${formatMatcherNumber(matcher.processingTimeMs)} ms</td>
+                                </tr>`;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            renderMatchedMinutiae(result);
+            renderPrimaryComparison();
+            jsonEl.textContent = formatJson(result);
+            document.getElementById('finalScoreCard').textContent = `${completed}/${matchers.length || 5}`;
+            document.getElementById('thresholdCard').textContent = `${matches} M · ${nonMatches} NM`;
+        }
+
+        async function processUpload(side) {
+            const fileInput = document.getElementById(`${side}File`);
+            const file = fileInput.files[0];
+            if (!file) {
+                alert(`Select a ${side} fingerprint image first.`);
+                return;
+            }
+
+            state.compare = null;
+            renderCompare();
+            setButtonsDisabled(true);
+            setPanelStatus(side, 'Processing uploaded fingerprint...');
+            try {
+                const dataUrl = await fileToDataUrl(file);
+                state[side].inputDataUrl = dataUrl;
+                const result = await requestService('/afis/from-image', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ image: dataUrl })
+                });
+                result.sourceFileName = file.name;
+                state[side].result = result;
+                if (side === 'probe') {
+                    document.getElementById('probeQualityCard').textContent = `${result.afisQuality ?? result.quality ?? '-'}/100`;
+                } else {
+                    document.getElementById('candidateQualityCard').textContent = `${result.afisQuality ?? result.quality ?? '-'}/100`;
+                }
+                setActiveTrace(result.traceId);
+                renderFingerprint(side);
+                await refreshTraceFeed();
+            } catch (error) {
+                state[side].result = null;
+                setActiveTrace(error.payload?.traceId || '');
+                setPanelStatus(side, error.message, 'danger');
+                await refreshTraceFeed();
+            } finally {
+                setButtonsDisabled(false);
+            }
+        }
+
+        async function runScan(side) {
+            const type = side === 'probe' ? 'applicant' : 'criminal';
+            state.compare = null;
+            renderCompare();
+            state[side].inputDataUrl = '';
+            state[side].result = null;
+            setActiveTrace('');
+            setButtonsDisabled(true);
+            setPanelStatus(side, 'Scanning now. Place your finger flat on the scanner until the service finishes...');
+            try {
+                const result = await requestService('/scan', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ type })
+                });
+                state[side].result = result;
+                if (side === 'probe') {
+                    document.getElementById('probeQualityCard').textContent = `${result.afisQuality ?? result.quality ?? '-'}/100`;
+                } else {
+                    document.getElementById('candidateQualityCard').textContent = `${result.afisQuality ?? result.quality ?? '-'}/100`;
+                }
+                setActiveTrace(result.traceId);
+                renderFingerprint(side);
+                await refreshTraceFeed();
+            } catch (error) {
+                setActiveTrace(error.payload?.traceId || '');
+                setPanelStatus(side, error.message, 'danger');
+                await refreshTraceFeed();
+            } finally {
+                setButtonsDisabled(false);
+            }
+        }
+
+        async function runCompare() {
+            if (!state.probe.result?.image || !state.candidate.result?.image) {
+                alert('Process or scan both fingerprints before comparing them.');
+                return;
+            }
+
+            setButtonsDisabled(true);
+            const summaryEl = document.getElementById('compareSummary');
+            summaryEl.className = 'empty';
+            summaryEl.textContent = 'Running Bozorth3, SourceAFIS, OpenAFIS, MCC, and Jiang Matcher independently...';
+            try {
+                const result = await requestService('/afis/compare-all', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        probeImage: state.probe.result.originalImage,
+                        referenceImage: state.candidate.result.originalImage,
+                        probeInfo: {
+                            fingerprintId: state.probe.result.fingerprintId,
+                            fileName: state.probe.result.sourceFileName || `scanner://${state.probe.result.traceId || 'probe'}`,
+                            fingerPosition: state.probe.result.fingerPosition || 'unspecified',
+                            dpi: state.probe.result.dpi || state.probe.result.inputMetrics?.dpi,
+                            dpiSource: state.probe.result.dpiSource || state.probe.result.inputMetrics?.dpiSource
+                        },
+                        referenceInfo: {
+                            fingerprintId: state.candidate.result.fingerprintId,
+                            fileName: state.candidate.result.sourceFileName || `scanner://${state.candidate.result.traceId || 'candidate'}`,
+                            fingerPosition: state.candidate.result.fingerPosition || 'unspecified',
+                            dpi: state.candidate.result.dpi || state.candidate.result.inputMetrics?.dpi,
+                            dpiSource: state.candidate.result.dpiSource || state.candidate.result.inputMetrics?.dpiSource
+                        },
+                        thresholds: {
+                            bozorth3: Number(document.getElementById('bozorth3Threshold').value),
+                            sourceafis: Number(document.getElementById('sourceAfisThreshold').value),
+                            openafis: Number(document.getElementById('openAfisThreshold').value),
+                            mcc: Number(document.getElementById('mccThreshold').value),
+                            jiang: Number(document.getElementById('jiangThreshold').value)
+                        }
+                    })
+                });
+
+                state.compare = result;
+                state.selectedPairId = '';
+                state.visualization.showAllPairs = false;
+                resetVisualizationView();
+                setActiveTrace(result.traceId);
+                renderCompare();
+                await refreshTraceFeed();
+            } catch (error) {
+                state.compare = null;
+                setActiveTrace(error.payload?.traceId || '');
+                summaryEl.className = 'empty danger';
+                summaryEl.textContent = error.message;
+                await refreshTraceFeed();
+            } finally {
+                setButtonsDisabled(false);
+            }
+        }
+
+        async function refreshTraceFeed() {
+            try {
+                const query = state.activeTraceId
+                    ? `/debug/events?limit=200&traceId=${encodeURIComponent(state.activeTraceId)}`
+                    : '/debug/events?limit=200';
+                const payload = await requestService(query);
+                const traceList = document.getElementById('traceList');
+                if (!payload.events || payload.events.length === 0) {
+                    traceList.innerHTML = '<div class="empty">No events recorded for this trace yet.</div>';
+                    return;
+                }
+
+                traceList.innerHTML = payload.events.map((event) => `
+                    <div class="trace-item">
+                        <strong>${event.stage}</strong>
+                        <div class="trace-meta">${event.timestamp} | ${event.operation || 'service'} | ${event.traceId}</div>
+                        <div>${event.message}</div>
+                        <div class="trace-data">${escapeHtml(formatJson(event.data || {}))}</div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                document.getElementById('traceList').innerHTML = `<div class="empty">${escapeHtml(error.message)}</div>`;
+            }
+        }
+
+        async function clearTraceFeed() {
+            await requestService('/debug/clear', { method: 'POST' });
+            setActiveTrace('');
+            await refreshTraceFeed();
+        }
+
+        function escapeHtml(value) {
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function wireEvents() {
+            document.getElementById('refreshHealthButton').addEventListener('click', refreshHealth);
+            document.getElementById('refreshTraceButton').addEventListener('click', refreshTraceFeed);
+            document.getElementById('clearTraceButton').addEventListener('click', clearTraceFeed);
+            document.getElementById('probeUploadButton').addEventListener('click', () => processUpload('probe'));
+            document.getElementById('candidateUploadButton').addEventListener('click', () => processUpload('candidate'));
+            document.getElementById('probeScanButton').addEventListener('click', () => runScan('probe'));
+            document.getElementById('candidateScanButton').addEventListener('click', () => runScan('candidate'));
+            document.getElementById('compareButton').addEventListener('click', runCompare);
+            document.getElementById('toggleMinutiae').addEventListener('change', (event) => {
+                state.visualization.showMinutiae = event.target.checked;
+                renderPrimaryComparison();
+            });
+            document.getElementById('toggleMatchedPairs').addEventListener('change', (event) => {
+                state.visualization.showMatchedPairs = event.target.checked;
+                renderPrimaryComparison();
+            });
+            document.getElementById('toggleDirections').addEventListener('change', (event) => {
+                state.visualization.showDirections = event.target.checked;
+                renderPrimaryComparison();
+            });
+            document.getElementById('zoomInButton').addEventListener('click', () => setVisualizationZoom(state.visualization.zoom + 0.25));
+            document.getElementById('zoomOutButton').addEventListener('click', () => setVisualizationZoom(state.visualization.zoom - 0.25));
+            document.getElementById('resetViewButton').addEventListener('click', resetVisualizationView);
+            document.getElementById('viewAllCorrespondences').addEventListener('click', () => {
+                state.visualization.showAllPairs = true;
+                renderPrimaryComparison();
+            });
+            document.getElementById('fullscreenComparisonButton').addEventListener('click', async () => {
+                const panel = document.querySelector('.shared-comparison-panel');
+                if (document.fullscreenElement) {
+                    await document.exitFullscreen();
+                } else if (panel?.requestFullscreen) {
+                    await panel.requestFullscreen();
+                }
+            });
+            document.addEventListener('fullscreenchange', () => {
+                document.getElementById('fullscreenComparisonButton').textContent = document.fullscreenElement ? 'Exit Fullscreen' : 'View Fullscreen';
+            });
+            const comparisonArea = document.getElementById('primaryFingerprintComparison');
+            comparisonArea.addEventListener('wheel', (event) => {
+                if (!event.target.closest('.comparison-viewport')) return;
+                event.preventDefault();
+                setVisualizationZoom(state.visualization.zoom + (event.deltaY < 0 ? 0.15 : -0.15));
+            }, { passive: false });
+            comparisonArea.addEventListener('pointerdown', (event) => {
+                const viewport = event.target.closest('.comparison-viewport');
+                if (!viewport || state.visualization.zoom <= 1) return;
+                state.visualization.dragging = true;
+                state.visualization.pointerX = event.clientX;
+                state.visualization.pointerY = event.clientY;
+                viewport.classList.add('dragging');
+                viewport.setPointerCapture(event.pointerId);
+            });
+            comparisonArea.addEventListener('pointermove', (event) => {
+                if (!state.visualization.dragging) return;
+                state.visualization.panX += event.clientX - state.visualization.pointerX;
+                state.visualization.panY += event.clientY - state.visualization.pointerY;
+                state.visualization.pointerX = event.clientX;
+                state.visualization.pointerY = event.clientY;
+                applyVisualizationTransform();
+            });
+            const stopDragging = () => {
+                state.visualization.dragging = false;
+                document.querySelector('.comparison-viewport')?.classList.remove('dragging');
+            };
+            comparisonArea.addEventListener('pointerup', stopDragging);
+            comparisonArea.addEventListener('pointercancel', stopDragging);
+            window.addEventListener('resize', () => {
+                if (state.compare || (state.probe.result && state.candidate.result)) renderPrimaryComparison();
+            });
+            document.getElementById('autoRefreshToggle').addEventListener('change', (event) => {
+                if (event.target.checked) {
+                    startAutoRefresh();
+                } else {
+                    stopAutoRefresh();
+                }
+            });
+        }
+
+        function startAutoRefresh() {
+            stopAutoRefresh();
+            state.traceTimer = window.setInterval(refreshTraceFeed, 1800);
+        }
+
+        function stopAutoRefresh() {
+            if (state.traceTimer) {
+                window.clearInterval(state.traceTimer);
+                state.traceTimer = null;
+            }
+        }
+
+        async function initialize() {
+            const allowed = await enforceLabAccess();
+            if (!allowed) {
+                return;
+            }
+            wireEvents();
+            renderFingerprint('probe');
+            renderFingerprint('candidate');
+            renderCompare();
+            await Promise.all([refreshHealth(), refreshConfig(), refreshTraceFeed()]);
+            startAutoRefresh();
+        }
+
+        window.addEventListener('beforeunload', stopAutoRefresh);
+        initialize().catch((error) => {
+            alert(error.message);
+        });
+    </script>
+</body>
+</html>

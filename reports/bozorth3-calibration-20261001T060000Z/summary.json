@@ -1,0 +1,81 @@
+{
+  "generatedAt": "2026-10-01T06:00:02.914Z",
+  "dataset": "C:\\xampp\\htdocs\\Minutiae\\temp\\matcher-build\\openafis\\data\\valid\\fvc2004\\DB4_B",
+  "groundTruth": "FVC filename subject prefix; impressions sharing a prefix are genuine; adjacent subject prefixes are impostors",
+  "samples": 80,
+  "subjects": 10,
+  "pairs": {
+    "total": 560,
+    "genuine": 280,
+    "impostor": 280
+  },
+  "split": "Subjects 101-105 train; 106-110 held-out validation",
+  "feeds": {
+    "sourceafis": {
+      "chosenThreshold": 20,
+      "selectionRule": "minimum train errors; then fewer false accepts; then closest FAR/FRR; then lowest threshold on an equivalent plateau",
+      "train": {
+        "threshold": 20,
+        "tp": 128,
+        "fn": 12,
+        "fp": 0,
+        "tn": 140,
+        "accuracy": 0.9571428571428572,
+        "precision": 1,
+        "recall": 0.9142857142857143,
+        "f1": 0.955223880597015,
+        "far": 0,
+        "frr": 0.08571428571428572,
+        "balancedAccuracy": 0.9571428571428571
+      },
+      "validation": {
+        "threshold": 20,
+        "tp": 128,
+        "fn": 12,
+        "fp": 0,
+        "tn": 140,
+        "accuracy": 0.9571428571428572,
+        "precision": 1,
+        "recall": 0.9142857142857143,
+        "f1": 0.955223880597015,
+        "far": 0,
+        "frr": 0.08571428571428572,
+        "balancedAccuracy": 0.9571428571428571
+      },
+      "all": {
+        "threshold": 20,
+        "tp": 256,
+        "fn": 24,
+        "fp": 0,
+        "tn": 280,
+        "accuracy": 0.9571428571428572,
+        "precision": 1,
+        "recall": 0.9142857142857143,
+        "f1": 0.955223880597015,
+        "far": 0,
+        "frr": 0.08571428571428572,
+        "balancedAccuracy": 0.9571428571428571
+      },
+      "genuine": {
+        "count": 280,
+        "minimum": 3,
+        "p25": 40,
+        "median": 64,
+        "p75": 106,
+        "p95": 183,
+        "maximum": 309,
+        "mean": 80.1
+      },
+      "impostor": {
+        "count": 280,
+        "minimum": 0,
+        "p25": 5,
+        "median": 7,
+        "p75": 9,
+        "p95": 14,
+        "maximum": 19,
+        "mean": 7.29
+      }
+    }
+  }
+}

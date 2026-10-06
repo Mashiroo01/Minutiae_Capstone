@@ -1,0 +1,17 @@
+{
+  "scripts": {
+    "test": "node --test \"test/*.test.js\"",
+    "scanner:diagnose": "node check-zkteco-zk9500.js",
+    "matchers:setup": "powershell -ExecutionPolicy Bypass -File .\\scripts\\setup-academic-matchers.ps1",
+    "matchers:verify": "node scripts/verify-academic-matchers.js",
+    "matchers:verify-repeated": "node scripts/verify-three-matchers.js",
+    "bozorth3:calibrate": "node scripts/calibrate-bozorth3.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "node-hid": "^3.3.0",
+    "sharp": "^0.34.5",
+    "usb": "^2.17.0"
+  }
+}
