@@ -780,6 +780,104 @@
         .fp-advanced pre { max-height: 340px; overflow: auto; padding: 12px; border-radius: 10px; background: #111827; color: #e5e7eb; white-space: pre-wrap; }
         .comparison-history-empty { padding: 20px; text-align: center; color: #64748b; }
 
+        .analytics-toolbar { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; margin-bottom: 22px; }
+        .analytics-toolbar .page-title { margin-bottom: 6px; }
+        .analytics-updated { display: flex; align-items: center; gap: 7px; color: #708097; font-size: 12px; }
+        .analytics-refresh { display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border: 1px solid rgba(0, 56, 168, .16); border-radius: 12px; color: var(--pnp-blue); background: #fff; font-weight: 800; box-shadow: 0 5px 16px rgba(15, 45, 95, .06); }
+        .analytics-refresh:hover, .analytics-refresh:focus { color: #fff; background: var(--pnp-blue); border-color: var(--pnp-blue); }
+        .analytics-loading, .analytics-error { display: none; align-items: center; justify-content: center; gap: 10px; min-height: 110px; margin-bottom: 18px; padding: 22px; border-radius: 18px; background: #fff; box-shadow: var(--panel-shadow); }
+        .analytics-error { color: #991b1b; border: 1px solid #fecaca; background: #fff7f7; }
+
+        .analytics-kpi-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 15px; margin-bottom: 18px; }
+        .analytics-kpi { position: relative; overflow: hidden; min-height: 138px; padding: 20px; border: 1px solid rgba(17, 56, 112, .1); border-radius: 20px; background: #fff; box-shadow: 0 12px 28px rgba(15, 45, 95, .075); }
+        .analytics-kpi::after { content: ''; position: absolute; right: -23px; bottom: -28px; width: 90px; height: 90px; border-radius: 50%; background: var(--kpi-glow, #e6efff); opacity: .65; }
+        .analytics-kpi-head { position: relative; z-index: 1; display: flex; justify-content: space-between; gap: 12px; align-items: center; }
+        .analytics-kpi-label { color: #65758b; font-size: 11px; font-weight: 800; letter-spacing: .065em; text-transform: uppercase; }
+        .analytics-kpi-icon { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 11px; color: var(--kpi-color, var(--pnp-blue)); background: var(--kpi-glow, #e6efff); font-size: 17px; }
+        .analytics-kpi-value { position: relative; z-index: 1; margin-top: 12px; color: #142746; font-size: 30px; font-weight: 850; line-height: 1; letter-spacing: -.025em; }
+        .analytics-kpi-detail { position: relative; z-index: 1; margin-top: 8px; color: #738198; font-size: 12px; }
+        .analytics-kpi.is-green { --kpi-color: #07814f; --kpi-glow: #dcf8eb; }
+        .analytics-kpi.is-amber { --kpi-color: #b76d00; --kpi-glow: #fff0cc; }
+        .analytics-kpi.is-purple { --kpi-color: #6941c6; --kpi-glow: #eee8ff; }
+
+        .analytics-quick-strip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-bottom: 18px; border: 1px solid rgba(17, 56, 112, .1); border-radius: 17px; background: #0e2d62; box-shadow: 0 13px 30px rgba(10, 38, 83, .16); overflow: hidden; }
+        .analytics-quick-item { padding: 17px 20px; color: #fff; border-right: 1px solid rgba(255,255,255,.13); }
+        .analytics-quick-item:last-child { border-right: 0; }
+        .analytics-quick-label { color: #bcd2f5; font-size: 10px; font-weight: 800; letter-spacing: .075em; text-transform: uppercase; }
+        .analytics-quick-value { display: block; margin-top: 6px; font-size: 19px; font-weight: 850; }
+
+        .analytics-dashboard-grid { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(300px, .75fr); gap: 18px; align-items: start; }
+        .analytics-side-stack { display: grid; gap: 18px; }
+        .analytics-panel { border: 1px solid rgba(17, 56, 112, .1); border-radius: 20px; background: #fff; box-shadow: 0 12px 30px rgba(15, 45, 95, .07); overflow: hidden; }
+        .analytics-panel-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; padding: 19px 21px 14px; }
+        .analytics-panel-title { margin: 0; color: #142746; font-size: 16px; font-weight: 850; }
+        .analytics-panel-subtitle { margin: 4px 0 0; color: #728097; font-size: 12px; }
+        .analytics-panel-badge { flex: 0 0 auto; padding: 5px 9px; border-radius: 999px; color: #1758b8; background: #e8f1ff; font-size: 10px; font-weight: 800; text-transform: uppercase; }
+        .analytics-panel-body { padding: 4px 21px 21px; }
+
+        .analytics-trend-chart { display: flex; align-items: stretch; gap: 8px; min-height: 270px; padding-top: 16px; border-top: 1px solid #edf1f6; }
+        .analytics-chart-yaxis { display: flex; flex-direction: column; justify-content: space-between; width: 24px; padding: 1px 0 31px; color: #8a98aa; font-size: 10px; text-align: right; }
+        .analytics-bars { display: grid; grid-template-columns: repeat(14, minmax(14px, 1fr)); align-items: end; gap: 7px; flex: 1; min-width: 0; height: 250px; padding: 8px 2px 0; background: repeating-linear-gradient(to bottom, transparent 0, transparent 59px, #edf1f6 60px); border-bottom: 1px solid #dfe7f1; }
+        .analytics-bar-column { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; min-width: 0; height: 100%; }
+        .analytics-bar-value { min-height: 15px; margin-bottom: 4px; color: #4f6077; font-size: 9px; font-weight: 800; }
+        .analytics-bar-track { display: flex; flex-direction: column-reverse; width: min(24px, 82%); min-height: 2px; border-radius: 6px 6px 2px 2px; overflow: hidden; background: #dce7f6; transition: height .3s ease; }
+        .analytics-bar-segment { display: block; width: 100%; }
+        .analytics-bar-segment.is-approved { background: #149769; }
+        .analytics-bar-segment.is-rejected { background: #cf3346; }
+        .analytics-bar-label { height: 24px; margin-top: 7px; color: #75849a; font-size: 9px; white-space: nowrap; transform: rotate(-35deg); transform-origin: center top; }
+        .analytics-chart-legend { display: flex; flex-wrap: wrap; gap: 15px; margin-top: 17px; color: #66758b; font-size: 11px; }
+        .analytics-chart-legend span { display: inline-flex; align-items: center; gap: 6px; }
+        .analytics-legend-dot { width: 8px; height: 8px; border-radius: 50%; background: #dce7f6; }
+        .analytics-legend-dot.is-approved { background: #149769; }
+        .analytics-legend-dot.is-rejected { background: #cf3346; }
+
+        .analytics-outcome { display: grid; grid-template-columns: 130px minmax(0, 1fr); gap: 18px; align-items: center; }
+        .analytics-donut { position: relative; display: grid; place-items: center; width: 124px; height: 124px; border-radius: 50%; background: var(--analytics-donut, #e9eef5); }
+        .analytics-donut::after { content: ''; position: absolute; width: 76px; height: 76px; border-radius: 50%; background: #fff; }
+        .analytics-donut-center { position: relative; z-index: 1; text-align: center; }
+        .analytics-donut-center strong { display: block; color: #142746; font-size: 24px; line-height: 1; }
+        .analytics-donut-center small { color: #79879a; font-size: 10px; }
+        .analytics-outcome-list, .analytics-fingerprint-list { display: grid; gap: 10px; }
+        .analytics-outcome-row { display: grid; grid-template-columns: 9px minmax(0, 1fr) auto; gap: 8px; align-items: center; color: #53647a; font-size: 11px; }
+        .analytics-outcome-swatch { width: 9px; height: 9px; border-radius: 3px; }
+        .analytics-outcome-count { color: #243a57; font-weight: 850; }
+
+        .analytics-fingerprint-item { display: grid; grid-template-columns: minmax(105px, .75fr) minmax(90px, 1fr) 30px; gap: 9px; align-items: center; }
+        .analytics-fingerprint-label { color: #52647b; font-size: 11px; font-weight: 700; overflow-wrap: anywhere; }
+        .analytics-progress { height: 7px; border-radius: 999px; background: #e8eef6; overflow: hidden; }
+        .analytics-progress span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #1458ba, #3185e8); }
+        .analytics-fingerprint-count { color: #203956; font-size: 11px; font-weight: 850; text-align: right; }
+
+        .analytics-insights { display: grid; gap: 10px; }
+        .analytics-insight { display: grid; grid-template-columns: 32px minmax(0, 1fr); gap: 10px; align-items: start; padding: 11px; border: 1px solid #e5ebf3; border-radius: 12px; background: #f9fbfd; }
+        .analytics-insight-icon { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 9px; color: #185dbd; background: #e6f0ff; }
+        .analytics-insight strong { display: block; color: #263b57; font-size: 12px; }
+        .analytics-insight p { margin: 3px 0 0; color: #6d7c90; font-size: 11px; line-height: 1.45; }
+        .analytics-empty { padding: 34px 15px; color: #7b899b; text-align: center; }
+
+        @media (max-width: 1100px) {
+            .analytics-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .analytics-dashboard-grid { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 700px) {
+            .analytics-toolbar { display: block; }
+            .analytics-refresh { margin-top: 14px; }
+            .analytics-kpi-grid, .analytics-quick-strip { grid-template-columns: 1fr 1fr; }
+            .analytics-quick-item:nth-child(2) { border-right: 0; }
+            .analytics-quick-item:nth-child(-n+2) { border-bottom: 1px solid rgba(255,255,255,.13); }
+            .analytics-outcome { grid-template-columns: 1fr; justify-items: center; }
+            .analytics-outcome-list { width: 100%; }
+            .analytics-bars { gap: 3px; }
+            .analytics-bar-value { display: none; }
+        }
+
+        @media (max-width: 480px) {
+            .analytics-kpi-grid, .analytics-quick-strip { grid-template-columns: 1fr; }
+            .analytics-quick-item { border-right: 0; border-bottom: 1px solid rgba(255,255,255,.13); }
+            .analytics-quick-item:last-child { border-bottom: 0; }
+        }
+
         .application-history-view {
             --history-navy: #102a56;
             --history-blue: #165dcc;
@@ -1335,55 +1433,92 @@
 
         <!-- Statistics Section -->
         <div id="statistics" class="section">
-            <div class="page-title">
-                <i class="bi bi-bar-chart"></i> Statistics
+            <div class="analytics-toolbar">
+                <div>
+                    <div class="page-title">
+                        <i class="bi bi-bar-chart"></i> Analytics
+                    </div>
+                    <div class="page-subtitle">Monitor application throughput, clearance outcomes, and biometric screening performance.</div>
+                    <div class="analytics-updated"><i class="bi bi-clock"></i> Last refreshed <span id="statisticsUpdatedAt">Not yet loaded</span></div>
+                </div>
+                <button type="button" class="analytics-refresh" onclick="loadStatistics()">
+                    <i class="bi bi-arrow-clockwise"></i> Refresh analytics
+                </button>
             </div>
-            <div class="page-subtitle">Track clearance decision patterns and monitor the health of the screening environment.</div>
 
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="card">
-                        <div class="card-header">Clearance Decisions</div>
-                        <div class="card-body">
-                            <div class="row text-center">
-                                <div class="col-md-6">
-                                    <div class="metric-panel success">
-                                        <div style="font-size: 24px; font-weight: 700; color: #155724;" id="statApproved">0</div>
-                                        <div style="font-size: 12px; color: #155724;">Approved</div>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="metric-panel danger">
-                                        <div style="font-size: 24px; font-weight: 700; color: #721c24;" id="statRejected">0</div>
-                                        <div style="font-size: 12px; color: #721c24;">Rejected</div>
-                                    </div>
-                                </div>
+            <div id="statisticsLoadingState" class="analytics-loading" role="status" aria-live="polite">
+                <span class="spinner-border spinner-border-sm text-primary" aria-hidden="true"></span>
+                Loading operational analytics…
+            </div>
+            <div id="statisticsErrorState" class="analytics-error" role="alert">
+                <i class="bi bi-exclamation-triangle"></i>
+                <span>Unable to load analytics. Check the database connection and try again.</span>
+            </div>
+
+            <div id="statisticsAnalyticsContent">
+                <div class="analytics-kpi-grid">
+                    <article class="analytics-kpi">
+                        <div class="analytics-kpi-head"><span class="analytics-kpi-label">Total applications</span><span class="analytics-kpi-icon"><i class="bi bi-files"></i></span></div>
+                        <div class="analytics-kpi-value" id="analyticsTotal">0</div>
+                        <div class="analytics-kpi-detail" id="analyticsTotalDetail">0 received in the last 7 days</div>
+                    </article>
+                    <article class="analytics-kpi is-green">
+                        <div class="analytics-kpi-head"><span class="analytics-kpi-label">Approval rate</span><span class="analytics-kpi-icon"><i class="bi bi-check2-circle"></i></span></div>
+                        <div class="analytics-kpi-value" id="analyticsApprovalRate">0%</div>
+                        <div class="analytics-kpi-detail" id="analyticsApprovalDetail">0 approved decisions</div>
+                    </article>
+                    <article class="analytics-kpi is-amber">
+                        <div class="analytics-kpi-head"><span class="analytics-kpi-label">Open workload</span><span class="analytics-kpi-icon"><i class="bi bi-hourglass-split"></i></span></div>
+                        <div class="analytics-kpi-value" id="analyticsOpenWorkload">0</div>
+                        <div class="analytics-kpi-detail" id="analyticsOpenDetail">Pending, review, and flagged records</div>
+                    </article>
+                    <article class="analytics-kpi is-purple">
+                        <div class="analytics-kpi-head"><span class="analytics-kpi-label">Avg. processing</span><span class="analytics-kpi-icon"><i class="bi bi-stopwatch"></i></span></div>
+                        <div class="analytics-kpi-value" id="analyticsProcessingTime">0h</div>
+                        <div class="analytics-kpi-detail">Submission to final decision</div>
+                    </article>
+                </div>
+
+                <div class="analytics-quick-strip" aria-label="Current processing indicators">
+                    <div class="analytics-quick-item"><span class="analytics-quick-label">Received today</span><strong class="analytics-quick-value" id="analyticsToday">0</strong></div>
+                    <div class="analytics-quick-item"><span class="analytics-quick-label">Last 7 days</span><strong class="analytics-quick-value" id="analyticsSevenDays">0</strong></div>
+                    <div class="analytics-quick-item"><span class="analytics-quick-label">Decision coverage</span><strong class="analytics-quick-value" id="analyticsDecisionRate">0%</strong></div>
+                    <div class="analytics-quick-item"><span class="analytics-quick-label">Biometric completion</span><strong class="analytics-quick-value" id="analyticsFingerprintRate">0%</strong></div>
+                </div>
+
+                <div class="analytics-dashboard-grid">
+                    <section class="analytics-panel">
+                        <div class="analytics-panel-header">
+                            <div><h3 class="analytics-panel-title">Application volume</h3><p class="analytics-panel-subtitle">Daily intake and current outcomes for the last 14 days</p></div>
+                            <span class="analytics-panel-badge">14 days</span>
+                        </div>
+                        <div class="analytics-panel-body">
+                            <div id="analyticsTrendChart" class="analytics-trend-chart" role="img" aria-label="14-day application volume"></div>
+                            <div class="analytics-chart-legend">
+                                <span><i class="analytics-legend-dot is-approved"></i>Approved</span>
+                                <span><i class="analytics-legend-dot is-rejected"></i>Rejected</span>
+                                <span><i class="analytics-legend-dot"></i>In progress</span>
                             </div>
                         </div>
+                    </section>
+
+                    <div class="analytics-side-stack">
+                        <section class="analytics-panel">
+                            <div class="analytics-panel-header"><div><h3 class="analytics-panel-title">Clearance outcomes</h3><p class="analytics-panel-subtitle">Current application pipeline</p></div></div>
+                            <div class="analytics-panel-body"><div id="clearanceOutcomeChart"></div></div>
+                        </section>
+
+                        <section class="analytics-panel">
+                            <div class="analytics-panel-header"><div><h3 class="analytics-panel-title">Fingerprint pipeline</h3><p class="analytics-panel-subtitle">Verification status across applications</p></div></div>
+                            <div class="analytics-panel-body"><div id="fingerprintAnalyticsList" class="analytics-fingerprint-list"></div></div>
+                        </section>
                     </div>
                 </div>
 
-                <div class="col-md-6">
-                    <div class="card">
-                        <div class="card-header">System Information</div>
-                        <div class="card-body">
-                            <div style="padding: 15px;">
-                                <div class="system-info-item">
-                                    <strong>Modified Bozorth3 Status:</strong>
-                                    <span id="bozorth3Status" class="badge bg-success">Operational</span>
-                                </div>
-                                <div class="system-info-item">
-                                    <strong>Database:</strong>
-                                    <span id="dbStatus" class="badge bg-success">Connected</span>
-                                </div>
-                                <div class="system-info-item">
-                                    <strong>System Version:</strong>
-                                    <span class="badge bg-info">1.0.0</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <section class="analytics-panel mt-3">
+                    <div class="analytics-panel-header"><div><h3 class="analytics-panel-title">Operational insights</h3><p class="analytics-panel-subtitle">Automated observations from the current workload</p></div><span class="analytics-panel-badge">Live</span></div>
+                    <div class="analytics-panel-body"><div id="analyticsInsights" class="analytics-insights"></div></div>
+                </section>
             </div>
         </div>
 
@@ -2457,14 +2592,216 @@
         }
 
         // Load Statistics
+        function analyticsNumber(value) {
+            const number = Number(value);
+            return Number.isFinite(number) ? number : 0;
+        }
+
+        function analyticsPercent(value) {
+            return `${analyticsNumber(value).toLocaleString(undefined, { maximumFractionDigits: 1 })}%`;
+        }
+
+        function analyticsDateKey(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function renderAnalyticsTrend(points) {
+            const chart = document.getElementById('analyticsTrendChart');
+            const pointMap = new Map((Array.isArray(points) ? points : []).map((point) => [String(point.date || ''), point]));
+            const endDate = new Date();
+            endDate.setHours(0, 0, 0, 0);
+            const normalizedPoints = [];
+
+            for (let offset = 13; offset >= 0; offset -= 1) {
+                const date = new Date(endDate);
+                date.setDate(endDate.getDate() - offset);
+                const key = analyticsDateKey(date);
+                const source = pointMap.get(key) || {};
+                normalizedPoints.push({
+                    date,
+                    total: analyticsNumber(source.total),
+                    approved: analyticsNumber(source.approved),
+                    rejected: analyticsNumber(source.rejected)
+                });
+            }
+
+            const maximum = Math.max(1, ...normalizedPoints.map((point) => point.total));
+            const tickMidpoint = Math.ceil(maximum / 2);
+            chart.innerHTML = `
+                <div class="analytics-chart-yaxis" aria-hidden="true"><span>${maximum}</span><span>${tickMidpoint}</span><span>0</span></div>
+                <div class="analytics-bars">
+                    ${normalizedPoints.map((point) => {
+                        const total = point.total;
+                        const approved = Math.min(total, point.approved);
+                        const rejected = Math.min(Math.max(0, total - approved), point.rejected);
+                        const height = total > 0 ? Math.max(8, (total / maximum) * 190) : 2;
+                        const approvedHeight = total > 0 ? (approved / total) * 100 : 0;
+                        const rejectedHeight = total > 0 ? (rejected / total) * 100 : 0;
+                        const label = point.date.toLocaleDateString('en-PH', { month: 'short', day: 'numeric' });
+                        const description = `${label}: ${total} applications, ${approved} approved, ${rejected} rejected`;
+                        return `
+                            <div class="analytics-bar-column" title="${escapeHtml(description)}">
+                                <span class="analytics-bar-value">${total || ''}</span>
+                                <span class="analytics-bar-track" style="height:${height}px">
+                                    <span class="analytics-bar-segment is-approved" style="height:${approvedHeight}%"></span>
+                                    <span class="analytics-bar-segment is-rejected" style="height:${rejectedHeight}%"></span>
+                                </span>
+                                <span class="analytics-bar-label">${escapeHtml(label)}</span>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
+
+        function renderClearanceOutcomes(distribution, total) {
+            const container = document.getElementById('clearanceOutcomeChart');
+            const colors = {
+                approved: '#149769',
+                rejected: '#cf3346',
+                pending: '#d9a018',
+                under_review: '#635bce',
+                flagged: '#e87722'
+            };
+            const rows = Array.isArray(distribution) ? distribution : [];
+            let cursor = 0;
+            const segments = rows.filter((item) => analyticsNumber(item.count) > 0).map((item) => {
+                const start = cursor;
+                cursor += total > 0 ? (analyticsNumber(item.count) / total) * 100 : 0;
+                return `${colors[item.key] || '#7b8ba1'} ${start}% ${cursor}%`;
+            });
+            const donutBackground = segments.length ? `conic-gradient(${segments.join(',')})` : '#e9eef5';
+
+            container.innerHTML = `
+                <div class="analytics-outcome">
+                    <div class="analytics-donut" style="--analytics-donut:${donutBackground}" role="img" aria-label="Clearance outcome distribution">
+                        <div class="analytics-donut-center"><strong>${total}</strong><small>applications</small></div>
+                    </div>
+                    <div class="analytics-outcome-list">
+                        ${rows.map((item) => `
+                            <div class="analytics-outcome-row">
+                                <span class="analytics-outcome-swatch" style="background:${colors[item.key] || '#7b8ba1'}"></span>
+                                <span>${escapeHtml(item.label || formatStatusLabel(item.key))}</span>
+                                <span class="analytics-outcome-count">${analyticsNumber(item.count)}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderFingerprintAnalytics(distribution) {
+            const container = document.getElementById('fingerprintAnalyticsList');
+            const rows = Array.isArray(distribution) ? distribution : [];
+            if (!rows.length) {
+                container.innerHTML = '<div class="analytics-empty"><i class="bi bi-fingerprint"></i><br>No fingerprint activity recorded</div>';
+                return;
+            }
+
+            const maximum = Math.max(1, ...rows.map((item) => analyticsNumber(item.count)));
+            container.innerHTML = rows.map((item) => {
+                const count = analyticsNumber(item.count);
+                return `
+                    <div class="analytics-fingerprint-item">
+                        <span class="analytics-fingerprint-label">${escapeHtml(formatStatusLabel(item.status))}</span>
+                        <span class="analytics-progress" aria-hidden="true"><span style="width:${(count / maximum) * 100}%"></span></span>
+                        <span class="analytics-fingerprint-count">${count}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderAnalyticsInsights(stats) {
+            const total = analyticsNumber(stats.total);
+            const openWorkload = analyticsNumber(stats.pending) + analyticsNumber(stats.under_review) + analyticsNumber(stats.flagged);
+            const openShare = total > 0 ? (openWorkload / total) * 100 : 0;
+            const weeklyAverage = analyticsNumber(stats.submitted_last_7_days) / 7;
+            const insights = [
+                {
+                    icon: 'bi-activity',
+                    title: 'Intake pace',
+                    text: `${analyticsNumber(stats.submitted_today)} received today; the 7-day average is ${weeklyAverage.toFixed(1)} per day.`
+                },
+                {
+                    icon: openShare > 25 ? 'bi-exclamation-circle' : 'bi-check-circle',
+                    title: openShare > 25 ? 'Workload needs attention' : 'Workload is controlled',
+                    text: `${openWorkload} applications (${openShare.toFixed(1)}%) remain pending, under review, or flagged.`
+                },
+                {
+                    icon: 'bi-fingerprint',
+                    title: 'Biometric coverage',
+                    text: `${analyticsPercent(stats.fingerprint_completion_rate)} of applications have a completed fingerprint outcome.`
+                },
+                {
+                    icon: 'bi-clipboard-data',
+                    title: 'Decision coverage',
+                    text: `${analyticsPercent(stats.decision_rate)} of all applications currently have a final clearance decision.`
+                }
+            ];
+
+            document.getElementById('analyticsInsights').innerHTML = insights.map((insight) => `
+                <div class="analytics-insight">
+                    <span class="analytics-insight-icon"><i class="bi ${insight.icon}"></i></span>
+                    <div><strong>${escapeHtml(insight.title)}</strong><p>${escapeHtml(insight.text)}</p></div>
+                </div>
+            `).join('');
+        }
+
+        function renderStatisticsAnalytics(stats) {
+            const total = analyticsNumber(stats.total);
+            const approved = analyticsNumber(stats.approved);
+            const openWorkload = analyticsNumber(stats.pending) + analyticsNumber(stats.under_review) + analyticsNumber(stats.flagged);
+            const processingHours = analyticsNumber(stats.average_processing_hours);
+            const processingLabel = processingHours >= 24
+                ? `${(processingHours / 24).toLocaleString(undefined, { maximumFractionDigits: 1 })}d`
+                : `${processingHours.toLocaleString(undefined, { maximumFractionDigits: 1 })}h`;
+
+            document.getElementById('analyticsTotal').textContent = total.toLocaleString();
+            document.getElementById('analyticsTotalDetail').textContent = `${analyticsNumber(stats.submitted_last_7_days)} received in the last 7 days`;
+            document.getElementById('analyticsApprovalRate').textContent = analyticsPercent(stats.approval_rate);
+            document.getElementById('analyticsApprovalDetail').textContent = `${approved} approved decisions`;
+            document.getElementById('analyticsOpenWorkload').textContent = openWorkload.toLocaleString();
+            document.getElementById('analyticsOpenDetail').textContent = `${analyticsNumber(stats.pending)} pending · ${analyticsNumber(stats.under_review)} in review · ${analyticsNumber(stats.flagged)} flagged`;
+            document.getElementById('analyticsProcessingTime').textContent = processingLabel;
+            document.getElementById('analyticsToday').textContent = analyticsNumber(stats.submitted_today).toLocaleString();
+            document.getElementById('analyticsSevenDays').textContent = analyticsNumber(stats.submitted_last_7_days).toLocaleString();
+            document.getElementById('analyticsDecisionRate').textContent = analyticsPercent(stats.decision_rate);
+            document.getElementById('analyticsFingerprintRate').textContent = analyticsPercent(stats.fingerprint_completion_rate);
+
+            renderAnalyticsTrend(stats.daily_trend);
+            renderClearanceOutcomes(stats.status_distribution, total);
+            renderFingerprintAnalytics(stats.fingerprint_distribution);
+            renderAnalyticsInsights(stats);
+
+            const generatedAt = stats.generated_at ? new Date(stats.generated_at) : new Date();
+            document.getElementById('statisticsUpdatedAt').textContent = Number.isNaN(generatedAt.getTime())
+                ? 'just now'
+                : generatedAt.toLocaleString('en-PH', { dateStyle: 'medium', timeStyle: 'short' });
+        }
+
         async function loadStatistics() {
+            const loadingState = document.getElementById('statisticsLoadingState');
+            const errorState = document.getElementById('statisticsErrorState');
+            const content = document.getElementById('statisticsAnalyticsContent');
+            loadingState.style.display = 'flex';
+            errorState.style.display = 'none';
+            content.style.opacity = '.45';
+            content.setAttribute('aria-busy', 'true');
+
             try {
                 const stats = await requestJson('backend/applicant_info.php?action=stats');
-                document.getElementById('statApproved').textContent = stats.approved || 0;
-                document.getElementById('statRejected').textContent = stats.rejected || 0;
+                renderStatisticsAnalytics(stats);
             } catch (error) {
-                document.getElementById('statApproved').textContent = '0';
-                document.getElementById('statRejected').textContent = '0';
+                errorState.style.display = 'flex';
+                const message = errorState.querySelector('span');
+                message.textContent = `Unable to load analytics: ${error.message}`;
+            } finally {
+                loadingState.style.display = 'none';
+                content.style.opacity = '1';
+                content.removeAttribute('aria-busy');
             }
         }
 

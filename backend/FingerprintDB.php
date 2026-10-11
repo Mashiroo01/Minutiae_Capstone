@@ -1691,15 +1691,27 @@ class FingerprintDB {
      * Get applicant status counters for admin dashboard.
      */
     public function getApplicantStatusStats() {
+        $emptyStats = [
+            'total' => 0,
+            'approved' => 0,
+            'rejected' => 0,
+            'pending' => 0,
+            'under_review' => 0,
+            'flagged' => 0,
+            'submitted_today' => 0,
+            'submitted_last_7_days' => 0,
+            'average_processing_hours' => 0.0,
+            'approval_rate' => 0.0,
+            'decision_rate' => 0.0,
+            'fingerprint_completion_rate' => 0.0,
+            'status_distribution' => [],
+            'fingerprint_distribution' => [],
+            'daily_trend' => [],
+            'generated_at' => date('c')
+        ];
+
         if (!$this->db) {
-            return [
-                'total' => 0,
-                'approved' => 0,
-                'rejected' => 0,
-                'pending' => 0,
-                'under_review' => 0,
-                'flagged' => 0
-            ];
+            return $emptyStats;
         }
 
         try {
@@ -1710,28 +1722,88 @@ class FingerprintDB {
                     SUM(CASE WHEN clearance_status = 'REJECTED' THEN 1 ELSE 0 END) AS rejected,
                     SUM(CASE WHEN clearance_status = 'PENDING' OR clearance_status = 'PENDING_FINGERPRINT' OR clearance_status IS NULL THEN 1 ELSE 0 END) AS pending,
                     SUM(CASE WHEN clearance_status = 'UNDER_REVIEW' THEN 1 ELSE 0 END) AS under_review,
-                    SUM(CASE WHEN clearance_status = 'FLAGGED' THEN 1 ELSE 0 END) AS flagged
+                    SUM(CASE WHEN clearance_status = 'FLAGGED' THEN 1 ELSE 0 END) AS flagged,
+                    SUM(CASE WHEN DATE(submitted_at) = CURDATE() THEN 1 ELSE 0 END) AS submitted_today,
+                    SUM(CASE WHEN submitted_at >= DATE_SUB(CURDATE(), INTERVAL 6 DAY) THEN 1 ELSE 0 END) AS submitted_last_7_days,
+                    SUM(CASE WHEN fingerprint_verification_status IN ('CONFIRMED_MATCH', 'CONFIRMED_NO_MATCH', 'NO_MATCH', 'CLEARED', 'MATCH') THEN 1 ELSE 0 END) AS fingerprint_completed,
+                    ROUND(AVG(CASE
+                        WHEN clearance_status IN ('APPROVED', 'APPROVED_WITH_CAUTION', 'REJECTED')
+                            AND last_updated_at >= submitted_at
+                        THEN TIMESTAMPDIFF(MINUTE, submitted_at, last_updated_at) / 60
+                        ELSE NULL
+                    END), 2) AS average_processing_hours
                 FROM applicants
             ")->fetch(PDO::FETCH_ASSOC);
 
+            $total = intval($row['total'] ?? 0);
+            $approved = intval($row['approved'] ?? 0);
+            $rejected = intval($row['rejected'] ?? 0);
+            $pending = intval($row['pending'] ?? 0);
+            $underReview = intval($row['under_review'] ?? 0);
+            $flagged = intval($row['flagged'] ?? 0);
+            $decided = $approved + $rejected;
+            $fingerprintCompleted = intval($row['fingerprint_completed'] ?? 0);
+
+            $fingerprintRows = $this->db->query("
+                SELECT
+                    COALESCE(NULLIF(fingerprint_verification_status, ''), 'NOT_STARTED') AS status,
+                    COUNT(*) AS count
+                FROM applicants
+                GROUP BY fingerprint_verification_status
+                ORDER BY count DESC, status ASC
+            ")->fetchAll(PDO::FETCH_ASSOC);
+
+            $trendRows = $this->db->query("
+                SELECT
+                    DATE_FORMAT(DATE(submitted_at), '%Y-%m-%d') AS date,
+                    COUNT(*) AS total,
+                    SUM(CASE WHEN clearance_status IN ('APPROVED', 'APPROVED_WITH_CAUTION') THEN 1 ELSE 0 END) AS approved,
+                    SUM(CASE WHEN clearance_status = 'REJECTED' THEN 1 ELSE 0 END) AS rejected
+                FROM applicants
+                WHERE submitted_at >= DATE_SUB(CURDATE(), INTERVAL 13 DAY)
+                GROUP BY DATE(submitted_at)
+                ORDER BY DATE(submitted_at) ASC
+            ")->fetchAll(PDO::FETCH_ASSOC);
+
             return [
-                'total' => intval($row['total'] ?? 0),
-                'approved' => intval($row['approved'] ?? 0),
-                'rejected' => intval($row['rejected'] ?? 0),
-                'pending' => intval($row['pending'] ?? 0),
-                'under_review' => intval($row['under_review'] ?? 0),
-                'flagged' => intval($row['flagged'] ?? 0)
+                'total' => $total,
+                'approved' => $approved,
+                'rejected' => $rejected,
+                'pending' => $pending,
+                'under_review' => $underReview,
+                'flagged' => $flagged,
+                'submitted_today' => intval($row['submitted_today'] ?? 0),
+                'submitted_last_7_days' => intval($row['submitted_last_7_days'] ?? 0),
+                'average_processing_hours' => round(floatval($row['average_processing_hours'] ?? 0), 2),
+                'approval_rate' => $decided > 0 ? round(($approved / $decided) * 100, 1) : 0.0,
+                'decision_rate' => $total > 0 ? round(($decided / $total) * 100, 1) : 0.0,
+                'fingerprint_completion_rate' => $total > 0 ? round(($fingerprintCompleted / $total) * 100, 1) : 0.0,
+                'status_distribution' => [
+                    ['key' => 'approved', 'label' => 'Approved', 'count' => $approved],
+                    ['key' => 'rejected', 'label' => 'Rejected', 'count' => $rejected],
+                    ['key' => 'pending', 'label' => 'Pending', 'count' => $pending],
+                    ['key' => 'under_review', 'label' => 'Under Review', 'count' => $underReview],
+                    ['key' => 'flagged', 'label' => 'Flagged', 'count' => $flagged]
+                ],
+                'fingerprint_distribution' => array_map(function ($item) {
+                    return [
+                        'status' => (string)($item['status'] ?? 'NOT_STARTED'),
+                        'count' => intval($item['count'] ?? 0)
+                    ];
+                }, $fingerprintRows),
+                'daily_trend' => array_map(function ($item) {
+                    return [
+                        'date' => (string)($item['date'] ?? ''),
+                        'total' => intval($item['total'] ?? 0),
+                        'approved' => intval($item['approved'] ?? 0),
+                        'rejected' => intval($item['rejected'] ?? 0)
+                    ];
+                }, $trendRows),
+                'generated_at' => date('c')
             ];
         } catch (PDOException $e) {
             error_log("Query error: " . $e->getMessage());
-            return [
-                'total' => 0,
-                'approved' => 0,
-                'rejected' => 0,
-                'pending' => 0,
-                'under_review' => 0,
-                'flagged' => 0
-            ];
+            return $emptyStats;
         }
     }
 
