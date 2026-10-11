@@ -671,7 +671,9 @@ class ApplicantInfo {
             $record['privacy_notice_version'] = null;
             $record['privacy_consent_at'] = null;
         }
-        $fingerprints = $isSuperAdmin ? $this->db->getApplicantFingerprints($applicantId) : [];
+        // The history endpoint only needs fingerprint metadata. Returning raw
+        // binary templates can make json_encode fail on otherwise valid records.
+        $fingerprints = $isSuperAdmin ? $this->db->getApplicantFingerprintSummaries($applicantId) : [];
         $matchHistory = $this->db->getMatchHistory($applicantId, $isSuperAdmin);
         $fingerprintNotifications = $isSuperAdmin
             ? array_values(array_filter($matchHistory, function ($match) {

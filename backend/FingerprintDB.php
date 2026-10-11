@@ -1610,6 +1610,41 @@ class FingerprintDB {
     }
 
     /**
+     * Return fingerprint metadata safe for JSON history views.
+     * Binary templates and image payloads are intentionally excluded.
+     */
+    public function getApplicantFingerprintSummaries($applicantId = null) {
+        if (!$this->db) return [];
+
+        try {
+            $sql = "
+                SELECT
+                    id,
+                    applicant_id,
+                    finger_position,
+                    template_format,
+                    quality_score,
+                    submitted_at
+                FROM applicant_fingerprints
+            ";
+
+            if ($applicantId !== null) {
+                $sql .= " WHERE applicant_id = ? ORDER BY submitted_at DESC, id DESC";
+                $stmt = $this->db->prepare($sql);
+                $stmt->execute([intval($applicantId)]);
+            } else {
+                $sql .= " ORDER BY applicant_id, submitted_at DESC, id DESC";
+                $stmt = $this->db->query($sql);
+            }
+
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Applicant fingerprint summary query error: " . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
      * Get applicant demographic records with fingerprint counts (for admin listing).
      */
     public function getApplicants($applicantId = null) {

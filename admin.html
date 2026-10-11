@@ -780,6 +780,114 @@
         .fp-advanced pre { max-height: 340px; overflow: auto; padding: 12px; border-radius: 10px; background: #111827; color: #e5e7eb; white-space: pre-wrap; }
         .comparison-history-empty { padding: 20px; text-align: center; color: #64748b; }
 
+        .application-history-view {
+            --history-navy: #102a56;
+            --history-blue: #165dcc;
+            --history-border: #dce6f2;
+            --history-muted: #65758b;
+            color: #172033;
+        }
+
+        .application-history-hero {
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            justify-content: space-between;
+            gap: 28px;
+            padding: 28px;
+            margin: -16px -16px 22px;
+            color: #fff;
+            background: linear-gradient(125deg, var(--history-navy) 0%, #12499f 62%, #2377df 100%);
+        }
+
+        .application-history-hero::after {
+            content: '';
+            position: absolute;
+            width: 220px;
+            height: 220px;
+            right: -70px;
+            bottom: -120px;
+            border: 32px solid rgba(255, 255, 255, .08);
+            border-radius: 50%;
+        }
+
+        .application-history-person,
+        .application-history-state { position: relative; z-index: 1; }
+        .application-history-kicker { margin-bottom: 7px; color: #c9dcff; font-size: 12px; font-weight: 800; letter-spacing: .11em; text-transform: uppercase; }
+        .application-history-person h3 { margin: 0 0 7px; color: #fff; font-size: clamp(22px, 3vw, 32px); font-weight: 800; }
+        .application-history-id { color: #dbe9ff; font-size: 14px; font-weight: 700; }
+        .application-history-meta { display: flex; flex-wrap: wrap; gap: 9px 18px; margin-top: 17px; color: #edf5ff; font-size: 13px; }
+        .application-history-meta span { display: inline-flex; align-items: center; gap: 7px; }
+        .application-history-state { display: flex; flex-direction: column; align-items: flex-end; justify-content: center; gap: 10px; min-width: 190px; }
+        .application-history-state-label { color: #c9dcff; font-size: 11px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+        .application-history-state .status-badge { background: #fff; box-shadow: 0 7px 22px rgba(8, 31, 70, .24); }
+
+        .application-history-metrics {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+            margin-bottom: 22px;
+        }
+
+        .application-history-metric { padding: 15px 16px; border: 1px solid var(--history-border); border-radius: 14px; background: #fff; box-shadow: 0 4px 15px rgba(30, 55, 90, .055); }
+        .application-history-metric-label { margin-bottom: 7px; color: var(--history-muted); font-size: 11px; font-weight: 800; letter-spacing: .055em; text-transform: uppercase; }
+        .application-history-metric-value { color: var(--history-navy); font-size: 16px; font-weight: 800; overflow-wrap: anywhere; }
+        .application-history-metric-value small { color: var(--history-muted); font-size: 12px; font-weight: 600; }
+
+        .application-history-layout { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(280px, .7fr); gap: 18px; align-items: start; }
+        .application-history-stack { display: grid; gap: 18px; }
+        .application-history-section { border: 1px solid var(--history-border); border-radius: 16px; background: #fff; box-shadow: 0 5px 18px rgba(30, 55, 90, .05); overflow: hidden; }
+        .application-history-section-header { display: flex; align-items: center; gap: 11px; padding: 16px 18px; border-bottom: 1px solid #e8eef6; background: #f8fafd; }
+        .application-history-section-icon { display: inline-grid; place-items: center; width: 34px; height: 34px; border-radius: 10px; color: var(--history-blue); background: #e7f0ff; }
+        .application-history-section-header h6 { margin: 0; color: var(--history-navy); font-size: 15px; font-weight: 800; }
+        .application-history-section-header p { margin: 2px 0 0; color: var(--history-muted); font-size: 12px; }
+        .application-history-section-body { padding: 18px; }
+
+        .application-timeline { position: relative; list-style: none; padding: 0; margin: 0; }
+        .application-timeline::before { content: ''; position: absolute; left: 15px; top: 12px; bottom: 16px; width: 2px; background: #dbe7f6; }
+        .application-timeline-item { position: relative; padding: 0 0 17px 45px; }
+        .application-timeline-item:last-child { padding-bottom: 0; }
+        .application-timeline-marker { position: absolute; z-index: 1; top: 5px; left: 5px; display: grid; place-items: center; width: 22px; height: 22px; border: 3px solid #fff; border-radius: 50%; color: #fff; background: var(--history-blue); box-shadow: 0 0 0 2px #cfe0f8; font-size: 9px; }
+        .application-timeline-marker.is-success { background: #159461; box-shadow: 0 0 0 2px #bde8d6; }
+        .application-timeline-marker.is-warning { background: #d98a00; box-shadow: 0 0 0 2px #f7deb0; }
+        .application-timeline-marker.is-danger { background: #cf3346; box-shadow: 0 0 0 2px #f1c4ca; }
+        .application-timeline-card { padding: 13px 15px; border: 1px solid #e2eaf4; border-radius: 12px; background: #fbfcfe; }
+        .application-timeline-heading { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+        .application-timeline-title { color: #183153; font-size: 13px; font-weight: 800; }
+        .application-timeline-date { flex: 0 0 auto; color: var(--history-muted); font-size: 11px; }
+        .application-timeline-note { margin: 8px 0 0; color: #4c5c70; font-size: 13px; line-height: 1.5; }
+        .application-timeline-actor { display: flex; align-items: center; gap: 6px; margin-top: 9px; color: #7a8798; font-size: 11px; }
+        .history-transitions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 9px; }
+        .history-transition { display: inline-flex; align-items: center; gap: 6px; padding: 5px 8px; border: 1px solid #dce6f2; border-radius: 999px; color: #354962; background: #fff; font-size: 11px; font-weight: 700; }
+        .history-transition-label { color: #77869a; font-weight: 600; }
+
+        .history-detail-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 13px; }
+        .history-detail-item { min-width: 0; padding-bottom: 11px; border-bottom: 1px solid #edf1f6; }
+        .history-detail-item:last-child, .history-detail-item:nth-last-child(2) { padding-bottom: 0; border-bottom: 0; }
+        .history-detail-label { display: block; margin-bottom: 4px; color: var(--history-muted); font-size: 11px; font-weight: 700; text-transform: uppercase; }
+        .history-detail-value { display: block; color: #253a56; font-size: 13px; font-weight: 700; overflow-wrap: anywhere; }
+        .history-empty-state { padding: 28px 16px; text-align: center; color: var(--history-muted); }
+        .history-empty-state i { display: block; margin-bottom: 8px; color: #9db3cf; font-size: 28px; }
+        .application-history-view .restricted-note { margin: 0 0 18px; }
+        .application-history-view .table { margin-bottom: 0; font-size: 12px; }
+        .application-history-view .table thead th { white-space: nowrap; color: #52657c; background: #f8fafc; }
+        .application-history-view .review-panel { margin-top: 18px; }
+
+        @media (max-width: 900px) {
+            .application-history-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .application-history-layout { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 576px) {
+            .application-history-hero { flex-direction: column; padding: 22px; }
+            .application-history-state { align-items: flex-start; min-width: 0; }
+            .application-history-metrics { grid-template-columns: 1fr; }
+            .history-detail-grid { grid-template-columns: 1fr; }
+            .history-detail-item:nth-last-child(2) { padding-bottom: 11px; border-bottom: 1px solid #edf1f6; }
+            .application-timeline-heading { display: block; }
+            .application-timeline-date { display: block; margin-top: 3px; }
+        }
+
         @media (max-width: 1199px) {
             .admin-hero {
                 grid-template-columns: 1fr;
@@ -1298,8 +1406,8 @@
         </div>
     </div>
 
-    <div class="modal fade" id="recordViewModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal fade" id="recordViewModal" tabindex="-1" aria-labelledby="recordViewModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="recordViewModalLabel">Record Details</h5>
@@ -1307,6 +1415,9 @@
                 </div>
                 <div class="modal-body" id="recordViewContent">
                     Loading...
+                </div>
+                <div class="modal-footer" id="recordViewModalFooter">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
@@ -3256,7 +3367,104 @@
             }
         };
 
+        function formatApplicationHistoryDate(value) {
+            const rawValue = String(value || '').trim();
+            if (!rawValue) return 'Not recorded';
+
+            const normalizedValue = /^\d{4}-\d{2}-\d{2}\s/.test(rawValue)
+                ? rawValue.replace(' ', 'T')
+                : rawValue;
+            const date = new Date(normalizedValue);
+            if (Number.isNaN(date.getTime())) return rawValue;
+
+            return new Intl.DateTimeFormat('en-PH', {
+                dateStyle: 'medium',
+                timeStyle: 'short'
+            }).format(date);
+        }
+
+        function getApplicationHistoryEvent(changeType, entry = {}) {
+            const type = String(changeType || '').toUpperCase();
+            const status = String(entry.new_status || '').toUpperCase();
+            const fingerprintStatus = String(entry.new_fingerprint_status || '').toUpperCase();
+
+            if (type.includes('SUBMIT')) return { label: 'Application submitted', icon: 'bi-send-check', tone: '' };
+            if (type.includes('FINGERPRINT')) return { label: type.includes('CAPTURE') ? 'Fingerprint captured' : 'Fingerprint status updated', icon: 'bi-fingerprint', tone: fingerprintStatus.includes('MATCH') ? 'is-warning' : 'is-success' };
+            if (status === 'APPROVED' || type.includes('APPROVE')) return { label: 'Application approved', icon: 'bi-check-lg', tone: 'is-success' };
+            if (status === 'REJECTED' || type.includes('REJECT')) return { label: 'Application rejected', icon: 'bi-x-lg', tone: 'is-danger' };
+            if (type.includes('REVIEW') || status.includes('REVIEW')) return { label: 'Application reviewed', icon: 'bi-search', tone: 'is-warning' };
+            if (type.includes('STATUS')) return { label: 'Application status updated', icon: 'bi-file-earmark-check', tone: '' };
+            return { label: formatStatusLabel(changeType || 'Application updated'), icon: 'bi-arrow-repeat', tone: '' };
+        }
+
+        function renderHistoryTransition(label, previousValue, nextValue) {
+            const previous = String(previousValue || '').trim();
+            const next = String(nextValue || '').trim();
+            if (!previous && !next) return '';
+
+            const valueHtml = previous && next && previous !== next
+                ? `${escapeHtml(formatStatusLabel(previous))} <i class="bi bi-arrow-right" aria-hidden="true"></i> ${escapeHtml(formatStatusLabel(next))}`
+                : escapeHtml(formatStatusLabel(next || previous));
+            return `<span class="history-transition"><span class="history-transition-label">${escapeHtml(label)}:</span> ${valueHtml}</span>`;
+        }
+
+        function renderApplicationTimeline(entries, record) {
+            if (!entries.length) {
+                return `
+                    <div class="history-empty-state">
+                        <i class="bi bi-clock-history" aria-hidden="true"></i>
+                        No activity has been recorded for this application yet.
+                    </div>
+                `;
+            }
+
+            return `
+                <ol class="application-timeline" aria-label="Application activity timeline">
+                    ${entries.map((entry) => {
+                        const event = getApplicationHistoryEvent(entry.change_type, entry);
+                        const statusTransition = renderHistoryTransition(
+                            'Application',
+                            entry.previous_status || entry.old_status,
+                            entry.new_status
+                        );
+                        const fingerprintTransition = renderHistoryTransition(
+                            'Fingerprint',
+                            entry.previous_fingerprint_status || entry.old_fingerprint_status,
+                            entry.new_fingerprint_status
+                        );
+                        const transitions = `${statusTransition}${fingerprintTransition}`;
+                        const actor = entry.actor_name || entry.actor_role || 'System';
+                        return `
+                            <li class="application-timeline-item">
+                                <span class="application-timeline-marker ${event.tone}" aria-hidden="true"><i class="bi ${event.icon}"></i></span>
+                                <div class="application-timeline-card">
+                                    <div class="application-timeline-heading">
+                                        <span class="application-timeline-title">${escapeHtml(event.label)}</span>
+                                        <time class="application-timeline-date">${escapeHtml(formatApplicationHistoryDate(entry.changed_at))}</time>
+                                    </div>
+                                    ${transitions ? `<div class="history-transitions">${transitions}</div>` : ''}
+                                    ${entry.note ? `<p class="application-timeline-note">${escapeHtml(entry.note)}</p>` : ''}
+                                    <div class="application-timeline-actor"><i class="bi bi-person-circle" aria-hidden="true"></i> ${escapeHtml(actor)}</div>
+                                </div>
+                            </li>
+                        `;
+                    }).join('')}
+                </ol>
+            `;
+        }
+
         viewApplicant = async function viewApplicantOverride(applicantId) {
+            const modalTitle = document.getElementById('recordViewModalLabel');
+            const modalContent = document.getElementById('recordViewContent');
+            modalTitle.textContent = `Application History #${applicantId}`;
+            modalContent.innerHTML = `
+                <div class="d-flex flex-column align-items-center justify-content-center py-5 text-muted" role="status" aria-live="polite">
+                    <div class="spinner-border text-primary mb-3" aria-hidden="true"></div>
+                    Loading application history…
+                </div>
+            `;
+            recordModal.show();
+
             try {
                 const data = await requestJson('backend/applicant_info.php?action=get', {
                     method: 'POST',
@@ -3265,157 +3473,112 @@
                 });
 
                 const record = data.record || {};
-                const reviewSummary = data.review_summary || {};
-                const restrictedHtml = data.biometric_access === 'restricted'
-                    ? '<div class="restricted-note"><strong>Restricted history view.</strong> Admins can review status history and update activity, but full biometric and match detail disclosure is limited to super admins.</div>'
-                    : '';
-
-                const fingerprintSummaryHtml = `
-                    <div class="row mb-3">
-                        <div class="col-md-6"><strong>Application Status:</strong> <span class="status-${getStatusClass(record.clearance_status)}">${escapeHtml(formatStatusLabel(record.clearance_status))}</span></div>
-                        <div class="col-md-6"><strong>Fingerprint Verification:</strong> ${escapeHtml(formatStatusLabel(record.fingerprint_verification_status || 'NOT_STARTED'))}</div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-md-6"><strong>Submitted:</strong> ${escapeHtml(record.submitted_at || '-')}</div>
-                        <div class="col-md-6"><strong>Last Updated:</strong> ${escapeHtml(record.last_updated_at || '-')}</div>
-                    </div>
-                `;
-
-                const fingerprintNotifications = Array.isArray(data.fingerprint_notifications)
-                    ? data.fingerprint_notifications
+                const updateLogs = Array.isArray(data.update_logs)
+                    ? data.update_logs.slice().sort((left, right) => {
+                        const leftTime = new Date(String(left.changed_at || '').replace(' ', 'T')).getTime() || 0;
+                        const rightTime = new Date(String(right.changed_at || '').replace(' ', 'T')).getTime() || 0;
+                        return leftTime - rightTime || Number(left.id || 0) - Number(right.id || 0);
+                    })
                     : [];
-                const notificationHtml = data.biometric_access === 'full'
-                    ? `
-                        <h6>Fingerprint Match Notifications</h6>
-                        <div class="table-responsive mb-3">
-                            <table class="table table-sm table-bordered align-middle">
-                                <thead><tr><th>Result</th><th>Matched Finger</th><th>Matched Record</th><th>Comparison ID</th><th>Notification</th><th>Time</th><th>Action</th></tr></thead>
-                                <tbody>
-                                    ${fingerprintNotifications.length
-                                        ? fingerprintNotifications.map((item) => {
-                                            const encodedComparisonId = encodeURIComponent(String(item.comparison_id || ''));
-                                            const notificationId = Number(item.id);
-                                            return `
-                                                <tr>
-                                                    <td><span class="badge bg-danger">${escapeHtml(item.notification_final_result || 'MATCH')}</span></td>
-                                                    <td>${escapeHtml(formatStatusLabel(item.finger_matched || '-'))}</td>
-                                                    <td>${escapeHtml(item.criminal_name || item.criminal_id || '-')}</td>
-                                                    <td class="text-break"><code>${escapeHtml(item.comparison_id || '-')}</code></td>
-                                                    <td>${escapeHtml(formatStatusLabel(item.notification_status || 'none'))}</td>
-                                                    <td>${escapeHtml(item.matched_at || '-')}</td>
-                                                    <td>
-                                                        ${item.comparison_id
-                                                            ? `<button type="button" class="btn btn-view btn-sm" onclick="openApplicationFingerprintComparison('${encodedComparisonId}', ${Number.isFinite(notificationId) ? notificationId : 'null'})">View Fingerprint Result</button>`
-                                                            : '<span class="text-muted">Unavailable</span>'}
-                                                    </td>
-                                                </tr>
-                                            `;
-                                        }).join('')
-                                        : '<tr><td colspan="7" class="text-center text-muted">No fingerprint match notifications for this application</td></tr>'
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
-                    `
+                const fingerprints = Array.isArray(data.fingerprints) ? data.fingerprints : [];
+                const matchHistory = Array.isArray(data.match_history) ? data.match_history : [];
+                const fingerprintNotifications = Array.isArray(data.fingerprint_notifications) ? data.fingerprint_notifications : [];
+                const reviewSummary = data.review_summary || {};
+                const isFullBiometricView = data.biometric_access === 'full';
+                const positiveMatchCount = matchHistory.filter((item) => Number(item.is_match) === 1).length;
+
+                const restrictedHtml = !isFullBiometricView
+                    ? '<div class="restricted-note"><strong>Restricted history view.</strong> Full biometric templates and match identities are available only to super admins.</div>'
                     : '';
 
-                const historyHtml = data.biometric_access === 'full'
+                const notificationRows = fingerprintNotifications.length
+                    ? fingerprintNotifications.map((item) => {
+                        const encodedComparisonId = encodeURIComponent(String(item.comparison_id || ''));
+                        const notificationId = Number(item.id);
+                        return `
+                            <tr>
+                                <td><span class="badge bg-danger">${escapeHtml(item.notification_final_result || 'MATCH')}</span></td>
+                                <td>${escapeHtml(formatStatusLabel(item.finger_matched || '-'))}</td>
+                                <td>${escapeHtml(item.criminal_name || item.criminal_id || '-')}</td>
+                                <td>${escapeHtml(formatStatusLabel(item.notification_status || 'NEW'))}</td>
+                                <td>${escapeHtml(formatApplicationHistoryDate(item.matched_at))}</td>
+                                <td>${item.comparison_id
+                                    ? `<button type="button" class="btn btn-view btn-sm" onclick="openApplicationFingerprintComparison('${encodedComparisonId}', ${Number.isFinite(notificationId) ? notificationId : 'null'})">View Fingerprint Result</button>`
+                                    : '<span class="text-muted">Unavailable</span>'}
+                                </td>
+                            </tr>
+                        `;
+                    }).join('')
+                    : '<tr><td colspan="6" class="text-center text-muted py-3">No fingerprint match notifications</td></tr>';
+
+                const fingerprintRows = fingerprints.length
+                    ? fingerprints.map((fp) => `
+                        <tr>
+                            <td>${escapeHtml(formatStatusLabel(fp.finger_position || '-'))}</td>
+                            <td>${escapeHtml(fp.template_format || 'ISO')}</td>
+                            <td>${escapeHtml(fp.quality_score ?? '-')}</td>
+                            <td>${escapeHtml(formatApplicationHistoryDate(fp.submitted_at))}</td>
+                        </tr>
+                    `).join('')
+                    : '<tr><td colspan="4" class="text-center text-muted py-3">No fingerprints stored</td></tr>';
+
+                const matchRows = matchHistory.length
+                    ? matchHistory.map((item) => `
+                        <tr>
+                            <td>${escapeHtml(item.criminal_name || item.criminal_id || '-')}</td>
+                            <td>${escapeHtml(item.match_score ?? 0)}</td>
+                            <td><span class="badge ${Number(item.is_match) === 1 ? 'bg-danger' : 'bg-success'}">${Number(item.is_match) === 1 ? 'MATCH' : 'NO MATCH'}</span></td>
+                            <td>${escapeHtml(formatStatusLabel(item.review_status || 'CLEAR'))}${item.review_outcome ? ` / ${escapeHtml(formatStatusLabel(item.review_outcome))}` : ''}</td>
+                            <td>${escapeHtml(formatApplicationHistoryDate(item.matched_at))}</td>
+                        </tr>
+                    `).join('')
+                    : '<tr><td colspan="5" class="text-center text-muted py-3">No match history</td></tr>';
+
+                const biometricHtml = isFullBiometricView
                     ? `
-                        <h6>Fingerprint Templates</h6>
-                        <div class="table-responsive mb-3">
-                            <table class="table table-sm table-bordered">
-                                <thead><tr><th>Finger</th><th>Format</th><th>Quality</th><th>Submitted At</th></tr></thead>
-                                <tbody>
-                                    ${(data.fingerprints || []).length
-                                        ? data.fingerprints.map((fp) => `
-                                            <tr>
-                                                <td>${escapeHtml(fp.finger_position || '-')}</td>
-                                                <td>${escapeHtml(fp.template_format || 'ISO')}</td>
-                                                <td>${escapeHtml(fp.quality_score ?? 0)}</td>
-                                                <td>${escapeHtml(fp.submitted_at || '-')}</td>
-                                            </tr>
-                                        `).join('')
-                                        : '<tr><td colspan="4" class="text-center text-muted">No fingerprints stored</td></tr>'
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
-                        <h6>Fingerprint Match History</h6>
-                        <div class="table-responsive mb-3">
-                            <table class="table table-sm table-bordered">
-                                <thead><tr><th>Matched Record</th><th>Score</th><th>Result</th><th>Review</th><th>Date</th></tr></thead>
-                                <tbody>
-                                    ${(data.match_history || []).length
-                                        ? data.match_history.map((item) => `
-                                            <tr>
-                                                <td>${escapeHtml(item.criminal_name || item.criminal_id || '-')}</td>
-                                                <td>${escapeHtml(item.match_score ?? 0)}</td>
-                                                <td>${item.is_match == 1 ? 'MATCH' : 'NO MATCH'}</td>
-                                                <td>${escapeHtml(formatStatusLabel(item.review_status || 'CLEAR'))}${item.review_outcome ? ` / ${escapeHtml(formatStatusLabel(item.review_outcome))}` : ''}</td>
-                                                <td>${escapeHtml(item.matched_at || '-')}</td>
-                                            </tr>
-                                        `).join('')
-                                        : '<tr><td colspan="5" class="text-center text-muted">No match history</td></tr>'
-                                    }
-                                </tbody>
-                            </table>
+                        <div class="application-history-section">
+                            <div class="application-history-section-header">
+                                <span class="application-history-section-icon"><i class="bi bi-fingerprint"></i></span>
+                                <div><h6>Biometric history</h6><p>Stored captures, comparisons, and match alerts</p></div>
+                            </div>
+                            <div class="application-history-section-body">
+                                <h6 class="mb-2">Fingerprint captures</h6>
+                                <div class="table-responsive mb-4">
+                                    <table class="table table-sm align-middle"><thead><tr><th>Finger</th><th>Format</th><th>Quality</th><th>Captured</th></tr></thead><tbody>${fingerprintRows}</tbody></table>
+                                </div>
+                                <h6 class="mb-2">Comparison history</h6>
+                                <div class="table-responsive mb-4">
+                                    <table class="table table-sm align-middle"><thead><tr><th>Matched record</th><th>Score</th><th>Result</th><th>Review</th><th>Date</th></tr></thead><tbody>${matchRows}</tbody></table>
+                                </div>
+                                <h6 class="mb-2">Fingerprint Match Notifications</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-sm align-middle"><thead><tr><th>Result</th><th>Finger</th><th>Matched record</th><th>Status</th><th>Date</th><th>Action</th></tr></thead><tbody>${notificationRows}</tbody></table>
+                                </div>
+                            </div>
                         </div>
                     `
                     : `
-                        <h6>Fingerprint Review Summary</h6>
-                        <div class="table-responsive mb-3">
-                            <table class="table table-sm table-bordered">
-                                <thead><tr><th>Pending Reviews</th><th>Positive Matches</th><th>Best Score</th></tr></thead>
-                                <tbody>
-                                    <tr>
-                                        <td>${escapeHtml(reviewSummary.pending_reviews ?? 0)}</td>
-                                        <td>${escapeHtml(reviewSummary.positive_matches ?? 0)}</td>
-                                        <td>${escapeHtml(reviewSummary.best_score ?? 0)}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                        <div class="application-history-section">
+                            <div class="application-history-section-header">
+                                <span class="application-history-section-icon"><i class="bi bi-shield-lock"></i></span>
+                                <div><h6>Fingerprint review summary</h6><p>Non-sensitive verification overview</p></div>
+                            </div>
+                            <div class="application-history-section-body">
+                                <div class="history-detail-grid">
+                                    <div class="history-detail-item"><span class="history-detail-label">Pending reviews</span><span class="history-detail-value">${escapeHtml(reviewSummary.pending_reviews ?? 0)}</span></div>
+                                    <div class="history-detail-item"><span class="history-detail-label">Positive matches</span><span class="history-detail-value">${escapeHtml(reviewSummary.positive_matches ?? 0)}</span></div>
+                                    <div class="history-detail-item"><span class="history-detail-label">Best score</span><span class="history-detail-value">${escapeHtml(reviewSummary.best_score ?? 0)}</span></div>
+                                </div>
+                            </div>
                         </div>
                     `;
-
-                const updateLogsHtml = `
-                    <h6>Application Update Log</h6>
-                    <div class="table-responsive">
-                        <table class="table table-sm table-bordered">
-                            <thead>
-                                <tr>
-                                    <th>When</th>
-                                    <th>Change</th>
-                                    <th>Status</th>
-                                    <th>Fingerprint</th>
-                                    <th>Actor</th>
-                                    <th>Note</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${(data.update_logs || []).length
-                                    ? data.update_logs.map((entry) => `
-                                        <tr>
-                                            <td>${escapeHtml(entry.changed_at || '-')}</td>
-                                            <td>${escapeHtml(formatStatusLabel(entry.change_type || '-'))}</td>
-                                            <td>${escapeHtml(formatStatusLabel(entry.new_status || record.clearance_status || '-'))}</td>
-                                            <td>${escapeHtml(formatStatusLabel(entry.new_fingerprint_status || record.fingerprint_verification_status || '-'))}</td>
-                                            <td>${escapeHtml(entry.actor_name || entry.actor_role || '-')}</td>
-                                            <td>${escapeHtml(entry.note || '-')}</td>
-                                        </tr>
-                                    `).join('')
-                                    : '<tr><td colspan="6" class="text-center text-muted">No update log entries recorded yet</td></tr>'
-                                }
-                            </tbody>
-                        </table>
-                    </div>
-                `;
 
                 const reviewPanel = data.review_actions?.can_review && data.review_actions?.requires_review
                     ? `
                         <div class="review-panel">
-                            <h6 style="margin-bottom: 10px;">Super Admin Match Review</h6>
-                            <p style="font-size: 13px; color: #64748b;">Manual confirmation is required before any final disposition is applied to this matched applicant.</p>
-                            <label class="form-label" for="reviewNotes">Review Notes</label>
+                            <h6 class="mb-2">Super Admin Match Review</h6>
+                            <p class="small text-muted">Manual confirmation is required before any final disposition is applied to this matched applicant.</p>
+                            <label class="form-label" for="reviewNotes">Review notes</label>
                             <textarea id="reviewNotes" class="form-control" rows="3" placeholder="Add verification notes, justification, or instructions."></textarea>
                             <div class="d-flex gap-2 flex-wrap mt-3">
                                 <button type="button" class="btn btn-success btn-sm" onclick="submitReviewDecision('approve', ${applicantId})">Approve</button>
@@ -3426,27 +3589,75 @@
                     `
                     : '';
 
-                document.getElementById('recordViewModalLabel').textContent = `Application History #${applicantId}`;
-                document.getElementById('recordViewContent').innerHTML = `
-                    <div class="row mb-3">
-                        <div class="col-md-6"><strong>Name:</strong> ${escapeHtml(record.name || 'N/A')}</div>
-                        <div class="col-md-3"><strong>Age:</strong> ${escapeHtml(record.age ?? 'N/A')}</div>
-                        <div class="col-md-3"><strong>Sex:</strong> ${escapeHtml(formatSex(record.sex))}</div>
+                modalContent.innerHTML = `
+                    <div class="application-history-view">
+                        <section class="application-history-hero" aria-label="Applicant summary">
+                            <div class="application-history-person">
+                                <div class="application-history-kicker">Application record</div>
+                                <h3>${escapeHtml(record.name || 'Unnamed applicant')}</h3>
+                                <div class="application-history-id">Application #${escapeHtml(record.id || applicantId)}</div>
+                                <div class="application-history-meta">
+                                    <span><i class="bi bi-person-vcard" aria-hidden="true"></i>${escapeHtml(record.age ?? 'N/A')} years · ${escapeHtml(formatSex(record.sex))}</span>
+                                    <span><i class="bi bi-envelope" aria-hidden="true"></i>${escapeHtml(record.email || 'Email restricted')}</span>
+                                </div>
+                            </div>
+                            <div class="application-history-state">
+                                <span class="application-history-state-label">Current decision</span>
+                                <span class="status-badge status-${getStatusClass(record.clearance_status)}">${escapeHtml(formatStatusLabel(record.clearance_status))}</span>
+                            </div>
+                        </section>
+
+                        ${restrictedHtml}
+
+                        <section class="application-history-metrics" aria-label="Application overview">
+                            <div class="application-history-metric"><div class="application-history-metric-label">Fingerprint status</div><div class="application-history-metric-value">${escapeHtml(formatStatusLabel(record.fingerprint_verification_status || 'NOT_STARTED'))}</div></div>
+                            <div class="application-history-metric"><div class="application-history-metric-label">Submitted</div><div class="application-history-metric-value">${escapeHtml(formatApplicationHistoryDate(record.submitted_at))}</div></div>
+                            <div class="application-history-metric"><div class="application-history-metric-label">Last updated</div><div class="application-history-metric-value">${escapeHtml(formatApplicationHistoryDate(record.last_updated_at))}</div></div>
+                            <div class="application-history-metric"><div class="application-history-metric-label">Activity</div><div class="application-history-metric-value">${updateLogs.length} <small>updates · ${isFullBiometricView ? positiveMatchCount : escapeHtml(reviewSummary.positive_matches ?? 0)} matches</small></div></div>
+                        </section>
+
+                        <div class="application-history-layout">
+                            <div class="application-history-stack">
+                                <div class="application-history-section">
+                                    <div class="application-history-section-header">
+                                        <span class="application-history-section-icon"><i class="bi bi-clock-history"></i></span>
+                                        <div><h6>Application activity</h6><p>Complete history from submission to the latest decision</p></div>
+                                    </div>
+                                    <div class="application-history-section-body">${renderApplicationTimeline(updateLogs, record)}</div>
+                                </div>
+                                ${biometricHtml}
+                            </div>
+
+                            <aside class="application-history-stack" aria-label="Application details">
+                                <div class="application-history-section">
+                                    <div class="application-history-section-header">
+                                        <span class="application-history-section-icon"><i class="bi bi-file-earmark-person"></i></span>
+                                        <div><h6>Record details</h6><p>Applicant and consent information</p></div>
+                                    </div>
+                                    <div class="application-history-section-body">
+                                        <div class="history-detail-grid">
+                                            <div class="history-detail-item"><span class="history-detail-label">Applicant ID</span><span class="history-detail-value">#${escapeHtml(record.id || applicantId)}</span></div>
+                                            <div class="history-detail-item"><span class="history-detail-label">Age</span><span class="history-detail-value">${escapeHtml(record.age ?? 'N/A')}</span></div>
+                                            <div class="history-detail-item"><span class="history-detail-label">Sex</span><span class="history-detail-value">${escapeHtml(formatSex(record.sex))}</span></div>
+                                            <div class="history-detail-item"><span class="history-detail-label">Consent version</span><span class="history-detail-value">${escapeHtml(record.privacy_notice_version || 'Restricted')}</span></div>
+                                            <div class="history-detail-item"><span class="history-detail-label">Consent recorded</span><span class="history-detail-value">${escapeHtml(formatApplicationHistoryDate(record.privacy_consent_at))}</span></div>
+                                            <div class="history-detail-item"><span class="history-detail-label">Stored fingerprints</span><span class="history-detail-value">${isFullBiometricView ? fingerprints.length : 'Restricted'}</span></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </aside>
+                        </div>
+                        ${reviewPanel}
                     </div>
-                    <div class="row mb-3">
-                        <div class="col-md-6"><strong>Email:</strong> ${escapeHtml(record.email || '-')}</div>
-                        <div class="col-md-6"><strong>Consent Version:</strong> ${escapeHtml(record.privacy_notice_version || '-')}</div>
-                    </div>
-                    ${restrictedHtml}
-                    ${fingerprintSummaryHtml}
-                    ${notificationHtml}
-                    ${historyHtml}
-                    ${updateLogsHtml}
-                    ${reviewPanel}
                 `;
-                recordModal.show();
             } catch (error) {
-                alert('View failed: ' + error.message);
+                modalContent.innerHTML = `
+                    <div class="history-empty-state text-danger" role="alert">
+                        <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+                        Unable to load this application history.<br>
+                        <small>${escapeHtml(error.message)}</small>
+                    </div>
+                `;
             }
         };
 
