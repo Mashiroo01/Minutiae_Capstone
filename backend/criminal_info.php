@@ -13,10 +13,16 @@ class CriminalInfo {
     private $db;
     private $matcher;
     private $afisProfileCache = [];
+    private $afisBaseUrl;
     
     public function __construct($pdo = null) {
+        $config = require __DIR__ . '/config.php';
         $this->db = new FingerprintDB($pdo);
         $this->matcher = new Bozorth3Matcher();
+        $this->afisBaseUrl = rtrim(
+            $config['services']['fingerprint_service_url'] ?? 'http://localhost:9000',
+            '/'
+        );
     }
 
     private function normalizeFingerprintImage($value) {
@@ -81,7 +87,7 @@ class CriminalInfo {
             ]
         ]);
 
-        $response = @file_get_contents('http://localhost:9000/afis/from-image', false, $context);
+        $response = @file_get_contents($this->afisBaseUrl . '/afis/from-image', false, $context);
         if ($response === false) {
             $result = ['success' => false, 'error' => 'Fingerprint image conversion is unavailable. Please ensure the fingerprint service is running.'];
             $this->afisProfileCache[$cacheKey] = $result;

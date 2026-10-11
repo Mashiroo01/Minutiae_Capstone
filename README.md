@@ -19,16 +19,26 @@ The Minutiae system provides:
 ## System Architecture
 
 ```
-├── Bozorth3Matcher.php      - Bozorth3 algorithm wrapper
-├── FingerprintDB.php         - Database abstraction layer
-├── criminal_info.php         - Criminal fingerprint management
-├── applicant_info.php        - Applicant fingerprint handling
-├── criminal_record.php       - Main REST API handler
-├── config.php                - System configuration
-└── temp/                     - Temporary files for processing
+├── backend/                  - PHP APIs, authentication, and database access
+├── config/                   - Shared matcher configuration
+├── matchers/                 - Bozorth3, SourceAFIS, OpenAFIS, MCC, and Jiang adapters
+├── scripts/                  - Setup, calibration, diagnostics, and scanner launchers
+├── test/                     - Automated regression and integration tests
+├── docs/                     - Setup, workflow, and scanner documentation
+├── reports/                  - Calibration results and archived benchmarks
+├── *.html / *.js             - Operator, administrator, and test interfaces
+├── compose.yaml              - MariaDB and web application deployment
+└── temp/                     - Re-creatable runtime files (ignored by Git)
 ```
 
+See [docs/README.md](docs/README.md) for the documentation index and
+[DOCKER.md](DOCKER.md) for the current local deployment instructions.
+
 ## Installation
+
+For a containerized local setup, see [DOCKER.md](DOCKER.md). The short version
+is to copy `.env.example` to `.env`, set both passwords, and run
+`docker compose up --build -d`.
 
 ### 1. Install NIST NBIS Tools (Including Bozorth3)
 

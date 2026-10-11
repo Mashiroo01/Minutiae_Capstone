@@ -722,6 +722,64 @@
             border-top: 1px solid rgba(0, 56, 168, 0.08);
         }
 
+        .fp-result { color: #172033; }
+        .fp-result-header, .fp-final, .fp-primary {
+            border-radius: 18px;
+            padding: 18px;
+            margin-bottom: 16px;
+        }
+        .fp-result-header {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            background: #eef4ff;
+            color: #12356f;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+        }
+        .fp-quality { margin: 12px 0 16px; font-size: 16px; }
+        .fp-image-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .fp-image-grid figure { margin: 0; padding: 14px; background: #f8fafc; border: 1px solid #dce5f3; border-radius: 16px; }
+        .fp-image-grid figcaption { font-weight: 800; margin-bottom: 10px; }
+        .fp-image-grid img, .fp-image-unavailable { width: 100%; aspect-ratio: 1; object-fit: contain; background: #fff; border-radius: 12px; }
+        .fp-image-unavailable { display: grid; place-items: center; color: #64748b; }
+        .fp-primary { margin-top: 18px; background: linear-gradient(135deg, #07285f, #0038a8); color: #fff; text-align: center; }
+        .fp-primary > span, .fp-final > span { display: block; font-size: 12px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+        .fp-primary h4 { margin: 5px 0; }
+        .fp-primary-decision { font-size: 26px; font-weight: 900; }
+        .fp-primary-percentage { font-size: 18px; }
+        .fp-supporting { padding: 18px; border: 1px solid #dce5f3; border-radius: 18px; margin-bottom: 16px; }
+        .fp-matcher-row { display: grid; grid-template-columns: minmax(120px, 1fr) auto 100px; gap: 12px; align-items: center; padding: 10px 0; border-bottom: 1px solid #edf1f7; }
+        .fp-decision { font-size: 12px; font-weight: 900; padding: 5px 9px; border-radius: 999px; }
+        .fp-match { color: #087443; background: #dcfce7; }
+        .fp-no-match { color: #9f1239; background: #ffe4e6; }
+        .fp-review { color: #92400e; background: #fef3c7; }
+        .fp-agreement { margin-top: 14px; }
+        .fp-final { background: #f5f7fb; border: 2px solid #0038a8; text-align: center; }
+        .fp-final strong { display: block; color: #0038a8; font-size: 28px; }
+        .fp-final p { margin: 8px 0 0; color: #58657a; }
+        .fp-visualization-details, .fp-advanced, .fp-developer-diagnostics { margin-top: 14px; border: 1px solid #dce5f3; border-radius: 14px; overflow: hidden; }
+        .fp-visualization-details > summary, .fp-advanced > summary, .fp-developer-diagnostics > summary { cursor: pointer; padding: 14px 16px; font-weight: 800; background: #f8fafc; }
+        .fp-visualization { padding: 14px; }
+        .fp-visualization svg { display: block; width: 100%; height: auto; background: #e8edf5; border-radius: 14px; }
+        .fp-visualization svg text { font: 700 18px Arial, sans-serif; fill: #172033; }
+        .fp-correspondence line { stroke: #f59e0b; stroke-width: 2; opacity: .72; }
+        .fp-ridge-ending { fill: #0038a8; stroke: #fff; stroke-width: 2; }
+        .fp-bifurcation { fill: #ce1126; stroke: #fff; stroke-width: 2; }
+        .fp-unknown-minutia { fill: #64748b; stroke: #fff; stroke-width: 2; }
+        .fp-visualization-legend { display: flex; gap: 18px; margin-bottom: 10px; }
+        .fp-legend-circle { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #0038a8; }
+        .fp-legend-triangle { display: inline-block; width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-bottom: 11px solid #ce1126; }
+        .fp-visualization-note { margin: 10px 0 0; color: #64748b; }
+        .fp-advanced-content { padding: 16px; }
+        .fp-technical-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; }
+        .fp-technical-card { border: 1px solid #dce5f3; border-radius: 12px; padding: 12px; }
+        .fp-technical-card dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; margin: 0; }
+        .fp-technical-card dt { color: #64748b; }
+        .fp-technical-card dd { margin: 0; overflow-wrap: anywhere; }
+        .fp-advanced pre { max-height: 340px; overflow: auto; padding: 12px; border-radius: 10px; background: #111827; color: #e5e7eb; white-space: pre-wrap; }
+        .comparison-history-empty { padding: 20px; text-align: center; color: #64748b; }
+
         @media (max-width: 1199px) {
             .admin-hero {
                 grid-template-columns: 1fr;
@@ -789,6 +847,10 @@
             .filter-grid {
                 grid-template-columns: 1fr;
             }
+
+            .fp-image-grid { grid-template-columns: 1fr; }
+            .fp-matcher-row { grid-template-columns: 1fr auto; }
+            .fp-matcher-row > :last-child { grid-column: 1 / -1; }
         }
     </style>
 </head>
@@ -802,6 +864,11 @@
             <div class="d-flex align-items-center gap-2">
                 <span id="authStatusText" class="top-status">Police Clearance System</span>
                 <span id="roleBadge" class="role-badge" style="display: none;"></span>
+                <button id="fingerprintNotificationButton" type="button" class="btn btn-sm btn-outline-light position-relative" style="display: none;" aria-label="Fingerprint match notifications">
+                    <i class="bi bi-bell-fill"></i>
+                    <span>Notifications</span>
+                    <span id="fingerprintNotificationBadge" class="badge rounded-pill bg-danger">0</span>
+                </button>
                 <button id="logoutButton" type="button" class="btn btn-sm logout-button" style="display: none;">
                     <i class="bi bi-box-arrow-right"></i> Logout
                 </button>
@@ -889,7 +956,7 @@
 
             <div class="alert system-banner mt-4">
                 <i class="bi bi-info-circle"></i>
-                <strong>System Ready:</strong> Bozorth3 fingerprint matching is operational. Last system check at <span id="lastCheck">--:--</span>
+                <strong>System Ready:</strong> Modified Bozorth3 fingerprint matching is operational. Last system check at <span id="lastCheck">--:--</span>
             </div>
         </div>
 
@@ -963,6 +1030,26 @@
                                         <i class="bi bi-inbox"></i> No applications found
                                     </td>
                                 </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-4" id="fingerprintComparisonHistoryCard">
+                <div class="card-header d-flex justify-content-between align-items-center gap-3">
+                    <div>
+                        <strong>Fingerprint Comparison History</strong>
+                        <div class="small text-muted">Stored research/demo results from the shared five-matcher pipeline.</div>
+                    </div>
+                    <button type="button" class="btn btn-outline-primary btn-sm" id="refreshComparisonHistoryButton">Refresh</button>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead><tr><th>Date/Time</th><th>Comparison ID</th><th>Fingerprint Quality</th><th>Modified Bozorth3 Result</th><th>Matcher Agreement</th><th>Final Result</th><th>Action</th></tr></thead>
+                            <tbody id="fingerprintComparisonHistoryBody">
+                                <tr><td colspan="7" class="comparison-history-empty">Comparison history is available to authorized admins.</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -1174,7 +1261,7 @@
                         <div class="card-body">
                             <div style="padding: 15px;">
                                 <div class="system-info-item">
-                                    <strong>Bozorth3 Status:</strong>
+                                    <strong>Modified Bozorth3 Status:</strong>
                                     <span id="bozorth3Status" class="badge bg-success">Operational</span>
                                 </div>
                                 <div class="system-info-item">
@@ -1220,6 +1307,24 @@
                 </div>
                 <div class="modal-body" id="recordViewContent">
                     Loading...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="fingerprintComparisonModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Fingerprint Comparison Result</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="fingerprintComparisonContent">Result unavailable.</div>
+                <div class="modal-footer">
+                    <button type="button" id="rejectFingerprintMatchButton" class="btn btn-danger" style="display: none;">
+                        <i class="bi bi-x-octagon"></i> Reject Application
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
@@ -1353,22 +1458,22 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">
-                        <i class="bi bi-bell-fill text-danger"></i> Super Admin Match Alert
+                        <i class="bi bi-bell-fill text-danger"></i> New Fingerprint Match
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <p style="margin-bottom: 12px; color: #334155;">
-                        New fingerprint matches are waiting for manual super admin review. These alerts are not shown to regular admins.
+                        A new fingerprint comparison result is available.
                     </p>
                     <div id="superAdminAlertSummary" class="restricted-note" style="margin-bottom: 14px;">
-                        Checking for pending biometric review alerts...
+                        Checking for new fingerprint matches...
                     </div>
                     <div id="superAdminAlertList"></div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Dismiss</button>
-                    <button type="button" id="openAlertsReviewButton" class="btn btn-primary-custom">Open Application History</button>
+                    <button type="button" id="dismissFingerprintNotificationButton" class="btn btn-outline-secondary" data-bs-dismiss="modal">Dismiss</button>
+                    <button type="button" id="openAlertsReviewButton" class="btn btn-primary-custom">View Result</button>
                 </div>
             </div>
         </div>
@@ -1410,6 +1515,7 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="fingerprint-comparison-result.js"></script>
 
     <script>
         let currentUser = null;
@@ -1522,6 +1628,10 @@
             setSectionVisibility('criminals', canViewCriminals);
             if (runSeederButton) {
                 runSeederButton.style.display = canRunSeeder ? 'inline-flex' : 'none';
+            }
+            const comparisonHistoryCard = document.getElementById('fingerprintComparisonHistoryCard');
+            if (comparisonHistoryCard) {
+                comparisonHistoryCard.style.display = ['admin', 'super_admin'].includes(role) ? '' : 'none';
             }
 
             if (role === 'officer') {
@@ -1687,7 +1797,10 @@
             await Promise.all([
                 loadDashboardData(),
                 loadApplications(),
-                loadCriminals()
+                loadCriminals(),
+                ['admin', 'super_admin'].includes(currentUser.role) && typeof loadComparisonHistory === 'function'
+                    ? loadComparisonHistory()
+                    : Promise.resolve()
             ]);
         }
 
@@ -2257,7 +2370,7 @@
                         </div>
 
                         <div style="margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #e0e0e0;">
-                            <strong>Bozorth3 Status:</strong><br>
+                            <strong>Modified Bozorth3 Status:</strong><br>
                             Installed: <span class="badge ${data.bozorth3_status?.installed ? 'bg-success' : 'bg-danger'}">${data.bozorth3_status?.installed ? 'Yes' : 'No'}</span><br>
                             Path: <code>${escapeHtml(data.bozorth3_status?.path || 'Not configured')}</code><br>
                             Message: ${escapeHtml(data.bozorth3_status?.message || 'Unknown')}
@@ -2464,7 +2577,7 @@
                 label.textContent = 'Waiting for scanner capture...';
 
                 const controller = new AbortController();
-                scanTimeout = setTimeout(() => controller.abort(), 40000);
+                scanTimeout = setTimeout(() => controller.abort(), 55000);
 
                 const response = await fetch('http://localhost:9000/scan', {
                     method: 'POST',
@@ -2752,70 +2865,282 @@
     </script>
     <script>
         let superAdminAlertModalInstance = null;
+        let fingerprintComparisonModalInstance = null;
         let superAdminAlertInterval = null;
-        let lastSuperAdminAlertSignature = '';
+        let currentMatchNotification = null;
+        let notificationPollInFlight = false;
+        let openingFingerprintResult = false;
+        let currentFingerprintComparisonEntry = null;
+        const fingerprintComparisonResults = new Map();
 
-        function buildSuperAdminAlertSignature(alertData) {
-            if (!alertData || !alertData.count) {
-                return '';
-            }
-
-            const topAlert = alertData.alerts?.[0];
-            return `${alertData.count}:${topAlert?.applicant_id || '0'}:${topAlert?.latest_match_at || ''}`;
+        function canAccessFingerprintNotifications() {
+            return !!currentUser && ['admin', 'super_admin'].includes(currentUser.role);
         }
 
-        function renderSuperAdminAlerts(alertData) {
+        function updateFingerprintNotificationIndicator(count) {
+            const button = document.getElementById('fingerprintNotificationButton');
+            const badge = document.getElementById('fingerprintNotificationBadge');
+            if (!button || !badge) return;
+
+            if (!canAccessFingerprintNotifications()) {
+                button.style.display = 'none';
+                return;
+            }
+
+            const activeCount = Math.max(0, Number(count) || 0);
+            button.style.display = 'inline-flex';
+            badge.textContent = String(activeCount);
+            badge.style.display = activeCount > 0 ? 'inline-block' : 'none';
+            button.setAttribute('aria-label', `Fingerprint match notifications (${activeCount})`);
+        }
+
+        function renderSuperAdminAlerts(notification, activeCount = 1) {
             const summary = document.getElementById('superAdminAlertSummary');
             const list = document.getElementById('superAdminAlertList');
-            const alerts = alertData.alerts || [];
 
-            if (!alerts.length) {
-                summary.textContent = 'There are no pending fingerprint-match alerts right now.';
+            if (!notification) {
+                summary.textContent = 'There are no active fingerprint match notifications.';
                 list.innerHTML = '';
                 return;
             }
 
-            summary.innerHTML = `<strong>${alerts.length}</strong> applicant match alert${alerts.length === 1 ? '' : 's'} require manual super admin verification.`;
+            summary.innerHTML = `<strong>${activeCount}</strong> active fingerprint match notification${activeCount === 1 ? '' : 's'}.`;
             list.innerHTML = `
-                <ul class="alert-list">
-                    ${alerts.slice(0, 5).map((alert) => `
-                        <li>
-                            Applicant #${alert.applicant_id} - ${escapeHtml(alert.name || 'Unknown')}
-                            (${escapeHtml(formatStatusLabel(alert.clearance_status || 'UNDER_REVIEW'))},
-                            best score: ${escapeHtml(alert.best_score ?? 0)},
-                            latest: ${escapeHtml(alert.latest_match_at || '-')})
-                        </li>
-                    `).join('')}
-                </ul>
+                <div class="border rounded-3 p-3 bg-light">
+                    <div class="text-uppercase small fw-bold text-danger mb-2">Result</div>
+                    <div class="fs-4 fw-bold mb-3">${escapeHtml(notification.finalResult || 'MATCH')}</div>
+                    <div class="small text-muted">Comparison ID</div>
+                    <div class="fw-semibold text-break mb-2">${escapeHtml(notification.comparisonId || 'Unavailable')}</div>
+                    <div class="small text-muted">Time</div>
+                    <div>${escapeHtml(notification.createdAt || 'Unavailable')}</div>
+                </div>
             `;
         }
 
-        async function checkSuperAdminAlerts(forceShow = false) {
-            if (!currentUser || currentUser.role !== 'super_admin') {
+        function comparisonHistoryRow(entry) {
+            const result = entry.comparison_result
+                ? FingerprintComparison.ensureComparisonResult(entry.comparison_result)
+                : null;
+            const primary = result ? FingerprintComparison.matcherByName(result, 'Modified Bozorth3') : null;
+            const percentage = result
+                ? FingerprintComparison.matcherPercentage(primary)
+                : (Number.isFinite(Number(entry.match_score)) ? Number(entry.match_score) : null);
+            const summaryDecision = String(entry.notification_final_result || '').toUpperCase()
+                || (Number(entry.is_match) === 1 ? 'MATCH' : entry.review_status === 'PENDING_REVIEW' ? 'REVIEW REQUIRED' : 'NO MATCH');
+            const primaryDecision = result ? FingerprintComparison.matcherDecision(primary) : summaryDecision;
+            const primaryText = `${primaryDecision}${percentage === null ? '' : ` · ${FingerprintComparison.formatValue(percentage)}%`}`;
+            return `<tr>
+                <td>${escapeHtml(entry.matched_at || result?.createdAt || 'Unavailable')}</td>
+                <td>${escapeHtml(result?.comparisonId || entry.comparison_id || 'Unavailable')}</td>
+                <td>${escapeHtml(result?.quality?.subject?.label || 'Unavailable')}</td>
+                <td>${escapeHtml(primaryText)}</td>
+                <td>${escapeHtml(result?.matcherAgreement?.label || 'View details')}</td>
+                <td>${escapeHtml(result?.finalResult?.decision || summaryDecision)}</td>
+                <td><button type="button" class="btn btn-view btn-sm" onclick="viewFingerprintComparisonResult(${Number(entry.id)})">View Details</button></td>
+            </tr>`;
+        }
+
+        function isRejectableFingerprintMatch(entry, user) {
+            return user?.role === 'super_admin'
+                && entry?.review_status === 'PENDING_REVIEW'
+                && String(entry?.comparison_result?.finalResult?.decision || '').toUpperCase() === 'MATCH';
+        }
+
+        function configureFingerprintMatchActions(entry) {
+            currentFingerprintComparisonEntry = entry || null;
+            const rejectButton = document.getElementById('rejectFingerprintMatchButton');
+            if (!rejectButton) return;
+            const canReject = isRejectableFingerprintMatch(entry, currentUser);
+            rejectButton.style.display = canReject ? 'inline-flex' : 'none';
+            rejectButton.disabled = false;
+        }
+
+        async function loadComparisonHistory() {
+            const card = document.getElementById('fingerprintComparisonHistoryCard');
+            const body = document.getElementById('fingerprintComparisonHistoryBody');
+            if (!card || !body) return;
+            if (!canAccessFingerprintNotifications()) {
+                card.style.display = 'none';
                 return;
             }
 
+            card.style.display = '';
             try {
-                const alertData = await requestJson('backend/applicant_info.php?action=alerts&limit=5');
-                const signature = buildSuperAdminAlertSignature(alertData);
-                const lastSeen = sessionStorage.getItem('minutiae_super_admin_alert_signature') || '';
+                const data = await requestJson('backend/applicant_info.php?action=comparisons&limit=50');
+                const comparisons = Array.isArray(data.comparisons) ? data.comparisons : [];
+                fingerprintComparisonResults.clear();
+                comparisons.forEach((entry) => fingerprintComparisonResults.set(Number(entry.id), entry));
+                body.innerHTML = comparisons.length
+                    ? comparisons.map(comparisonHistoryRow).join('')
+                    : '<tr><td colspan="7" class="comparison-history-empty">No fingerprint comparison results have been stored yet.</td></tr>';
+                return data;
+            } catch (error) {
+                body.innerHTML = `<tr><td colspan="7" class="text-center text-danger py-4">Unable to load comparison history: ${escapeHtml(error.message)}</td></tr>`;
+                throw error;
+            }
+        }
 
-                renderSuperAdminAlerts(alertData);
+        async function viewFingerprintComparisonResult(recordId) {
+            const entry = fingerprintComparisonResults.get(Number(recordId));
+            const content = document.getElementById('fingerprintComparisonContent');
+            superAdminAlertModalInstance?.hide();
+            configureFingerprintMatchActions(null);
+            if (!entry?.comparison_id) {
+                content.innerHTML = '<div class="alert alert-warning">The comparison result is unavailable.</div>';
+                fingerprintComparisonModalInstance.show();
+                return;
+            }
+            content.innerHTML = '<div class="text-center text-muted py-4">Loading comparison details...</div>';
+            fingerprintComparisonModalInstance.show();
+            try {
+                const data = await requestJson(`backend/applicant_info.php?action=comparison&comparison_id=${encodeURIComponent(entry.comparison_id)}`);
+                if (!data.comparison?.comparison_result) {
+                    throw new Error('The stored comparison result is unavailable.');
+                }
+                configureFingerprintMatchActions(data.comparison);
+                content.innerHTML = FingerprintComparison.renderComparisonResult(data.comparison.comparison_result);
+            } catch (error) {
+                configureFingerprintMatchActions(null);
+                content.innerHTML = `<div class="alert alert-danger">Unable to load comparison result: ${escapeHtml(error.message)}</div>`;
+            }
+        }
 
-                if (forceShow && alertData.count > 0) {
-                    superAdminAlertModalInstance.show();
+        window.viewFingerprintComparisonResult = viewFingerprintComparisonResult;
+
+        async function markFingerprintNotification(notificationId, status) {
+            return requestJson('backend/applicant_info.php?action=notification_status', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ notification_id: notificationId, status })
+            });
+        }
+
+        async function viewFingerprintComparisonById(comparisonId, notificationId = null) {
+            if (!comparisonId) return;
+            openingFingerprintResult = true;
+            currentMatchNotification = null;
+            try {
+                if (notificationId) {
+                    await markFingerprintNotification(notificationId, 'read');
+                }
+                superAdminAlertModalInstance.hide();
+                const data = await requestJson(`backend/applicant_info.php?action=comparison&comparison_id=${encodeURIComponent(comparisonId)}`);
+                const entry = data.comparison;
+                const content = document.getElementById('fingerprintComparisonContent');
+                if (!entry?.comparison_result) {
+                    throw new Error('The stored comparison result is unavailable.');
+                }
+                configureFingerprintMatchActions(entry);
+                content.innerHTML = FingerprintComparison.renderComparisonResult(entry.comparison_result);
+                fingerprintComparisonModalInstance.show();
+                await loadComparisonHistory();
+            } catch (error) {
+                configureFingerprintMatchActions(null);
+                document.getElementById('fingerprintComparisonContent').innerHTML = `<div class="alert alert-danger">Unable to load comparison result: ${escapeHtml(error.message)}</div>`;
+                fingerprintComparisonModalInstance.show();
+            } finally {
+                currentMatchNotification = null;
+                openingFingerprintResult = false;
+            }
+        }
+
+        async function openApplicationFingerprintComparison(encodedComparisonId, notificationId = null) {
+            let comparisonId = '';
+            try {
+                comparisonId = decodeURIComponent(String(encodedComparisonId || ''));
+            } catch (error) {
+                comparisonId = String(encodedComparisonId || '');
+            }
+            if (!comparisonId) return;
+
+            const recordModalElement = document.getElementById('recordViewModal');
+            if (recordModalElement?.classList.contains('show')) {
+                await new Promise((resolve) => {
+                    recordModalElement.addEventListener('hidden.bs.modal', resolve, { once: true });
+                    recordModal.hide();
+                });
+            }
+            await viewFingerprintComparisonById(comparisonId, notificationId);
+        }
+
+        window.openApplicationFingerprintComparison = openApplicationFingerprintComparison;
+
+        async function rejectCurrentFingerprintMatch() {
+            const entry = currentFingerprintComparisonEntry;
+            if (!isRejectableFingerprintMatch(entry, currentUser)) return;
+
+            const applicantId = Number(entry.applicant_id);
+            if (!Number.isInteger(applicantId) || applicantId <= 0) {
+                alert('The matched applicant could not be identified.');
+                return;
+            }
+            if (!window.confirm(`Reject application #${applicantId} because of this confirmed fingerprint match?`)) {
+                return;
+            }
+
+            const button = document.getElementById('rejectFingerprintMatchButton');
+            if (button) button.disabled = true;
+            try {
+                await requestJson('backend/applicant_info.php?action=review', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        applicant_id: applicantId,
+                        decision: 'reject',
+                        notes: `Rejected from fingerprint comparison ${entry.comparison_id || entry.id || 'MATCH'}.`
+                    })
+                });
+                configureFingerprintMatchActions(null);
+                fingerprintComparisonModalInstance.hide();
+                await Promise.all([
+                    loadApplications(),
+                    loadDashboardData(),
+                    loadStatistics(),
+                    loadComparisonHistory()
+                ]);
+                await checkSuperAdminAlerts();
+                alert(`Application #${applicantId} was rejected.`);
+            } catch (error) {
+                if (button) button.disabled = false;
+                alert('Reject failed: ' + error.message);
+            }
+        }
+
+        async function checkSuperAdminAlerts(forceShow = false) {
+            if (!canAccessFingerprintNotifications() || notificationPollInFlight) return;
+
+            notificationPollInFlight = true;
+            console.info('[Admin] Checking unread notifications');
+            try {
+                const data = await requestJson('backend/applicant_info.php?action=notifications&state=active&limit=50');
+                const notifications = Array.isArray(data.notifications) ? data.notifications : [];
+                updateFingerprintNotificationIndicator(notifications.length);
+
+                if (currentMatchNotification || document.getElementById('superAdminAlertModal')?.classList.contains('show')) {
                     return;
                 }
 
-                if (signature && signature !== lastSeen && signature !== lastSuperAdminAlertSignature) {
-                    lastSuperAdminAlertSignature = signature;
-                    sessionStorage.setItem('minutiae_super_admin_alert_signature', signature);
-                    superAdminAlertModalInstance.show();
+                const notification = forceShow
+                    ? notifications[0]
+                    : notifications.filter((item) => item.status === 'unread').at(-1);
+                if (!notification) {
+                    if (forceShow) renderSuperAdminAlerts(null, 0);
+                    return;
                 }
+
+                currentMatchNotification = notification;
+                renderSuperAdminAlerts(notification, notifications.length);
+                console.info('[Admin] New fingerprint match notification received');
+                console.info(`[Admin] Notification ID: ${notification.id}`);
+                console.info(`[Admin] Comparison ID: ${notification.comparisonId}`);
+                console.info('[Admin] Showing popup');
+                superAdminAlertModalInstance.show();
             } catch (error) {
                 if (error.message !== 'Authentication required.') {
-                    console.error('Super admin alert check failed:', error);
+                    console.error('[Admin] Fingerprint notification check failed:', error);
                 }
+            } finally {
+                notificationPollInFlight = false;
             }
         }
 
@@ -2825,14 +3150,15 @@
                 superAdminAlertInterval = null;
             }
 
-            if (!currentUser || currentUser.role !== 'super_admin') {
+            if (!canAccessFingerprintNotifications()) {
+                updateFingerprintNotificationIndicator(0);
                 return;
             }
 
             checkSuperAdminAlerts();
             superAdminAlertInterval = window.setInterval(() => {
                 checkSuperAdminAlerts();
-            }, 30000);
+            }, 4000);
         }
 
         function stopSuperAdminAlertPolling() {
@@ -2840,14 +3166,46 @@
                 clearInterval(superAdminAlertInterval);
                 superAdminAlertInterval = null;
             }
+            document.getElementById('fingerprintNotificationButton')?.style.setProperty('display', 'none');
         }
 
         bindApplicationHistoryFilters();
         superAdminAlertModalInstance = new bootstrap.Modal(document.getElementById('superAdminAlertModal'));
-        document.getElementById('openAlertsReviewButton').addEventListener('click', async () => {
-            superAdminAlertModalInstance.hide();
-            switchSection('applications');
-            await loadApplications();
+        fingerprintComparisonModalInstance = new bootstrap.Modal(document.getElementById('fingerprintComparisonModal'));
+        document.getElementById('refreshComparisonHistoryButton')?.addEventListener('click', loadComparisonHistory);
+        document.getElementById('rejectFingerprintMatchButton')?.addEventListener('click', rejectCurrentFingerprintMatch);
+        document.getElementById('fingerprintNotificationButton')?.addEventListener('click', () => checkSuperAdminAlerts(true));
+        document.getElementById('openAlertsReviewButton').addEventListener('click', () => {
+            const notification = currentMatchNotification;
+            if (notification) {
+                viewFingerprintComparisonById(notification.comparisonId, notification.id);
+            }
+        });
+        document.getElementById('superAdminAlertModal').addEventListener('shown.bs.modal', async () => {
+            if (currentMatchNotification?.status === 'unread') {
+                const notificationId = currentMatchNotification.id;
+                currentMatchNotification.status = 'seen';
+                try {
+                    await markFingerprintNotification(notificationId, 'seen');
+                } catch (error) {
+                    console.error('[Admin] Unable to mark fingerprint notification as seen:', error);
+                }
+            }
+        });
+        document.getElementById('superAdminAlertModal').addEventListener('hidden.bs.modal', async () => {
+            if (!currentMatchNotification || openingFingerprintResult) return;
+            const notificationId = currentMatchNotification.id;
+            currentMatchNotification = null;
+            try {
+                await markFingerprintNotification(notificationId, 'read');
+            } catch (error) {
+                console.error('[Admin] Unable to mark fingerprint notification as read:', error);
+            }
+            checkSuperAdminAlerts();
+        });
+        document.getElementById('fingerprintComparisonModal').addEventListener('hidden.bs.modal', () => {
+            configureFingerprintMatchActions(null);
+            checkSuperAdminAlerts();
         });
         logoutButton.addEventListener('click', stopSuperAdminAlertPolling);
 
@@ -2922,6 +3280,44 @@
                         <div class="col-md-6"><strong>Last Updated:</strong> ${escapeHtml(record.last_updated_at || '-')}</div>
                     </div>
                 `;
+
+                const fingerprintNotifications = Array.isArray(data.fingerprint_notifications)
+                    ? data.fingerprint_notifications
+                    : [];
+                const notificationHtml = data.biometric_access === 'full'
+                    ? `
+                        <h6>Fingerprint Match Notifications</h6>
+                        <div class="table-responsive mb-3">
+                            <table class="table table-sm table-bordered align-middle">
+                                <thead><tr><th>Result</th><th>Matched Finger</th><th>Matched Record</th><th>Comparison ID</th><th>Notification</th><th>Time</th><th>Action</th></tr></thead>
+                                <tbody>
+                                    ${fingerprintNotifications.length
+                                        ? fingerprintNotifications.map((item) => {
+                                            const encodedComparisonId = encodeURIComponent(String(item.comparison_id || ''));
+                                            const notificationId = Number(item.id);
+                                            return `
+                                                <tr>
+                                                    <td><span class="badge bg-danger">${escapeHtml(item.notification_final_result || 'MATCH')}</span></td>
+                                                    <td>${escapeHtml(formatStatusLabel(item.finger_matched || '-'))}</td>
+                                                    <td>${escapeHtml(item.criminal_name || item.criminal_id || '-')}</td>
+                                                    <td class="text-break"><code>${escapeHtml(item.comparison_id || '-')}</code></td>
+                                                    <td>${escapeHtml(formatStatusLabel(item.notification_status || 'none'))}</td>
+                                                    <td>${escapeHtml(item.matched_at || '-')}</td>
+                                                    <td>
+                                                        ${item.comparison_id
+                                                            ? `<button type="button" class="btn btn-view btn-sm" onclick="openApplicationFingerprintComparison('${encodedComparisonId}', ${Number.isFinite(notificationId) ? notificationId : 'null'})">View Fingerprint Result</button>`
+                                                            : '<span class="text-muted">Unavailable</span>'}
+                                                    </td>
+                                                </tr>
+                                            `;
+                                        }).join('')
+                                        : '<tr><td colspan="7" class="text-center text-muted">No fingerprint match notifications for this application</td></tr>'
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    `
+                    : '';
 
                 const historyHtml = data.biometric_access === 'full'
                     ? `
@@ -3043,6 +3439,7 @@
                     </div>
                     ${restrictedHtml}
                     ${fingerprintSummaryHtml}
+                    ${notificationHtml}
                     ${historyHtml}
                     ${updateLogsHtml}
                     ${reviewPanel}
@@ -3067,7 +3464,7 @@
         };
 
         window.setTimeout(() => {
-            if (currentUser?.role === 'super_admin') {
+            if (['admin', 'super_admin'].includes(currentUser?.role)) {
                 startSuperAdminAlertPolling();
             }
         }, 600);

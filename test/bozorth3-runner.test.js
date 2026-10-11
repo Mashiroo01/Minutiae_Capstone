@@ -63,15 +63,17 @@ test('Cygwin path conversion preserves Linux executable paths and converts Windo
     assert.equal(toCygwinPath('C:\\tmp\\probe.xyt'), '/cygdrive/c/tmp/probe.xyt');
 });
 
-test('decision classification keeps quality failure and borderline separate from binary matching', () => {
+test('decision classification treats the calibrated threshold as a match and reserves borderline for scores just below it', () => {
     assert.deepEqual(classifyBozorthDecision({ score: 60, threshold: 20, borderlineBand: 3, qualityPassed: false }), {
         result: 'INSUFFICIENT QUALITY',
         isMatch: null,
         decisionState: 'insufficient-quality',
         reviewRecommended: false
     });
-    assert.equal(classifyBozorthDecision({ score: 22, threshold: 20, borderlineBand: 3, qualityPassed: true }).result, 'BORDERLINE');
+    assert.equal(classifyBozorthDecision({ score: 20, threshold: 20, borderlineBand: 3, qualityPassed: true }).result, 'MATCH');
+    assert.equal(classifyBozorthDecision({ score: 22, threshold: 20, borderlineBand: 3, qualityPassed: true }).result, 'MATCH');
     assert.equal(classifyBozorthDecision({ score: 24, threshold: 20, borderlineBand: 3, qualityPassed: true }).result, 'MATCH');
+    assert.equal(classifyBozorthDecision({ score: 18, threshold: 20, borderlineBand: 3, qualityPassed: true }).result, 'BORDERLINE');
     assert.equal(classifyBozorthDecision({ score: 16, threshold: 20, borderlineBand: 3, qualityPassed: true }).result, 'NO MATCH');
 });
 

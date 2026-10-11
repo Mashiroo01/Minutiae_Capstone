@@ -5,6 +5,8 @@
  */
 
 class FingerprintDB {
+    private const COMPARISON_INLINE_LIMIT = 262144;
+    private const COMPARISON_CHUNK_SIZE = 262144;
     
     private $db;
     private $config;
@@ -84,6 +86,12 @@ class FingerprintDB {
             $this->addColumnIfMissing('fingerprint_matches', 'reviewed_by', "INT NULL");
             $this->addColumnIfMissing('fingerprint_matches', 'reviewed_at', "TIMESTAMP NULL DEFAULT NULL");
             $this->addColumnIfMissing('fingerprint_matches', 'disclosure_level', "VARCHAR(20) NOT NULL DEFAULT 'RESTRICTED'");
+            $this->addColumnIfMissing('fingerprint_matches', 'comparison_id', "VARCHAR(160) DEFAULT NULL");
+            $this->addColumnIfMissing('fingerprint_matches', 'comparison_result', "LONGTEXT DEFAULT NULL");
+            $this->addColumnIfMissing('fingerprint_matches', 'notification_status', "VARCHAR(20) NOT NULL DEFAULT 'none'");
+            $this->addColumnIfMissing('fingerprint_matches', 'notification_final_result', "VARCHAR(30) DEFAULT NULL");
+            $this->addColumnIfMissing('fingerprint_matches', 'notification_seen_at', "TIMESTAMP NULL DEFAULT NULL");
+            $this->addColumnIfMissing('fingerprint_matches', 'notification_read_at', "TIMESTAMP NULL DEFAULT NULL");
             $this->addColumnIfMissing('criminal_fingerprints', 'fingerprint_image', "LONGTEXT DEFAULT NULL");
             $this->addColumnIfMissing('criminal_fingerprints', 'fingerprint_filename', "VARCHAR(255) DEFAULT NULL");
             $this->addColumnIfMissing('criminal_fingerprints', 'template_hash', "VARCHAR(64) DEFAULT NULL");
@@ -93,8 +101,18 @@ class FingerprintDB {
             $this->addColumnIfMissing('criminal_fingerprints', 'deactivated_at', "TIMESTAMP NULL DEFAULT NULL");
             $this->addColumnIfMissing('criminal_fingerprints', 'deactivation_reason', "TEXT DEFAULT NULL");
             $this->addColumnIfMissing('applicant_fingerprints', 'fingerprint_image', "LONGTEXT DEFAULT NULL");
+            $this->addColumnIfMissing('dataset_participants', 'criminal_record_id', "INT DEFAULT NULL");
+            $this->addIndexIfMissing('dataset_participants', 'idx_dataset_criminal_record', ['criminal_record_id']);
+            $this->addForeignKeyIfMissing(
+                'dataset_participants',
+                'fk_dataset_participant_criminal',
+                'criminal_record_id',
+                'criminal_records',
+                'id'
+            );
             $this->backfillCriminalActiveFlags();
             $this->backfillCriminalFingerprintHashes();
+            $this->backfillDatasetCriminalLinks();
 
             $this->seedDefaultAdminUsers();
             
@@ -148,6 +166,55 @@ class FingerprintDB {
                     last_updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                     INDEX idx_name (name),
                     INDEX idx_demographics (name, age, sex)
+                )
+            ",
+            'dataset_participants' => "
+                CREATE TABLE IF NOT EXISTS dataset_participants (
+                    id INT PRIMARY KEY AUTO_INCREMENT,
+                    dataset_type VARCHAR(30) NOT NULL,
+                    participant_number INT NOT NULL,
+                    display_name VARCHAR(255) NOT NULL,
+                    family_name VARCHAR(120) NOT NULL,
+                    given_name VARCHAR(120) NOT NULL,
+                    age INT DEFAULT NULL,
+                    criminal_record_id INT DEFAULT NULL,
+                    consent_given TINYINT(1) NOT NULL DEFAULT 0,
+                    consented_at TIMESTAMP NULL DEFAULT NULL,
+                    status VARCHAR(20) NOT NULL DEFAULT 'active',
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    completed_at TIMESTAMP NULL DEFAULT NULL,
+                    UNIQUE KEY unique_dataset_participant (dataset_type, participant_number),
+                    INDEX idx_dataset_participant_status (dataset_type, status, id),
+                    INDEX idx_dataset_criminal_record (criminal_record_id),
+                    FOREIGN KEY (criminal_record_id) REFERENCES criminal_records(id)
+                )
+            ",
+            'dataset_fingerprint_samples' => "
+                CREATE TABLE IF NOT EXISTS dataset_fingerprint_samples (
+                    id INT PRIMARY KEY AUTO_INCREMENT,
+                    participant_id INT NOT NULL,
+                    dataset_type VARCHAR(30) NOT NULL,
+                    filename VARCHAR(255) NOT NULL,
+                    file_extension VARCHAR(12) NOT NULL,
+                    finger_side VARCHAR(10) NOT NULL,
+                    finger_name VARCHAR(20) NOT NULL,
+                    finger_code VARCHAR(3) NOT NULL,
+                    sample_number INT NOT NULL,
+                    template LONGBLOB NOT NULL,
+                    template_format VARCHAR(20) NOT NULL DEFAULT 'ISO',
+                    original_image LONGTEXT NOT NULL,
+                    image_format VARCHAR(20) NOT NULL DEFAULT 'png',
+                    quality_score INT NOT NULL,
+                    quality_label VARCHAR(20) NOT NULL,
+                    scanner_source VARCHAR(255) DEFAULT NULL,
+                    capture_hash CHAR(64) NOT NULL,
+                    captured_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    UNIQUE KEY unique_dataset_filename (filename),
+                    UNIQUE KEY unique_dataset_sample (dataset_type, finger_code, sample_number),
+                    UNIQUE KEY unique_participant_capture (participant_id, finger_code, capture_hash),
+                    INDEX idx_dataset_participant_finger (participant_id, finger_code, sample_number),
+                    FOREIGN KEY (participant_id) REFERENCES dataset_participants(id)
                 )
             ",
             'audit_logs' => "
@@ -231,9 +298,24 @@ class FingerprintDB {
                     finger_matched VARCHAR(50),
                     match_score INT NOT NULL,
                     is_match BOOLEAN DEFAULT FALSE,
+                    comparison_id VARCHAR(160) DEFAULT NULL,
+                    comparison_result LONGTEXT DEFAULT NULL,
+                    notification_status VARCHAR(20) NOT NULL DEFAULT 'none',
+                    notification_final_result VARCHAR(30) DEFAULT NULL,
+                    notification_seen_at TIMESTAMP NULL DEFAULT NULL,
+                    notification_read_at TIMESTAMP NULL DEFAULT NULL,
                     matched_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     FOREIGN KEY (applicant_id) REFERENCES applicants(id),
                     FOREIGN KEY (criminal_id) REFERENCES criminal_records(id)
+                )
+            ",
+            'fingerprint_comparison_result_chunks' => "
+                CREATE TABLE IF NOT EXISTS fingerprint_comparison_result_chunks (
+                    match_id INT NOT NULL,
+                    chunk_index INT NOT NULL,
+                    payload MEDIUMBLOB NOT NULL,
+                    PRIMARY KEY (match_id, chunk_index),
+                    FOREIGN KEY (match_id) REFERENCES fingerprint_matches(id) ON DELETE CASCADE
                 )
             "
         ];
@@ -262,7 +344,10 @@ class FingerprintDB {
 
     private function rebuildManagedSchema($schema) {
         $dropOrder = [
+            'fingerprint_comparison_result_chunks',
             'fingerprint_matches',
+            'dataset_fingerprint_samples',
+            'dataset_participants',
             'applicant_fingerprints',
             'criminal_fingerprints',
             'application_update_logs',
@@ -338,6 +423,47 @@ class FingerprintDB {
         $stmt->execute([$table, $column]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         return intval($row['total'] ?? 0) > 0;
+    }
+
+    private function addIndexIfMissing($table, $indexName, $columns) {
+        $stmt = $this->db->prepare("
+            SELECT COUNT(*) AS total
+            FROM information_schema.STATISTICS
+            WHERE TABLE_SCHEMA = DATABASE()
+              AND TABLE_NAME = ?
+              AND INDEX_NAME = ?
+        ");
+        $stmt->execute([$table, $indexName]);
+        if (intval($stmt->fetchColumn()) > 0) return;
+
+        $quotedColumns = array_map([$this, 'quoteIdentifier'], $columns);
+        $this->db->exec(sprintf(
+            "ALTER TABLE %s ADD INDEX %s (%s)",
+            $this->quoteIdentifier($table),
+            $this->quoteIdentifier($indexName),
+            implode(', ', $quotedColumns)
+        ));
+    }
+
+    private function addForeignKeyIfMissing($table, $constraintName, $column, $referencedTable, $referencedColumn) {
+        $stmt = $this->db->prepare("
+            SELECT COUNT(*) AS total
+            FROM information_schema.REFERENTIAL_CONSTRAINTS
+            WHERE CONSTRAINT_SCHEMA = DATABASE()
+              AND TABLE_NAME = ?
+              AND CONSTRAINT_NAME = ?
+        ");
+        $stmt->execute([$table, $constraintName]);
+        if (intval($stmt->fetchColumn()) > 0) return;
+
+        $this->db->exec(sprintf(
+            "ALTER TABLE %s ADD CONSTRAINT %s FOREIGN KEY (%s) REFERENCES %s (%s)",
+            $this->quoteIdentifier($table),
+            $this->quoteIdentifier($constraintName),
+            $this->quoteIdentifier($column),
+            $this->quoteIdentifier($referencedTable),
+            $this->quoteIdentifier($referencedColumn)
+        ));
     }
 
     private function seedDefaultAdminUsers() {
@@ -958,6 +1084,12 @@ class FingerprintDB {
      * Search for criminals by demographics (name, age, sex)
      * Used for initial HIT check before fingerprint matching
      */
+    public static function normalizeDemographicName($name) {
+        $value = strtolower(trim((string)$name));
+        $value = preg_replace('/[^\p{L}\p{N}]+/u', ' ', $value);
+        return trim(preg_replace('/\s+/u', ' ', (string)$value));
+    }
+
     public function searchCriminalByDemographics($name, $age = null, $sex = null) {
         if (!$this->db) {
             return [
@@ -973,10 +1105,10 @@ class FingerprintDB {
             $params = [];
             $conditions = [];
             
-            // Always search by name (case-insensitive)
+            // Restrict the database query by stable demographic fields first.
+            // Names are normalized in PHP so dashboard punctuation such as
+            // "Family, First" cannot hide an equivalent stored record.
             $conditions[] = "cr.is_active = 1";
-            $conditions[] = "LOWER(cr.name) = LOWER(?)";
-            $params[] = trim($name);
             
             // Add age if provided
             if ($age !== null) {
@@ -996,6 +1128,10 @@ class FingerprintDB {
             $stmt = $this->db->prepare($query);
             $stmt->execute($params);
             $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $normalizedName = self::normalizeDemographicName($name);
+            $results = array_values(array_filter($results, function($record) use ($normalizedName) {
+                return self::normalizeDemographicName($record['name'] ?? '') === $normalizedName;
+            }));
             
             return [
                 'success' => true,
@@ -1082,7 +1218,9 @@ class FingerprintDB {
                 strtoupper(substr($sex, 0, 1)),
                 $email,
                 !empty($privacyConsent['accepted']) ? 1 : 0,
-                !empty($privacyConsent['accepted']) ? ($privacyConsent['consented_at'] ?? date('Y-m-d H:i:s')) : null,
+                !empty($privacyConsent['accepted'])
+                    ? $this->normalizeDatabaseDateTime($privacyConsent['consented_at'] ?? null)
+                    : null,
                 $privacyConsent['version'] ?? null
             ]);
             
@@ -1114,6 +1252,30 @@ class FingerprintDB {
                 'success' => false,
                 'error' => 'Database error: ' . $e->getMessage()
             ];
+        }
+    }
+
+    /**
+     * Convert browser ISO-8601 timestamps to the format accepted by MariaDB.
+     * Existing database-formatted values are left unchanged for compatibility.
+     */
+    private function normalizeDatabaseDateTime($value) {
+        $value = trim((string)$value);
+        if ($value === '') {
+            return gmdate('Y-m-d H:i:s');
+        }
+
+        if (preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $value)) {
+            return $value;
+        }
+
+        try {
+            $timestamp = new DateTimeImmutable($value);
+            return $timestamp
+                ->setTimezone(new DateTimeZone('UTC'))
+                ->format('Y-m-d H:i:s');
+        } catch (Throwable $e) {
+            return gmdate('Y-m-d H:i:s');
         }
     }
     
@@ -1710,7 +1872,7 @@ class FingerprintDB {
     /**
      * Record a match result
      */
-    public function recordMatchResult($applicantId, $criminalId, $finger, $score, $isMatch, $reviewStatus = null, $disclosureLevel = 'RESTRICTED') {
+    public function recordMatchResult($applicantId, $criminalId, $finger, $score, $isMatch, $reviewStatus = null, $disclosureLevel = 'RESTRICTED', $comparisonResult = null) {
         if (!$this->db) {
             return [
                 'success' => false,
@@ -1718,11 +1880,40 @@ class FingerprintDB {
             ];
         }
         
+        $ownsTransaction = false;
         try {
+            if (method_exists($this->db, 'inTransaction') && !$this->db->inTransaction()) {
+                $this->db->beginTransaction();
+                $ownsTransaction = true;
+            }
+
+            $finalDecision = $this->normalizeComparisonDecision($comparisonResult);
+            $notificationStatus = $finalDecision === 'MATCH' ? 'unread' : 'none';
+
+            $comparisonId = is_array($comparisonResult)
+                ? trim((string)($comparisonResult['comparisonId'] ?? $comparisonResult['traceId'] ?? ''))
+                : '';
+            $comparisonJson = is_array($comparisonResult)
+                ? json_encode($comparisonResult, JSON_UNESCAPED_SLASHES)
+                : null;
+            if ($comparisonJson === false) {
+                throw new RuntimeException('Fingerprint comparison result could not be encoded for persistence.');
+            }
+
+            $usesChunkStorage = is_string($comparisonJson)
+                && strlen($comparisonJson) > self::COMPARISON_INLINE_LIMIT;
+            $storedComparisonJson = $usesChunkStorage
+                ? json_encode([
+                    'storage' => 'fingerprint_comparison_result_chunks',
+                    'schemaVersion' => $comparisonResult['schemaVersion'] ?? null,
+                    'chunkCount' => intval(ceil(strlen($comparisonJson) / self::COMPARISON_CHUNK_SIZE))
+                ], JSON_UNESCAPED_SLASHES)
+                : $comparisonJson;
+
             $stmt = $this->db->prepare("
                 INSERT INTO fingerprint_matches 
-                (applicant_id, criminal_id, finger_matched, match_score, is_match, review_status, disclosure_level)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
+                (applicant_id, criminal_id, finger_matched, match_score, is_match, review_status, disclosure_level, comparison_id, comparison_result, notification_status, notification_final_result)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ");
             
             $stmt->execute([
@@ -1732,19 +1923,254 @@ class FingerprintDB {
                 $score,
                 $isMatch ? 1 : 0,
                 $reviewStatus ?: ($isMatch ? 'PENDING_REVIEW' : 'CLEAR'),
-                $disclosureLevel
+                $disclosureLevel,
+                $comparisonId !== '' ? $comparisonId : null,
+                $storedComparisonJson,
+                $notificationStatus,
+                $finalDecision !== '' ? $finalDecision : null
             ]);
+
+            $recordId = (string)$this->db->lastInsertId();
+            if ($usesChunkStorage) {
+                $this->storeComparisonResultChunks($recordId, $comparisonJson);
+            }
+            $notification = $notificationStatus === 'unread'
+                ? $this->getFingerprintMatchNotificationById($recordId)
+                : null;
+
+            if ($ownsTransaction) {
+                $this->db->commit();
+            }
+
+            if ($notification !== null) {
+                error_log('[Backend] Notification saved');
+                error_log('[Backend] Notification ID = ' . $notification['id']);
+                error_log('[Backend] Comparison ID = ' . $notification['comparisonId']);
+                error_log('[Backend] Result = ' . $notification['finalResult']);
+                error_log('[Backend] Status = ' . $notification['status']);
+            }
             
             return [
                 'success' => true,
                 'message' => 'Match result recorded',
-                'record_id' => $this->db->lastInsertId()
+                'record_id' => $recordId,
+                'notification' => $notification,
+                'comparison_storage' => $usesChunkStorage ? 'chunked' : 'inline'
             ];
-        } catch (PDOException $e) {
+        } catch (Throwable $e) {
+            if ($ownsTransaction && method_exists($this->db, 'inTransaction') && $this->db->inTransaction()) {
+                $this->db->rollBack();
+            }
+            error_log('[Backend] Match result persistence failed: ' . $e->getMessage());
             return [
                 'success' => false,
                 'error' => 'Database error: ' . $e->getMessage()
             ];
+        }
+    }
+
+    private function storeComparisonResultChunks($matchId, $comparisonJson) {
+        $stmt = $this->db->prepare("
+            INSERT INTO fingerprint_comparison_result_chunks (match_id, chunk_index, payload)
+            VALUES (?, ?, ?)
+        ");
+        $length = strlen($comparisonJson);
+        $chunkIndex = 0;
+
+        for ($offset = 0; $offset < $length; $offset += self::COMPARISON_CHUNK_SIZE) {
+            $chunk = substr($comparisonJson, $offset, self::COMPARISON_CHUNK_SIZE);
+            $stmt->bindValue(1, intval($matchId), PDO::PARAM_INT);
+            $stmt->bindValue(2, $chunkIndex, PDO::PARAM_INT);
+            $stmt->bindValue(3, $chunk, PDO::PARAM_LOB);
+            $stmt->execute();
+            $chunkIndex++;
+        }
+    }
+
+    private function loadChunkedComparisonResult($matchId) {
+        $stmt = $this->db->prepare("
+            SELECT payload
+            FROM fingerprint_comparison_result_chunks
+            WHERE match_id = ?
+            ORDER BY chunk_index ASC
+        ");
+        $stmt->execute([intval($matchId)]);
+        $comparisonJson = '';
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $comparisonJson .= (string)($row['payload'] ?? '');
+        }
+
+        if ($comparisonJson === '') {
+            return null;
+        }
+
+        $decoded = json_decode($comparisonJson, true);
+        return is_array($decoded) ? $decoded : null;
+    }
+
+    private function normalizeComparisonDecision($comparisonResult) {
+        if (!is_array($comparisonResult)) {
+            return '';
+        }
+
+        return strtoupper(trim((string)($comparisonResult['finalResult']['decision'] ?? '')));
+    }
+
+    private function formatFingerprintMatchNotification($row) {
+        if (!is_array($row) || empty($row)) {
+            return null;
+        }
+
+        $status = strtolower(trim((string)($row['notification_status'] ?? 'none')));
+        return [
+            'id' => (string)($row['id'] ?? ''),
+            'comparisonId' => (string)($row['comparison_id'] ?? ''),
+            'type' => 'fingerprint_match',
+            'status' => $status,
+            'finalResult' => strtoupper(trim((string)($row['notification_final_result'] ?? ''))),
+            'createdAt' => (string)($row['matched_at'] ?? ''),
+            'viewed' => $status === 'read'
+        ];
+    }
+
+    private function getFingerprintMatchNotificationById($notificationId) {
+        if (!$this->db || intval($notificationId) <= 0) {
+            return null;
+        }
+
+        $stmt = $this->db->prepare("
+            SELECT id, comparison_id, notification_status, notification_final_result, matched_at
+            FROM fingerprint_matches
+            WHERE id = ?
+              AND notification_status <> 'none'
+            LIMIT 1
+        ");
+        $stmt->execute([intval($notificationId)]);
+        return $this->formatFingerprintMatchNotification($stmt->fetch(PDO::FETCH_ASSOC));
+    }
+
+    public function getFingerprintMatchNotifications($state = 'active', $limit = 20) {
+        if (!$this->db) {
+            return [];
+        }
+
+        $normalizedState = strtolower(trim((string)$state));
+        if ($normalizedState === 'unread') {
+            $statusFilter = "notification_status = 'unread'";
+        } elseif ($normalizedState === 'seen') {
+            $statusFilter = "notification_status = 'seen'";
+        } elseif ($normalizedState === 'read') {
+            $statusFilter = "notification_status = 'read'";
+        } elseif ($normalizedState === 'all') {
+            $statusFilter = "notification_status <> 'none'";
+        } else {
+            $statusFilter = "notification_status IN ('unread', 'seen')";
+        }
+
+        try {
+            $stmt = $this->db->prepare("
+                SELECT id, comparison_id, notification_status, notification_final_result, matched_at
+                FROM fingerprint_matches
+                WHERE {$statusFilter}
+                  AND notification_final_result = 'MATCH'
+                ORDER BY matched_at DESC, id DESC
+                LIMIT ?
+            ");
+            $stmt->bindValue(1, max(1, min(100, intval($limit))), PDO::PARAM_INT);
+            $stmt->execute();
+            return array_values(array_filter(array_map(
+                function ($row) {
+                    return $this->formatFingerprintMatchNotification($row);
+                },
+                $stmt->fetchAll(PDO::FETCH_ASSOC)
+            )));
+        } catch (PDOException $e) {
+            error_log('Fingerprint notification query error: ' . $e->getMessage());
+            return [];
+        }
+    }
+
+    public function updateFingerprintMatchNotificationStatus($notificationId, $status) {
+        if (!$this->db) {
+            return ['success' => false, 'error' => 'Database connection not available'];
+        }
+
+        $notificationId = intval($notificationId);
+        $status = strtolower(trim((string)$status));
+        if ($notificationId <= 0 || !in_array($status, ['seen', 'read'], true)) {
+            return ['success' => false, 'error' => 'Invalid notification update.'];
+        }
+
+        try {
+            if ($status === 'seen') {
+                $stmt = $this->db->prepare("
+                    UPDATE fingerprint_matches
+                    SET notification_status = CASE WHEN notification_status = 'unread' THEN 'seen' ELSE notification_status END,
+                        notification_seen_at = CASE WHEN notification_status = 'unread' THEN COALESCE(notification_seen_at, CURRENT_TIMESTAMP) ELSE notification_seen_at END
+                    WHERE id = ?
+                      AND notification_status IN ('unread', 'seen')
+                ");
+            } else {
+                $stmt = $this->db->prepare("
+                    UPDATE fingerprint_matches
+                    SET notification_status = 'read',
+                        notification_seen_at = COALESCE(notification_seen_at, CURRENT_TIMESTAMP),
+                        notification_read_at = COALESCE(notification_read_at, CURRENT_TIMESTAMP)
+                    WHERE id = ?
+                      AND notification_status IN ('unread', 'seen', 'read')
+                ");
+            }
+            $stmt->execute([$notificationId]);
+            $notification = $this->getFingerprintMatchNotificationById($notificationId);
+
+            return [
+                'success' => $notification !== null,
+                'notification' => $notification,
+                'updated_rows' => intval($stmt->rowCount())
+            ];
+        } catch (PDOException $e) {
+            return ['success' => false, 'error' => 'Database error: ' . $e->getMessage()];
+        }
+    }
+
+    public function getComparisonResultByComparisonId($comparisonId) {
+        if (!$this->db) {
+            return null;
+        }
+
+        $comparisonId = trim((string)$comparisonId);
+        if ($comparisonId === '') {
+            return null;
+        }
+
+        try {
+            $stmt = $this->db->prepare("
+                SELECT
+                    fm.id,
+                    fm.applicant_id,
+                    fm.criminal_id,
+                    fm.finger_matched,
+                    fm.match_score,
+                    fm.is_match,
+                    fm.comparison_id,
+                    fm.comparison_result,
+                    fm.review_status,
+                    fm.matched_at,
+                    a.name AS applicant_name,
+                    cr.name AS reference_name
+                FROM fingerprint_matches fm
+                LEFT JOIN applicants a ON a.id = fm.applicant_id
+                LEFT JOIN criminal_records cr ON cr.id = fm.criminal_id
+                WHERE fm.comparison_id = ?
+                ORDER BY fm.id DESC
+                LIMIT 1
+            ");
+            $stmt->execute([$comparisonId]);
+            $rows = $this->decodeComparisonResultRows([$stmt->fetch(PDO::FETCH_ASSOC) ?: []]);
+            return !empty($rows[0]) ? $rows[0] : null;
+        } catch (PDOException $e) {
+            error_log('Fingerprint comparison lookup error: ' . $e->getMessage());
+            return null;
         }
     }
 
@@ -1764,7 +2190,6 @@ class FingerprintDB {
                     review_notes = COALESCE(NULLIF(review_notes, ''), ?),
                     reviewed_at = NOW()
                 WHERE applicant_id = ?
-                  AND is_match = 1
                   AND review_status = 'PENDING_REVIEW'
             ");
             $stmt->execute([$note, intval($applicantId)]);
@@ -1790,7 +2215,25 @@ class FingerprintDB {
         try {
             if ($includeSensitive) {
                 $stmt = $this->db->prepare("
-                    SELECT fm.*, cr.name AS criminal_name 
+                    SELECT
+                        fm.id,
+                        fm.applicant_id,
+                        fm.criminal_id,
+                        fm.finger_matched,
+                        fm.match_score,
+                        fm.is_match,
+                        fm.review_status,
+                        fm.review_outcome,
+                        fm.review_notes,
+                        fm.reviewed_at,
+                        fm.disclosure_level,
+                        fm.comparison_id,
+                        fm.notification_status,
+                        fm.notification_final_result,
+                        fm.notification_seen_at,
+                        fm.notification_read_at,
+                        fm.matched_at,
+                        cr.name AS criminal_name
                     FROM fingerprint_matches fm
                     LEFT JOIN criminal_records cr ON fm.criminal_id = cr.id
                     WHERE fm.applicant_id = ?
@@ -1813,9 +2256,71 @@ class FingerprintDB {
             }
             
             $stmt->execute([$applicantId]);
+            // Application history is summary-only. The selected comparison is
+            // loaded by comparison_id when the user opens its result. This
+            // avoids decoding every stored fingerprint image for one modal.
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
             error_log("Query error: " . $e->getMessage());
+            return [];
+        }
+    }
+
+    private function decodeComparisonResultRows($rows) {
+        return array_map(function ($row) {
+            if (!array_key_exists('comparison_result', $row)) {
+                return $row;
+            }
+
+            $decoded = null;
+            if (is_string($row['comparison_result']) && trim($row['comparison_result']) !== '') {
+                $candidate = json_decode($row['comparison_result'], true);
+                $decoded = is_array($candidate) ? $candidate : null;
+                if (($decoded['storage'] ?? '') === 'fingerprint_comparison_result_chunks') {
+                    $decoded = $this->loadChunkedComparisonResult($row['id'] ?? 0);
+                }
+            }
+            $row['comparison_result'] = $decoded;
+            return $row;
+        }, is_array($rows) ? $rows : []);
+    }
+
+    public function getComparisonHistory($limit = 50) {
+        if (!$this->db) {
+            return [];
+        }
+
+        try {
+            $stmt = $this->db->prepare("
+                SELECT
+                    fm.id,
+                    fm.applicant_id,
+                    fm.criminal_id,
+                    fm.finger_matched,
+                    fm.match_score,
+                    fm.is_match,
+                    fm.comparison_id,
+                    fm.review_status,
+                    fm.notification_final_result,
+                    fm.matched_at,
+                    a.name AS applicant_name,
+                    cr.name AS reference_name
+                FROM fingerprint_matches fm
+                LEFT JOIN applicants a ON a.id = fm.applicant_id
+                LEFT JOIN criminal_records cr ON cr.id = fm.criminal_id
+                WHERE fm.comparison_id IS NOT NULL
+                  AND fm.comparison_id <> ''
+                ORDER BY fm.matched_at DESC, fm.id DESC
+                LIMIT ?
+            ");
+            $stmt->bindValue(1, max(1, min(200, intval($limit))), PDO::PARAM_INT);
+            $stmt->execute();
+            // History is intentionally summary-only. Decoding dozens of
+            // multi-megabyte image payloads can exhaust PHP memory before the
+            // admin page has a chance to request one selected comparison.
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Fingerprint comparison history query error: " . $e->getMessage());
             return [];
         }
     }
@@ -1856,7 +2361,6 @@ class FingerprintDB {
                     reviewed_by = ?,
                     reviewed_at = NOW()
                 WHERE applicant_id = ?
-                  AND is_match = 1
                   AND review_status = 'PENDING_REVIEW'
             ");
             $stmt->execute([$reviewOutcome, $notes, $reviewedBy, $applicantId]);
@@ -2072,7 +2576,609 @@ class FingerprintDB {
             return false;
         }
     }
-    
+
+    private function normalizeDatasetType($datasetType) {
+        $value = strtolower(trim((string)$datasetType));
+        if ($value === 'criminal') {
+            $value = 'criminal_reference';
+        }
+        return in_array($value, ['applicant', 'criminal_reference'], true) ? $value : null;
+    }
+
+    private function normalizeDatasetExtension($extension) {
+        $value = strtolower(trim((string)$extension));
+        $value = preg_replace('/^image\//', '', $value);
+        $value = ltrim($value, '.');
+        if ($value === 'jpeg') $value = 'jpg';
+        if ($value === 'tiff') $value = 'tif';
+        return in_array($value, ['png', 'bmp', 'jpg', 'tif', 'wsq'], true) ? $value : 'png';
+    }
+
+    private function datasetFilename($datasetType, $fingerCode, $sampleNumber, $extension) {
+        $prefix = $datasetType === 'applicant' ? 'pt' : 'c';
+        return $prefix . $fingerCode . intval($sampleNumber) . '.' . $this->normalizeDatasetExtension($extension);
+    }
+
+    public function getCurrentDatasetParticipant($datasetType) {
+        $datasetType = $this->normalizeDatasetType($datasetType);
+        if (!$this->db || !$datasetType) return null;
+
+        $stmt = $this->db->prepare("
+            SELECT id, dataset_type, participant_number, display_name, family_name, given_name,
+                   age, criminal_record_id, consent_given, consented_at, status, created_at, completed_at
+            FROM dataset_participants
+            WHERE dataset_type = ? AND status = 'active'
+            ORDER BY id DESC
+            LIMIT 1
+        ");
+        $stmt->execute([$datasetType]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row ?: null;
+    }
+
+    public function getDatasetParticipants($datasetType, $search = '', $page = 1, $pageSize = 40) {
+        $datasetType = $this->normalizeDatasetType($datasetType);
+        if (!$this->db || !$datasetType) {
+            return ['success' => false, 'error' => 'Invalid dataset type.'];
+        }
+
+        $page = max(1, intval($page));
+        $pageSize = max(1, min(100, intval($pageSize)));
+        $search = trim((string)$search);
+        $where = 'dp.dataset_type = ?';
+        $params = [$datasetType];
+        if ($search !== '') {
+            $where .= " AND (dp.display_name LIKE ? OR CAST(dp.participant_number AS CHAR) LIKE ? OR COALESCE(cr.case_number, '') LIKE ?)";
+            $term = '%' . $search . '%';
+            array_push($params, $term, $term, $term);
+        }
+
+        try {
+            $countStmt = $this->db->prepare("
+                SELECT COUNT(*)
+                FROM dataset_participants dp
+                LEFT JOIN criminal_records cr ON cr.id = dp.criminal_record_id
+                WHERE $where
+            ");
+            $countStmt->execute($params);
+            $total = intval($countStmt->fetchColumn());
+            $totalPages = max(1, intval(ceil($total / $pageSize)));
+            $page = min($page, $totalPages);
+            $offset = ($page - 1) * $pageSize;
+
+            $stmt = $this->db->prepare("
+                SELECT dp.id, dp.dataset_type, dp.participant_number, dp.display_name,
+                       dp.age, dp.criminal_record_id, dp.consent_given, dp.status,
+                       dp.created_at, dp.completed_at, cr.case_number, cr.sex AS sex,
+                       (SELECT COUNT(*) FROM dataset_fingerprint_samples dfs WHERE dfs.participant_id = dp.id) AS sample_count,
+                       (SELECT COUNT(DISTINCT dfs.finger_code) FROM dataset_fingerprint_samples dfs WHERE dfs.participant_id = dp.id) AS collected_finger_count
+                FROM dataset_participants dp
+                LEFT JOIN criminal_records cr ON cr.id = dp.criminal_record_id
+                WHERE $where
+                ORDER BY dp.participant_number DESC
+                LIMIT $pageSize OFFSET $offset
+            ");
+            $stmt->execute($params);
+
+            return [
+                'success' => true,
+                'participants' => $stmt->fetchAll(PDO::FETCH_ASSOC),
+                'pagination' => [
+                    'page' => $page,
+                    'page_size' => $pageSize,
+                    'total' => $total,
+                    'total_pages' => $totalPages
+                ]
+            ];
+        } catch (Throwable $e) {
+            return ['success' => false, 'error' => 'Database error: ' . $e->getMessage()];
+        }
+    }
+
+    public function getDatasetParticipantDetails($datasetType, $participantId) {
+        $datasetType = $this->normalizeDatasetType($datasetType);
+        $participantId = intval($participantId);
+        if (!$this->db || !$datasetType || $participantId <= 0) {
+            return ['success' => false, 'error' => 'Invalid dataset participant.'];
+        }
+
+        try {
+            $participantStmt = $this->db->prepare("
+                SELECT dp.id, dp.dataset_type, dp.participant_number, dp.display_name,
+                       dp.family_name, dp.given_name, dp.age, dp.criminal_record_id,
+                       dp.consent_given, dp.consented_at, dp.status, dp.created_at,
+                       dp.completed_at, cr.case_number, cr.sex AS sex
+                FROM dataset_participants dp
+                LEFT JOIN criminal_records cr ON cr.id = dp.criminal_record_id
+                WHERE dp.id = ? AND dp.dataset_type = ?
+                LIMIT 1
+            ");
+            $participantStmt->execute([$participantId, $datasetType]);
+            $participant = $participantStmt->fetch(PDO::FETCH_ASSOC);
+            if (!$participant) {
+                return ['success' => false, 'error' => 'Dataset participant not found.', 'code' => 'DATASET_PARTICIPANT_NOT_FOUND'];
+            }
+
+            $sampleStmt = $this->db->prepare("
+                SELECT id, filename, file_extension, finger_side, finger_name,
+                       finger_code, sample_number, original_image, image_format,
+                       quality_score, quality_label, scanner_source, captured_at, created_at
+                FROM dataset_fingerprint_samples
+                WHERE participant_id = ?
+                ORDER BY FIELD(finger_code, 'rth', 'rin', 'rmi', 'rri', 'rpi', 'lth', 'lin', 'lmi', 'lri', 'lpi'), sample_number ASC
+            ");
+            $sampleStmt->execute([$participantId]);
+
+            return [
+                'success' => true,
+                'participant' => $participant,
+                'samples' => $sampleStmt->fetchAll(PDO::FETCH_ASSOC)
+            ];
+        } catch (Throwable $e) {
+            return ['success' => false, 'error' => 'Database error: ' . $e->getMessage()];
+        }
+    }
+
+    private function datasetCriminalCaseNumber($participantNumber, $createdAt = null) {
+        $timestamp = $createdAt ? strtotime((string)$createdAt) : false;
+        $year = $timestamp ? date('Y', $timestamp) : date('Y');
+        return 'CASE-' . $year . '-' . intval($participantNumber);
+    }
+
+    private function datasetCriminalSex($value = null) {
+        $normalized = strtoupper(substr(trim((string)$value), 0, 1));
+        if (in_array($normalized, ['M', 'F'], true)) return $normalized;
+        return random_int(0, 1) === 0 ? 'M' : 'F';
+    }
+
+    private function ensureSyntheticCriminalRecord($participantNumber, $displayName, $age, $createdAt = null) {
+        $participantNumber = intval($participantNumber);
+        $caseNumber = $this->datasetCriminalCaseNumber($participantNumber, $createdAt);
+        $sex = $this->datasetCriminalSex();
+
+        $caseStmt = $this->db->prepare("
+            SELECT id FROM criminal_records
+            WHERE case_number = ?
+            ORDER BY id ASC
+            LIMIT 1
+        ");
+        $caseStmt->execute([$caseNumber]);
+        $existingByCase = intval($caseStmt->fetchColumn());
+        if ($existingByCase > 0) return $existingByCase;
+
+        $idStmt = $this->db->prepare('SELECT id, name, sex FROM criminal_records WHERE id = ? LIMIT 1');
+        $idStmt->execute([$participantNumber]);
+        $existingById = $idStmt->fetch(PDO::FETCH_ASSOC);
+        $requestedIdAvailable = !$existingById;
+
+        if ($existingById && strcasecmp(trim((string)$existingById['name']), trim((string)$displayName)) === 0) {
+            $sex = $this->datasetCriminalSex($existingById['sex'] ?? null);
+            $update = $this->db->prepare('UPDATE criminal_records SET case_number = ?, sex = ?, is_active = 1 WHERE id = ?');
+            $update->execute([$caseNumber, $sex, intval($existingById['id'])]);
+            return intval($existingById['id']);
+        }
+
+        if ($requestedIdAvailable) {
+            $insert = $this->db->prepare("
+                INSERT INTO criminal_records (id, name, age, sex, case_number, is_active)
+                VALUES (?, ?, ?, ?, ?, 1)
+            ");
+            $insert->execute([$participantNumber, $displayName, intval($age), $sex, $caseNumber]);
+            return $participantNumber;
+        }
+
+        $insert = $this->db->prepare("
+            INSERT INTO criminal_records (name, age, sex, case_number, is_active)
+            VALUES (?, ?, ?, ?, 1)
+        ");
+        $insert->execute([$displayName, intval($age), $sex, $caseNumber]);
+        return intval($this->db->lastInsertId());
+    }
+
+    private function datasetFingerPosition($fingerCode) {
+        $positions = [
+            'rth' => 'RIGHT_THUMB',
+            'rin' => 'RIGHT_INDEX',
+            'rmi' => 'RIGHT_MIDDLE',
+            'rri' => 'RIGHT_RING',
+            'rpi' => 'RIGHT_PINKY',
+            'lth' => 'LEFT_THUMB',
+            'lin' => 'LEFT_INDEX',
+            'lmi' => 'LEFT_MIDDLE',
+            'lri' => 'LEFT_RING',
+            'lpi' => 'LEFT_PINKY'
+        ];
+        return $positions[strtolower(trim((string)$fingerCode))] ?? null;
+    }
+
+    public function syncDatasetCriminalParticipant($participantId) {
+        if (!$this->db) return ['success' => false, 'error' => 'Database connection not available'];
+
+        try {
+            $participantStmt = $this->db->prepare("
+                SELECT id, participant_number, display_name, age, criminal_record_id, created_at
+                FROM dataset_participants
+                WHERE id = ? AND dataset_type = 'criminal_reference'
+                LIMIT 1
+            ");
+            $participantStmt->execute([intval($participantId)]);
+            $participant = $participantStmt->fetch(PDO::FETCH_ASSOC);
+            if (!$participant) {
+                return ['success' => false, 'error' => 'Synthetic reference participant not found.'];
+            }
+
+            $criminalRecordId = intval($participant['criminal_record_id'] ?? 0);
+            if ($criminalRecordId <= 0) {
+                $criminalRecordId = $this->ensureSyntheticCriminalRecord(
+                    $participant['participant_number'],
+                    $participant['display_name'],
+                    $participant['age'],
+                    $participant['created_at'] ?? null
+                );
+                $linkStmt = $this->db->prepare("
+                    UPDATE dataset_participants
+                    SET criminal_record_id = ?
+                    WHERE id = ?
+                ");
+                $linkStmt->execute([$criminalRecordId, intval($participantId)]);
+            }
+
+            $caseNumber = $this->datasetCriminalCaseNumber(
+                $participant['participant_number'],
+                $participant['created_at'] ?? null
+            );
+            $sexStmt = $this->db->prepare('SELECT sex FROM criminal_records WHERE id = ? LIMIT 1');
+            $sexStmt->execute([$criminalRecordId]);
+            $sex = $this->datasetCriminalSex($sexStmt->fetchColumn());
+            $caseStmt = $this->db->prepare('UPDATE criminal_records SET case_number = ?, sex = ? WHERE id = ?');
+            $caseStmt->execute([$caseNumber, $sex, $criminalRecordId]);
+
+            $existingStmt = $this->db->prepare("
+                SELECT finger_position
+                FROM criminal_fingerprints
+                WHERE criminal_id = ? AND is_active = 1
+            ");
+            $existingStmt->execute([$criminalRecordId]);
+            $existingPositions = array_fill_keys($existingStmt->fetchAll(PDO::FETCH_COLUMN), true);
+
+            $sampleStmt = $this->db->prepare("
+                SELECT finger_code, template, template_format, original_image, filename, quality_score
+                FROM dataset_fingerprint_samples
+                WHERE participant_id = ?
+                ORDER BY sample_number ASC, id ASC
+            ");
+            $sampleStmt->execute([intval($participantId)]);
+            $enrolled = [];
+            $errors = [];
+            foreach ($sampleStmt->fetchAll(PDO::FETCH_ASSOC) as $sample) {
+                $position = $this->datasetFingerPosition($sample['finger_code'] ?? '');
+                if (!$position || isset($existingPositions[$position])) continue;
+
+                $stored = $this->storeCriminalFingerprint(
+                    $criminalRecordId,
+                    $position,
+                    $sample['template'],
+                    $sample['template_format'] ?? 'ISO',
+                    intval($sample['quality_score'] ?? 0),
+                    $sample['original_image'] ?? null,
+                    $sample['filename'] ?? null
+                );
+                if (!empty($stored['success'])) {
+                    $existingPositions[$position] = true;
+                    $enrolled[] = $position;
+                } else {
+                    $errors[] = [
+                        'finger_position' => $position,
+                        'error' => $stored['error'] ?? 'Operational fingerprint enrollment failed.'
+                    ];
+                }
+            }
+
+            return [
+                'success' => true,
+                'criminal_record_id' => $criminalRecordId,
+                'enrolled_finger_positions' => $enrolled,
+                'enrollment_errors' => $errors
+            ];
+        } catch (Throwable $e) {
+            return ['success' => false, 'error' => 'Database error: ' . $e->getMessage()];
+        }
+    }
+
+    private function backfillDatasetCriminalLinks() {
+        if (!$this->db || !$this->columnExists('dataset_participants', 'criminal_record_id')) return;
+        $stmt = $this->db->query("
+            SELECT id
+            FROM dataset_participants
+            WHERE dataset_type = 'criminal_reference'
+            ORDER BY participant_number ASC
+        ");
+        foreach ($stmt->fetchAll(PDO::FETCH_COLUMN) as $participantId) {
+            $result = $this->syncDatasetCriminalParticipant(intval($participantId));
+            if (empty($result['success'])) {
+                error_log('Dataset criminal link backfill failed for participant ' . intval($participantId) . ': ' . ($result['error'] ?? 'unknown error'));
+            }
+        }
+    }
+
+    public function createDatasetParticipant($datasetType, $consentGiven = false) {
+        $datasetType = $this->normalizeDatasetType($datasetType);
+        if (!$this->db || !$datasetType) {
+            return ['success' => false, 'error' => 'Invalid dataset type.'];
+        }
+        if ($datasetType === 'applicant' && !$consentGiven) {
+            return ['success' => false, 'error' => 'Explicit participant consent is required.', 'code' => 'CONSENT_REQUIRED'];
+        }
+
+        try {
+            $this->db->beginTransaction();
+            $activeStmt = $this->db->prepare("
+                SELECT id FROM dataset_participants
+                WHERE dataset_type = ? AND status = 'active'
+                FOR UPDATE
+            ");
+            $activeStmt->execute([$datasetType]);
+            $activeIds = array_map('intval', $activeStmt->fetchAll(PDO::FETCH_COLUMN));
+            if (!empty($activeIds)) {
+                $placeholders = implode(',', array_fill(0, count($activeIds), '?'));
+                $finishStmt = $this->db->prepare("
+                    UPDATE dataset_participants
+                    SET status = 'completed', completed_at = CURRENT_TIMESTAMP
+                    WHERE id IN ($placeholders)
+                ");
+                $finishStmt->execute($activeIds);
+            }
+
+            if ($datasetType === 'criminal_reference') {
+                $maxStmt = $this->db->query("
+                    SELECT GREATEST(300,
+                        COALESCE((SELECT MAX(id) FROM criminal_records), 0),
+                        COALESCE((SELECT MAX(participant_number) FROM dataset_participants WHERE dataset_type = 'criminal_reference'), 0)
+                    ) AS maximum_number
+                ");
+                $maximum = intval($maxStmt->fetchColumn());
+            } else {
+                $maxStmt = $this->db->prepare("
+                    SELECT COALESCE(MAX(participant_number), 0)
+                    FROM dataset_participants
+                    WHERE dataset_type = ?
+                ");
+                $maxStmt->execute([$datasetType]);
+                $maximum = intval($maxStmt->fetchColumn());
+            }
+
+            $participantNumber = $maximum + 1;
+            $isCriminalReference = $datasetType === 'criminal_reference';
+            $familyName = $isCriminalReference ? 'Applicant' : 'Participant';
+            $givenName = (string)$participantNumber;
+            $displayName = $familyName . ' ' . $givenName;
+            $age = $isCriminalReference ? random_int(19, 65) : null;
+            $criminalRecordId = $isCriminalReference
+                ? $this->ensureSyntheticCriminalRecord($participantNumber, $displayName, $age)
+                : null;
+            $consentedAt = $consentGiven ? date('Y-m-d H:i:s') : null;
+
+            $insert = $this->db->prepare("
+                INSERT INTO dataset_participants
+                    (dataset_type, participant_number, display_name, family_name, given_name, age, criminal_record_id, consent_given, consented_at, status)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active')
+            ");
+            $insert->execute([
+                $datasetType,
+                $participantNumber,
+                $displayName,
+                $familyName,
+                $givenName,
+                $age,
+                $criminalRecordId,
+                $consentGiven ? 1 : 0,
+                $consentedAt
+            ]);
+            $participantId = intval($this->db->lastInsertId());
+            $this->db->commit();
+
+            return [
+                'success' => true,
+                'participant' => [
+                    'id' => $participantId,
+                    'dataset_type' => $datasetType,
+                    'participant_number' => $participantNumber,
+                    'display_name' => $displayName,
+                    'family_name' => $familyName,
+                    'given_name' => $givenName,
+                    'age' => $age,
+                    'criminal_record_id' => $criminalRecordId,
+                    'consent_given' => $consentGiven ? 1 : 0,
+                    'consented_at' => $consentedAt,
+                    'status' => 'active'
+                ]
+            ];
+        } catch (Throwable $e) {
+            if ($this->db->inTransaction()) $this->db->rollBack();
+            return ['success' => false, 'error' => 'Database error: ' . $e->getMessage()];
+        }
+    }
+
+    public function getNextDatasetSampleNumber($datasetType, $fingerCode) {
+        $datasetType = $this->normalizeDatasetType($datasetType);
+        if (!$this->db || !$datasetType) return 1;
+        $stmt = $this->db->prepare("
+            SELECT COALESCE(MAX(sample_number), 0) + 1
+            FROM dataset_fingerprint_samples
+            WHERE dataset_type = ? AND finger_code = ?
+        ");
+        $stmt->execute([$datasetType, strtolower(trim((string)$fingerCode))]);
+        return max(1, intval($stmt->fetchColumn()));
+    }
+
+    public function getDatasetCollectionState($datasetType, $participantId = null, $fingerCode = 'rth', $extension = 'png') {
+        $datasetType = $this->normalizeDatasetType($datasetType);
+        if (!$this->db || !$datasetType) {
+            return ['success' => false, 'error' => 'Invalid dataset type.'];
+        }
+
+        $participant = null;
+        if ($participantId) {
+            $stmt = $this->db->prepare("
+                SELECT id, dataset_type, participant_number, display_name, family_name, given_name,
+                       age, criminal_record_id, consent_given, consented_at, status, created_at, completed_at
+                FROM dataset_participants
+                WHERE id = ? AND dataset_type = ?
+                LIMIT 1
+            ");
+            $stmt->execute([intval($participantId), $datasetType]);
+            $participant = $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+        } else {
+            $participant = $this->getCurrentDatasetParticipant($datasetType);
+        }
+
+        $samples = [];
+        if ($participant) {
+            $sampleStmt = $this->db->prepare("
+                SELECT id, filename, finger_side, finger_name, finger_code, sample_number,
+                       file_extension, image_format, quality_score, quality_label, scanner_source,
+                       captured_at, created_at
+                FROM dataset_fingerprint_samples
+                WHERE participant_id = ?
+                ORDER BY finger_side DESC, finger_code, sample_number
+            ");
+            $sampleStmt->execute([intval($participant['id'])]);
+            $samples = $sampleStmt->fetchAll(PDO::FETCH_ASSOC);
+        }
+
+        $sampleNumber = $this->getNextDatasetSampleNumber($datasetType, $fingerCode);
+        $collectedCodes = [];
+        foreach ($samples as $sample) {
+            $collectedCodes[(string)$sample['finger_code']] = true;
+        }
+
+        return [
+            'success' => true,
+            'mode' => $datasetType === 'applicant' ? 'applicant' : 'criminal',
+            'dataset_type' => $datasetType,
+            'participant' => $participant,
+            'samples' => $samples,
+            'collected_finger_codes' => array_keys($collectedCodes),
+            'collected_finger_count' => count($collectedCodes),
+            'next_sample_number' => $sampleNumber,
+            'next_filename' => $this->datasetFilename($datasetType, strtolower(trim((string)$fingerCode)), $sampleNumber, $extension)
+        ];
+    }
+
+    public function storeDatasetFingerprintSample($participantId, $datasetType, $finger, $template, $templateFormat, $originalImage, $imageFormat, $qualityScore, $qualityLabel, $scannerSource, $capturedAt = null) {
+        $datasetType = $this->normalizeDatasetType($datasetType);
+        if (!$this->db || !$datasetType) {
+            return ['success' => false, 'error' => 'Invalid dataset type.'];
+        }
+
+        $fingerCode = strtolower(trim((string)($finger['code'] ?? '')));
+        $extension = $this->normalizeDatasetExtension($imageFormat);
+        $captureHash = hash('sha256', (string)$originalImage);
+        $lockName = 'minutiae_dataset_' . $datasetType . '_' . $fingerCode;
+
+        try {
+            $lockStmt = $this->db->prepare('SELECT GET_LOCK(?, 5)');
+            $lockStmt->execute([$lockName]);
+            if (intval($lockStmt->fetchColumn()) !== 1) {
+                return ['success' => false, 'error' => 'Dataset filename allocation is busy. Please try again.', 'code' => 'DATASET_LOCK_TIMEOUT'];
+            }
+
+            $participantStmt = $this->db->prepare("
+                SELECT id, dataset_type, display_name, status
+                FROM dataset_participants
+                WHERE id = ? AND dataset_type = ?
+                LIMIT 1
+            ");
+            $participantStmt->execute([intval($participantId), $datasetType]);
+            $participant = $participantStmt->fetch(PDO::FETCH_ASSOC);
+            if (!$participant || $participant['status'] !== 'active') {
+                return ['success' => false, 'error' => 'The selected dataset participant is not active.', 'code' => 'PARTICIPANT_NOT_ACTIVE'];
+            }
+
+            $duplicateStmt = $this->db->prepare("
+                SELECT id, filename
+                FROM dataset_fingerprint_samples
+                WHERE participant_id = ? AND finger_code = ? AND capture_hash = ?
+                LIMIT 1
+            ");
+            $duplicateStmt->execute([intval($participantId), $fingerCode, $captureHash]);
+            $duplicate = $duplicateStmt->fetch(PDO::FETCH_ASSOC);
+            if ($duplicate) {
+                return [
+                    'success' => false,
+                    'error' => 'This exact scanner capture is already stored for the selected participant and finger.',
+                    'code' => 'DUPLICATE_DATASET_CAPTURE',
+                    'existing_filename' => $duplicate['filename']
+                ];
+            }
+
+            $sampleNumber = $this->getNextDatasetSampleNumber($datasetType, $fingerCode);
+            $filename = $this->datasetFilename($datasetType, $fingerCode, $sampleNumber, $extension);
+            $captureTimestamp = $capturedAt && strtotime((string)$capturedAt)
+                ? date('Y-m-d H:i:s', strtotime((string)$capturedAt))
+                : date('Y-m-d H:i:s');
+            $insert = $this->db->prepare("
+                INSERT INTO dataset_fingerprint_samples
+                    (participant_id, dataset_type, filename, file_extension, finger_side, finger_name,
+                     finger_code, sample_number, template, template_format, original_image, image_format,
+                     quality_score, quality_label, scanner_source, capture_hash, captured_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ");
+            $insert->execute([
+                intval($participantId),
+                $datasetType,
+                $filename,
+                $extension,
+                strtolower((string)($finger['side'] ?? '')),
+                strtolower((string)($finger['name'] ?? '')),
+                $fingerCode,
+                $sampleNumber,
+                $template,
+                strtoupper(substr((string)$templateFormat, 0, 20)),
+                $originalImage,
+                $extension,
+                intval($qualityScore),
+                $qualityLabel,
+                substr((string)$scannerSource, 0, 255),
+                $captureHash,
+                $captureTimestamp
+            ]);
+
+            $sampleId = intval($this->db->lastInsertId());
+            $operationalEnrollment = null;
+            if ($datasetType === 'criminal_reference') {
+                // Keep every research capture append-only, but expose the first accepted
+                // sample for each finger through the application's existing criminal search.
+                $operationalEnrollment = $this->syncDatasetCriminalParticipant(intval($participantId));
+            }
+
+            return [
+                'success' => true,
+                'operational_enrollment' => $operationalEnrollment,
+                'sample' => [
+                    'id' => $sampleId,
+                    'participant_id' => intval($participantId),
+                    'filename' => $filename,
+                    'finger_side' => strtolower((string)($finger['side'] ?? '')),
+                    'finger_name' => strtolower((string)($finger['name'] ?? '')),
+                    'finger_code' => $fingerCode,
+                    'sample_number' => $sampleNumber,
+                    'quality_score' => intval($qualityScore),
+                    'quality_label' => $qualityLabel,
+                    'captured_at' => $captureTimestamp
+                ]
+            ];
+        } catch (Throwable $e) {
+            return ['success' => false, 'error' => 'Database error: ' . $e->getMessage()];
+        } finally {
+            try {
+                $releaseStmt = $this->db->prepare('SELECT RELEASE_LOCK(?)');
+                $releaseStmt->execute([$lockName]);
+            } catch (Throwable $ignored) {
+            }
+        }
+    }
+
     /**
      * Set PDO connection
      */

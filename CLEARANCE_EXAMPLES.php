@@ -285,6 +285,6 @@ echo "   - Contact with criminal database tracked\n";
 echo "   - Compliance-ready\n\n";
 
 echo "═════════════════════════════════════════════════════════════════\n";
-echo "For full documentation, see: POLICE_CLEARANCE_WORKFLOW.md\n";
+echo "For full documentation, see: docs/POLICE_CLEARANCE_WORKFLOW.md\n";
 echo "═════════════════════════════════════════════════════════════════\n";
 ?>

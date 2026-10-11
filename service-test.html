@@ -984,11 +984,344 @@
             background: white;
         }
 
+        .operator-view {
+            display: grid;
+            gap: 22px;
+        }
+
+        .operator-hero {
+            display: flex;
+            justify-content: space-between;
+            gap: 24px;
+            align-items: center;
+            padding: 26px 28px;
+            border-radius: 26px;
+            color: white;
+            background: linear-gradient(135deg, var(--pnp-blue-deep), var(--pnp-blue));
+            box-shadow: 0 24px 50px rgba(7, 43, 115, 0.2);
+        }
+
+        .operator-hero h1 {
+            margin: 8px 0;
+            font-size: clamp(30px, 4vw, 44px);
+        }
+
+        .operator-hero p {
+            margin: 0;
+            max-width: 700px;
+            color: rgba(255, 255, 255, 0.86);
+            line-height: 1.6;
+        }
+
+        .operator-hero .button-secondary {
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .workflow-strip {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 10px;
+            padding: 14px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.76);
+            border: 1px solid var(--line);
+        }
+
+        .workflow-step {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-height: 54px;
+            padding: 10px 12px;
+            border-radius: 14px;
+            color: var(--muted);
+            background: var(--soft);
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .workflow-step span {
+            display: grid;
+            place-items: center;
+            flex: 0 0 28px;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            color: white;
+            background: var(--pnp-blue);
+        }
+
+        .operator-capture-grid,
+        .operator-result-grid,
+        .operator-image-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .operator-card {
+            padding: 22px;
+            border-radius: 22px;
+            background: white;
+            border: 1px solid var(--line);
+            box-shadow: 0 14px 32px rgba(18, 34, 66, 0.07);
+        }
+
+        .operator-card h2,
+        .operator-card h3 {
+            margin: 0 0 8px;
+        }
+
+        .operator-card p {
+            margin: 0;
+            color: var(--muted);
+            line-height: 1.55;
+        }
+
+        .operator-card.primary-matcher {
+            border: 2px solid rgba(0, 56, 168, 0.32);
+            box-shadow: 0 18px 38px rgba(0, 56, 168, 0.12);
+        }
+
+        .operator-card.final-result {
+            grid-column: 1 / -1;
+            text-align: center;
+            border-width: 2px;
+        }
+
+        .operator-kicker {
+            color: var(--pnp-blue-deep);
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 0.09em;
+            text-transform: uppercase;
+        }
+
+        .operator-status {
+            margin-top: 14px;
+            font-size: clamp(23px, 3vw, 34px);
+            font-weight: 850;
+            line-height: 1.15;
+        }
+
+        .operator-status.success { color: var(--success); }
+        .operator-status.warning { color: var(--warning); }
+        .operator-status.danger { color: var(--danger); }
+        .operator-status.neutral { color: var(--muted); }
+
+        .capture-state {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            margin: 16px 0;
+        }
+
+        .capture-state > div {
+            padding: 12px;
+            border-radius: 14px;
+            background: var(--soft);
+        }
+
+        .capture-preview {
+            margin: 16px 0;
+            min-height: 250px;
+        }
+
+        .capture-preview figure img,
+        .capture-preview .image-placeholder {
+            min-height: 250px;
+            max-height: 330px;
+        }
+
+        .capture-state strong {
+            display: block;
+            margin-bottom: 4px;
+            color: var(--muted);
+            font-size: 11px;
+            letter-spacing: 0.07em;
+            text-transform: uppercase;
+        }
+
+        .operator-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .operator-actions .button-primary {
+            background: var(--pnp-blue);
+            color: white;
+            box-shadow: 0 12px 24px rgba(0, 56, 168, 0.2);
+        }
+
+        .operator-actions .button-soft {
+            border: 1px solid rgba(0, 56, 168, 0.12);
+        }
+
+        .supporting-list {
+            display: grid;
+            gap: 8px;
+            margin-top: 14px;
+        }
+
+        .supporting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: 12px;
+            background: var(--soft);
+            font-weight: 700;
+        }
+
+        .supporting-result {
+            display: grid;
+            gap: 3px;
+            text-align: right;
+        }
+
+        .matcher-percentage {
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .primary-percentage {
+            margin-top: 16px;
+            color: var(--pnp-blue-deep);
+            font-size: clamp(34px, 5vw, 52px);
+            font-weight: 900;
+            line-height: 1;
+        }
+
+        .percentage-label {
+            margin-top: 5px;
+            color: var(--muted);
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .agreement-line {
+            margin-top: 14px;
+            color: var(--ink);
+            font-weight: 800;
+        }
+
+        .operator-fingerprint-view {
+            scroll-margin-top: 20px;
+        }
+
+        .operator-visualization .panel-head {
+            margin-bottom: 14px;
+        }
+
+        .operator-image-slot {
+            min-height: 300px;
+        }
+
+        .operator-image-slot .image-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .operator-image-slot figure img {
+            min-height: 280px;
+            max-height: 420px;
+        }
+
+        .matched-points {
+            margin-top: 16px;
+            padding: 14px 16px;
+            border-radius: 14px;
+            background: var(--soft);
+            font-size: 18px;
+            font-weight: 800;
+        }
+
+        .advanced-info {
+            margin-top: 24px;
+            border: 1px solid rgba(7, 43, 115, 0.18);
+            border-radius: 22px;
+            background: white;
+            box-shadow: 0 14px 32px rgba(18, 34, 66, 0.07);
+            overflow: hidden;
+        }
+
+        .advanced-info > summary,
+        .developer-diagnostics > summary {
+            list-style: none;
+            cursor: pointer;
+            font-weight: 800;
+        }
+
+        .advanced-info > summary::-webkit-details-marker,
+        .developer-diagnostics > summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .advanced-info > summary {
+            padding: 17px 20px;
+            color: var(--pnp-blue-deep);
+            background: #edf3ff;
+            text-align: center;
+        }
+
+        .advanced-info[open] > summary {
+            border-bottom: 1px solid var(--line);
+        }
+
+        .advanced-content {
+            padding: 22px;
+        }
+
+        .advanced-content > h2 {
+            margin: 0 0 6px;
+        }
+
+        .advanced-intro {
+            margin: 0 0 18px;
+            color: var(--muted);
+        }
+
+        .developer-diagnostics {
+            margin-top: 22px;
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            overflow: hidden;
+        }
+
+        .developer-diagnostics > summary {
+            padding: 15px 18px;
+            color: var(--muted);
+            background: var(--soft);
+        }
+
+        .developer-content {
+            padding: 18px;
+            background: #fbfcff;
+        }
+
+        .operator-error {
+            margin-top: 10px;
+            color: var(--danger);
+            font-weight: 700;
+        }
+
         @media (max-width: 1100px) {
             .workspace,
             .compare-layout,
-            .footer-grid {
+            .footer-grid,
+            .operator-capture-grid,
+            .operator-result-grid {
                 grid-template-columns: 1fr;
+            }
+
+            .operator-card.final-result {
+                grid-column: auto;
             }
         }
 
@@ -1027,15 +1360,230 @@
             .pair-detail-grid {
                 grid-template-columns: 1fr;
             }
+
+            .operator-hero {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .workflow-strip,
+            .operator-image-grid,
+            .capture-state {
+                grid-template-columns: 1fr;
+            }
+
+            .operator-actions button,
+            .operator-actions .button,
+            .operator-actions .file-input {
+                width: 100%;
+            }
         }
     </style>
 </head>
 <body class="auth-pending">
     <div class="shell">
+        <!-- operator-view -->
+        <main class="operator-view" aria-labelledby="operatorPageTitle">
+            <header class="operator-hero">
+                <div>
+                    <div class="eyebrow">PNP Fingerprint Verification</div>
+                    <h1 id="operatorPageTitle">Fingerprint Comparison</h1>
+                    <p>Scan the applicant and criminal fingerprints, compare them, and review the result.</p>
+                </div>
+                <a class="button button-secondary" href="admin.html">Back to Admin</a>
+            </header>
+
+            <nav class="workflow-strip" aria-label="Fingerprint comparison steps">
+                <div class="workflow-step"><span>1</span> Applicant fingerprint</div>
+                <div class="workflow-step"><span>2</span> Criminal fingerprint</div>
+                <div class="workflow-step"><span>3</span> Compare fingerprints</div>
+                <div class="workflow-step"><span>4</span> Final result</div>
+            </nav>
+
+            <section class="operator-capture-grid" aria-label="Fingerprint capture">
+                <article class="operator-card">
+                    <div class="operator-kicker">Step 1</div>
+                    <h2>Applicant Fingerprint</h2>
+                    <p>Scan the applicant&apos;s finger or select a fingerprint image.</p>
+                    <div id="operatorProbeImage" class="capture-preview"><div class="image-placeholder">Applicant fingerprint will appear here.</div></div>
+                    <div class="capture-state">
+                        <div><strong>Status</strong><span id="probeCaptureStatus">Not captured</span></div>
+                        <div><strong>Fingerprint Quality</strong><span id="probeQualityCard">Waiting</span></div>
+                    </div>
+                    <input id="operatorProbeFile" class="file-input" type="file" accept=".png,.jpg,.jpeg,.bmp,.tif,.tiff,image/*" aria-label="Select applicant fingerprint image">
+                    <div class="operator-actions">
+                        <button id="scanFingerprintButton" class="button-primary" type="button">Scan Fingerprint</button>
+                        <button id="operatorProbeUploadButton" class="button-soft" type="button">Use Selected Image</button>
+                    </div>
+                    <div id="probeOperatorMessage" class="operator-error" aria-live="polite"></div>
+                </article>
+
+                <article class="operator-card">
+                    <div class="operator-kicker">Step 2</div>
+                    <h2>Criminal Fingerprint</h2>
+                    <p>Scan the criminal&apos;s finger or select a fingerprint image.</p>
+                    <div id="operatorCandidateImage" class="capture-preview"><div class="image-placeholder">Criminal fingerprint will appear here.</div></div>
+                    <div class="capture-state">
+                        <div><strong>Status</strong><span id="candidateCaptureStatus">Not captured</span></div>
+                        <div><strong>Fingerprint Quality</strong><span id="candidateQualityCard">Waiting</span></div>
+                    </div>
+                    <input id="operatorCandidateFile" class="file-input" type="file" accept=".png,.jpg,.jpeg,.bmp,.tif,.tiff,image/*" aria-label="Select criminal fingerprint image">
+                    <div class="operator-actions">
+                        <button id="scanStoredFingerprintButton" class="button-primary" type="button">Scan Fingerprint</button>
+                        <button id="operatorCandidateUploadButton" class="button-soft" type="button">Use Selected Image</button>
+                    </div>
+                    <div id="candidateOperatorMessage" class="operator-error" aria-live="polite"></div>
+                </article>
+            </section>
+
+            <section class="operator-card" aria-labelledby="compareHeading">
+                <div class="operator-kicker">Step 3</div>
+                <h2 id="compareHeading">Fingerprint Comparison</h2>
+                <p id="operatorCompareHelp">Capture both fingerprints before starting the comparison.</p>
+                <div class="operator-actions">
+                    <button id="compareButton" class="button-primary" type="button">Compare Fingerprints</button>
+                </div>
+            </section>
+
+            <section id="operatorFingerprintComparison" class="operator-card operator-fingerprint-view operator-visualization shared-comparison-panel" aria-labelledby="correspondenceVisualizationTitle">
+                <div class="panel-head">
+                    <div>
+                        <div class="operator-kicker">Fingerprint View</div>
+                        <h2 id="correspondenceVisualizationTitle">Fingerprint Comparison Visualization</h2>
+                        <p>Shows the fingerprint points found between the Applicant Fingerprint and Criminal Fingerprint.</p>
+                    </div>
+                </div>
+                <div id="comparisonInspector" class="comparison-inspector">
+                    <div id="correspondenceMessage" class="empty" aria-live="polite">Capture both fingerprints and run the comparison to view detected points.</div>
+                    <div id="correspondenceCountHeading" class="correspondence-count-heading" aria-live="polite">Matched Fingerprint Points: waiting</div>
+                    <div class="visualization-toolbar" aria-label="Fingerprint visualization controls">
+                        <div class="overlay-controls">
+                            <label class="overlay-toggle"><input id="toggleMinutiae" type="checkbox" checked> Show Fingerprint Points</label>
+                            <label class="overlay-toggle"><input id="toggleMatchedPairs" type="checkbox" checked> Show Correspondences</label>
+                        </div>
+                        <div class="view-controls">
+                            <button id="zoomOutButton" class="view-button" type="button" aria-label="Zoom out">− Zoom</button>
+                            <span id="zoomLevel" class="correspondence-status">100%</span>
+                            <button id="zoomInButton" class="view-button" type="button" aria-label="Zoom in">+ Zoom</button>
+                            <button id="resetViewButton" class="view-button" type="button">Reset View</button>
+                            <button id="fullscreenComparisonButton" class="view-button" type="button">View Fullscreen</button>
+                        </div>
+                    </div>
+                    <div id="primaryFingerprintComparison"></div>
+                    <div class="minutiae-legend" aria-label="Fingerprint point legend">
+                        <span class="legend-item"><span class="legend-symbol">●</span><span>Ridge Ending</span></span>
+                        <span class="legend-item"><span class="legend-symbol">▲</span><span>Bifurcation</span></span>
+                        <span class="legend-item"><span class="legend-symbol">◎</span><span>Matched Point</span></span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="operator-result-grid" aria-label="Fingerprint comparison result">
+                <article class="operator-card primary-matcher">
+                    <div class="operator-kicker">Primary Matcher</div>
+                    <h3>Modified Bozorth3 Result</h3>
+                    <div id="primaryMatcherResult" class="operator-status neutral" aria-live="polite">Waiting for comparison</div>
+                    <div id="primaryMatcherPercentage" class="primary-percentage">Not available</div>
+                    <div class="percentage-label">Match Percentage</div>
+                    <p id="primaryMatcherHelp">The primary decision will appear here.</p>
+                </article>
+
+                <article class="operator-card">
+                    <div class="operator-kicker">Supporting Matchers</div>
+                    <h3>Supporting Results</h3>
+                    <div id="supportingMatcherResults" class="supporting-list">
+                        <div class="supporting-row"><span>SourceAFIS</span><span class="supporting-result"><span>Waiting</span><span class="matcher-percentage">Match Percentage: Waiting</span></span></div>
+                        <div class="supporting-row"><span>OpenAFIS</span><span class="supporting-result"><span>Waiting</span><span class="matcher-percentage">Match Percentage: Waiting</span></span></div>
+                        <div class="supporting-row"><span>MCC</span><span class="supporting-result"><span>Waiting</span><span class="matcher-percentage">Match Percentage: Waiting</span></span></div>
+                        <div class="supporting-row"><span>Jiang Matcher</span><span class="supporting-result"><span>Waiting</span><span class="matcher-percentage">Match Percentage: Waiting</span></span></div>
+                    </div>
+                    <div class="operator-kicker" style="margin-top: 16px;">Four-Model Arbiter</div>
+                    <div id="supportingArbiterDecision" class="operator-status neutral" aria-live="polite">Waiting</div>
+                    <div id="supportingArbiterPercentage" class="primary-percentage">Not available</div>
+                    <div class="percentage-label">Calibrated Match Percentage</div>
+                    <p id="supportingArbiterHelp">Averages the four calibrated percentages and requires a 3-of-4 majority. This is not a probability of identity.</p>
+                    <div id="supportingAgreement" class="agreement-line">Matcher Agreement: waiting</div>
+                </article>
+
+                <article class="operator-card final-result">
+                    <div class="operator-kicker">Step 4</div>
+                    <h3>Final Fingerprint Result</h3>
+                    <div id="finalDecision" class="operator-status neutral" aria-live="assertive">NOT READY</div>
+                    <p id="finalDecisionHelp">Complete the fingerprint comparison to see the result.</p>
+                    <div class="operator-actions" style="justify-content: center;">
+                        <button id="viewFingerprintComparisonButton" class="button-soft" type="button">View Fingerprint Comparison</button>
+                        <button id="scanAgainButton" class="button-soft" type="button">Scan Again</button>
+                        <button id="newComparisonButton" class="button-danger" type="button">New Comparison</button>
+                    </div>
+                </article>
+            </section>
+        </main>
+        <!-- /operator-view -->
+
+        <!-- advanced-info -->
+        <details id="advancedInfo" class="advanced-info">
+            <summary aria-label="Show Advanced Info"><span id="advancedInfoLabel">Show Advanced Info</span></summary>
+            <div class="advanced-content">
+                <h2>Advanced / Technical Information</h2>
+                <p class="advanced-intro">Matcher settings and detailed result values for authorized review.</p>
+
+                <div class="threshold-grid" aria-label="Matcher thresholds">
+                    <label class="threshold-field">Modified Bozorth3 threshold
+                        <input id="bozorth3Threshold" type="number" min="0" step="1" value="16">
+                    </label>
+                    <label class="threshold-field">SourceAFIS threshold
+                        <input id="sourceAfisThreshold" type="number" min="0" step="0.000001" value="18.074729666">
+                    </label>
+                    <label class="threshold-field">OpenAFIS threshold
+                        <input id="openAfisThreshold" type="number" min="0" max="100" step="0.1" value="3.5">
+                    </label>
+                    <label class="threshold-field">MCC threshold
+                        <input id="mccThreshold" type="number" min="0" max="1" step="0.000001" value="0.030879">
+                    </label>
+                    <label class="threshold-field">Jiang Matcher threshold
+                        <input id="jiangThreshold" type="number" min="0" max="1" step="0.0000001" value="0.2020075">
+                    </label>
+                </div>
+                <div id="compareMetrics"></div>
+
+                <section class="panel" aria-labelledby="modifiedBozorth3PipelineHeading" style="margin-top: 18px;">
+                    <h3 id="modifiedBozorth3PipelineHeading">Modified Bozorth3 Processing Pipeline</h3>
+                    <p>Modified Bozorth3 uses the standard Bozorth3 minutiae matcher after the enhanced preprocessing pipeline. The base NIST matcher itself is not presented as rewritten.</p>
+                    <div class="kv">
+                        <div class="kv-row"><span>Base Matcher</span><span>Bozorth3</span></div>
+                        <div class="kv-row"><span>Enhanced Processing</span><span>✓ Median Denoising → ✓ Gabor Ridge Enhancement → ✓ Adaptive Binarization → ✓ Zhang-Suen Thinning → ✓ Cleaned Minutiae Extraction → ✓ Bozorth3 Matching</span></div>
+                        <div class="kv-row"><span>Stage Images</span><span>The actual output of every stage appears in Applicant and Criminal developer panels after capture.</span></div>
+                    </div>
+                </section>
+
+                <details class="technical-details" style="margin-top: 18px;">
+                    <summary>Technical Details</summary>
+                    <div style="padding: 16px;">
+                        <label class="overlay-toggle"><input id="toggleDirections" type="checkbox"> Show minutiae directions</label>
+                        <p>Correspondence visualization source: <strong>OpenAFIS</strong></p>
+                        <div class="inspection-grid">
+                            <aside id="minutiaDetail" class="minutia-detail" aria-live="polite">Select a matched pair to inspect the backend-provided minutia data.</aside>
+                            <details id="correspondenceDetails" class="correspondence-details">
+                                <summary>View Correspondence Details</summary>
+                                <div class="correspondence-panel">
+                                    <div class="correspondence-panel-head">
+                                        <div id="correspondenceStatus" class="correspondence-status">No matched minutiae correspondences detected.</div>
+                                        <button id="viewAllCorrespondences" class="view-button" type="button" hidden>View all</button>
+                                    </div>
+                                    <div id="primaryCorrespondenceList" class="correspondence-scroll"></div>
+                                </div>
+                            </details>
+                        </div>
+                    </div>
+                </details>
+
+                <details id="developerDiagnostics" class="developer-diagnostics">
+                    <summary>Developer Diagnostics</summary>
+                    <div class="developer-content">
         <section class="hero">
             <div class="eyebrow">Fingerprint Service Lab</div>
             <h1>Academic Fingerprint Matcher Comparison</h1>
-            <p>Run the same probe and reference through Bozorth3, SourceAFIS, OpenAFIS, MCC, and Jiang Matcher. Each matcher keeps its native score scale, threshold, decision, minutiae count, and processing time.</p>
+            <p>Run the same probe and reference through Modified Bozorth3, SourceAFIS, OpenAFIS, MCC, and Jiang Matcher. Each matcher keeps its native score scale, threshold, decision, minutiae count, and processing time.</p>
             <div class="hero-actions">
                 <button id="refreshHealthButton" class="button-primary">Refresh Service Status</button>
                 <button id="refreshTraceButton" class="button-secondary">Refresh Trace Feed</button>
@@ -1062,65 +1610,15 @@
             </div>
         </section>
 
-        <section class="panel shared-comparison-panel" aria-labelledby="correspondenceVisualizationTitle">
-            <div class="panel-head">
-                <div>
-                    <h2 id="correspondenceVisualizationTitle">Fingerprint Correspondence Visualization</h2>
-                    <p>Visual comparison of the probe and reference fingerprints based on detected minutiae correspondences.</p>
-                </div>
-            </div>
-            <div id="comparisonInspector" class="comparison-inspector">
-                <div id="correspondenceMessage" class="empty" aria-live="polite">Process both fingerprints and run the comparison to inspect detected correspondence data.</div>
-                <div id="correspondenceCountHeading" class="correspondence-count-heading" aria-live="polite">0 matched minutiae correspondences detected</div>
-                <div class="visualization-toolbar" aria-label="Fingerprint visualization controls">
-                    <div class="overlay-controls">
-                        <label class="overlay-toggle"><input id="toggleMinutiae" type="checkbox" checked> Show Minutiae</label>
-                        <label class="overlay-toggle"><input id="toggleMatchedPairs" type="checkbox" checked> Show Correspondences</label>
-                        <label class="overlay-toggle"><input id="toggleDirections" type="checkbox"> Show Directions</label>
-                    </div>
-                    <div class="view-controls">
-                        <button id="zoomOutButton" class="view-button" type="button" aria-label="Zoom out">− Zoom</button>
-                        <span id="zoomLevel" class="correspondence-status">100%</span>
-                        <button id="zoomInButton" class="view-button" type="button" aria-label="Zoom in">+ Zoom</button>
-                        <button id="resetViewButton" class="view-button" type="button">Reset View</button>
-                        <button id="fullscreenComparisonButton" class="view-button" type="button">View Fullscreen</button>
-                    </div>
-                </div>
-                <div id="primaryFingerprintComparison"></div>
-                <div class="minutiae-legend" aria-label="Minutiae legend">
-                    <span class="legend-item"><span class="legend-symbol">●</span> Ridge Ending</span>
-                    <span class="legend-item"><span class="legend-symbol">▲</span> Bifurcation</span>
-                    <span class="legend-item"><span class="legend-symbol">◎</span> Matched Minutia</span>
-                </div>
-                <div class="inspection-grid">
-                    <aside id="minutiaDetail" class="minutia-detail" aria-live="polite">Select a matched pair to inspect the backend-provided minutia data.</aside>
-                    <details id="correspondenceDetails" class="correspondence-details">
-                        <summary>View Correspondence Details</summary>
-                        <div class="correspondence-panel">
-                            <div class="correspondence-panel-head">
-                                <div id="correspondenceStatus" class="correspondence-status">No matched minutiae correspondences detected.</div>
-                                <button id="viewAllCorrespondences" class="view-button" type="button" hidden>View all</button>
-                            </div>
-                            <div id="primaryCorrespondenceList" class="correspondence-scroll"></div>
-                        </div>
-                    </details>
-                </div>
-                <details class="technical-details">
-                    <summary>Technical Details</summary>
-                    <p>Correspondence visualization source: <strong>OpenAFIS</strong></p>
-                </details>
-            </div>
-        </section>
-
         <div class="cards">
             <div class="stat-card">
                 <div class="stat-label">Probe Quality</div>
-                <div id="probeQualityCard" class="stat-value">-</div>
+                <div id="probeQualityTechnicalCard" class="stat-value">-</div>
                 <div class="stat-help">Quality score from the processed probe fingerprint.</div>
             </div>
             <div class="stat-card">
                 <div class="stat-label">Reference Quality</div>
-                <div id="candidateQualityCard" class="stat-value">-</div>
+                <div id="candidateQualityTechnicalCard" class="stat-value">-</div>
                 <div class="stat-help">Quality score from the processed candidate fingerprint.</div>
             </div>
             <div class="stat-card">
@@ -1183,34 +1681,15 @@
             <article class="panel">
                 <div class="panel-head">
                     <div>
-                        <h3>Bozorth3 · SourceAFIS · OpenAFIS · MCC · Jiang Matcher</h3>
+                        <h3>Modified Bozorth3 · SourceAFIS · OpenAFIS · MCC · Jiang Matcher</h3>
                         <p>Configure each threshold independently. Scores remain on their algorithm-specific scales.</p>
                     </div>
                     <div class="service-actions">
-                        <button id="compareButton" class="button-primary" type="button">Compare Fingerprints</button>
+                        <button id="advancedCompareButton" class="button-primary" type="button">Compare Fingerprints</button>
                     </div>
                 </div>
 
-                <div class="threshold-grid" aria-label="Matcher thresholds">
-                    <label class="threshold-field">Bozorth3 threshold
-                        <input id="bozorth3Threshold" type="number" min="0" step="1" value="20">
-                    </label>
-                    <label class="threshold-field">SourceAFIS threshold
-                        <input id="sourceAfisThreshold" type="number" min="0" step="0.1" value="40">
-                    </label>
-                    <label class="threshold-field">OpenAFIS threshold
-                        <input id="openAfisThreshold" type="number" min="0" max="100" step="1" value="6">
-                    </label>
-                    <label class="threshold-field">MCC threshold
-                        <input id="mccThreshold" type="number" min="0" max="1" step="0.01" value="0.04">
-                    </label>
-                    <label class="threshold-field">Jiang Matcher threshold
-                        <input id="jiangThreshold" type="number" min="0" max="1" step="0.005" value="0.245">
-                    </label>
-                </div>
-
                 <div id="compareSummary" class="empty">Process both sides first, then run the comparison to see the full decision breakdown.</div>
-                <div id="compareMetrics"></div>
                 <div id="matchedMinutiaeVisualization"></div>
                 <pre id="compareJson">No comparison result yet.</pre>
             </article>
@@ -1259,17 +1738,26 @@
                 </div>
                 <div class="kv">
                     <div class="kv-row"><span>Original</span><span>Input fingerprint used for upload or scan.</span></div>
-                    <div class="kv-row"><span>Normalized</span><span>Image normalized into the service pipeline shape before extraction.</span></div>
-                    <div class="kv-row"><span>Enhanced</span><span>Ridge-oriented enhancement with orientation and frequency guidance.</span></div>
-                    <div class="kv-row"><span>Thinned</span><span>Zhang-Suen skeleton used to extract minutiae more cleanly.</span></div>
+                    <div class="kv-row"><span>Modified Bozorth3</span><span>Standard Bozorth3 matching after the enhanced preprocessing and cleaned minutiae pipeline shown below.</span></div>
+                    <div class="kv-row"><span>Denoised</span><span>Actual 3×3 median-filter output passed to Gabor enhancement.</span></div>
+                    <div class="kv-row"><span>Gabor Enhanced</span><span>Actual orientation- and frequency-adaptive Gabor ridge enhancement output.</span></div>
+                    <div class="kv-row"><span>Binarized</span><span>Actual adaptive binary ridge image passed to thinning.</span></div>
+                    <div class="kv-row"><span>Zhang-Suen Thinned</span><span>Actual skeleton used by cleaned crossing-number minutiae extraction.</span></div>
+                    <div class="kv-row"><span>Modified Bozorth3 Pipeline</span><span>✓ Denoising · ✓ Gabor Ridge Enhancement · ✓ Binarization · ✓ Zhang-Suen Thinning · ✓ Minutiae Extraction · ✓ Bozorth3 Matching</span></div>
                     <div class="kv-row"><span>Trace Feed</span><span>Stage-by-stage logs from the Node service with timings and scores.</span></div>
                     <div class="kv-row"><span>Matcher Scores</span><span>Native values are interpreted only against each matcher&apos;s own configurable threshold.</span></div>
                     <div class="kv-row"><span>OpenAFIS Input</span><span>Actual ridge endings and bifurcations extracted by this service and converted to OpenAFIS CSV.</span></div>
                 </div>
             </article>
         </section>
+                    </div>
+                </details>
+            </div>
+        </details>
+        <!-- /advanced-info -->
     </div>
 
+    <script src="fingerprint-comparison-result.js"></script>
     <script>
         const SERVICE_BASE = 'http://localhost:9000';
         const state = {
@@ -1359,11 +1847,15 @@
             const summaryEl = document.getElementById(`${key}Summary`);
             const jsonEl = document.getElementById(`${key}Json`);
             const traceChip = document.getElementById(`${key}TraceChip`);
+            const operatorStatus = document.getElementById(`${key}CaptureStatus`);
+            const operatorMessage = document.getElementById(`${key}OperatorMessage`);
 
             summaryEl.className = `empty${tone ? ` ${tone}` : ''}`;
             summaryEl.textContent = message;
             jsonEl.textContent = message;
             traceChip.textContent = tone === 'danger' ? 'Trace: failed' : 'Trace: working';
+            operatorStatus.textContent = tone === 'danger' ? 'Needs attention' : 'Working...';
+            operatorMessage.textContent = tone === 'danger' ? message : '';
         }
 
         function setButtonsDisabled(disabled) {
@@ -1373,6 +1865,13 @@
                 'probeScanButton',
                 'candidateScanButton',
                 'compareButton',
+                'advancedCompareButton',
+                'scanFingerprintButton',
+                'scanStoredFingerprintButton',
+                'operatorProbeUploadButton',
+                'operatorCandidateUploadButton',
+                'scanAgainButton',
+                'newComparisonButton',
                 'refreshHealthButton',
                 'refreshTraceButton',
                 'clearTraceButton'
@@ -1382,6 +1881,9 @@
                     button.disabled = disabled;
                 }
             });
+            if (!disabled) {
+                updateOperatorReadiness();
+            }
         }
 
         function formatJson(value) {
@@ -1448,6 +1950,187 @@
             });
         }
 
+        function qualityState(value) {
+            const quality = Number(value);
+            if (!Number.isFinite(quality)) {
+                return { label: 'Waiting', tone: 'neutral', message: 'Capture a fingerprint to check its quality.' };
+            }
+            if (quality >= 70) {
+                return { label: 'Good', tone: 'success', message: 'Fingerprint is ready for comparison.' };
+            }
+            if (quality >= 45) {
+                return { label: 'Acceptable', tone: 'warning', message: 'Fingerprint can be compared, but a clearer scan may help.' };
+            }
+            return { label: 'Poor', tone: 'danger', message: 'Fingerprint quality is too low. Please scan the finger again.' };
+        }
+
+        function renderOperatorFingerprint(side) {
+            const key = side === 'probe' ? 'probe' : 'candidate';
+            const panel = state[key];
+            const result = panel.result;
+            const captureStatus = document.getElementById(`${key}CaptureStatus`);
+            const qualityEl = document.getElementById(`${key}QualityCard`);
+            const messageEl = document.getElementById(`${key}OperatorMessage`);
+            const imageEl = document.getElementById(key === 'probe' ? 'operatorProbeImage' : 'operatorCandidateImage');
+            const technicalQualityEl = document.getElementById(`${key}QualityTechnicalCard`);
+            const label = key === 'probe' ? 'Applicant Fingerprint' : 'Criminal Fingerprint';
+
+            if (!result) {
+                captureStatus.textContent = 'Not captured';
+                qualityEl.textContent = 'Waiting';
+                qualityEl.className = '';
+                messageEl.textContent = '';
+                technicalQualityEl.textContent = '-';
+                imageEl.innerHTML = `<div class="image-placeholder">${label} will appear here.</div>`;
+                updateOperatorReadiness();
+                return;
+            }
+
+            const qualityValue = result.afisQuality ?? result.quality;
+            const quality = qualityState(qualityValue);
+            captureStatus.textContent = '✓ Successfully Captured';
+            qualityEl.textContent = quality.label;
+            qualityEl.className = quality.tone;
+            messageEl.textContent = quality.tone === 'danger' ? quality.message : '';
+            technicalQualityEl.textContent = `${qualityValue ?? '-'}/100`;
+            const originalSrc = resolveOriginalPreviewSrc(panel, result);
+            imageEl.innerHTML = renderFigure(originalSrc, label, label.toLowerCase());
+            updateOperatorReadiness();
+        }
+
+        function updateOperatorReadiness() {
+            const ready = Boolean(state.probe.result?.image && state.candidate.result?.image);
+            const help = document.getElementById('operatorCompareHelp');
+            const button = document.getElementById('compareButton');
+            help.textContent = ready
+                ? 'Both fingerprints are ready. Select Compare Fingerprints to continue.'
+                : 'Capture both fingerprints before starting the comparison.';
+            button.disabled = !ready;
+        }
+
+        function formatOperatorPercentage(matcher) {
+            if (matcher?.normalization?.status === 'calibrated') {
+                if (matcher?.normalizedMatchPercentage === undefined) return 'Not available';
+                const normalized = FingerprintComparison.matcherPercentage(matcher);
+                if (normalized === null) return 'Not available';
+                return `${formatMatcherNumber(normalized)}%`;
+            }
+            return ['calibration_required', 'threshold_mismatch', 'invalid_profile']
+                .includes(matcher?.normalization?.status)
+                ? 'Calibration Required'
+                : 'Not available';
+        }
+
+        function renderOperatorResults() {
+            const result = state.compare;
+            const primaryEl = document.getElementById('primaryMatcherResult');
+            const primaryMatcherPercentage = document.getElementById('primaryMatcherPercentage');
+            const primaryHelp = document.getElementById('primaryMatcherHelp');
+            const supportingEl = document.getElementById('supportingMatcherResults');
+            const agreementEl = document.getElementById('supportingAgreement');
+            const arbiterDecisionEl = document.getElementById('supportingArbiterDecision');
+            const arbiterPercentageEl = document.getElementById('supportingArbiterPercentage');
+            const arbiterHelpEl = document.getElementById('supportingArbiterHelp');
+            const finalEl = document.getElementById('finalDecision');
+            const finalHelp = document.getElementById('finalDecisionHelp');
+            const matchedCountEl = document.getElementById('correspondenceCountHeading');
+
+            if (!result) {
+                primaryEl.className = 'operator-status neutral';
+                primaryEl.textContent = 'Waiting for comparison';
+                primaryMatcherPercentage.textContent = 'Not available';
+                primaryHelp.textContent = 'The primary decision will appear here.';
+                supportingEl.innerHTML = ['SourceAFIS', 'OpenAFIS', 'MCC', 'Jiang Matcher']
+                    .map((name) => `<div class="supporting-row"><span>${name}</span><span class="supporting-result"><span>Waiting</span><span class="matcher-percentage">Match Percentage: Waiting</span></span></div>`)
+                    .join('');
+                agreementEl.textContent = 'Matcher Agreement: waiting';
+                arbiterDecisionEl.className = 'operator-status neutral';
+                arbiterDecisionEl.textContent = 'Waiting';
+                arbiterPercentageEl.textContent = 'Not available';
+                arbiterHelpEl.textContent = 'Averages the four calibrated percentages and requires a 3-of-4 majority. This is not a probability of identity.';
+                finalEl.className = 'operator-status neutral';
+                finalEl.textContent = 'NOT READY';
+                finalHelp.textContent = 'Complete the fingerprint comparison to see the result.';
+                matchedCountEl.textContent = 'Matched Fingerprint Points: waiting';
+                return;
+            }
+
+            const matchers = Array.isArray(result.matchers) ? result.matchers : [];
+            const supportingArbiter = result.supportingArbiter || {};
+            document.getElementById('operatorCompareHelp').textContent = 'Comparison complete. Review the visualization and matcher results below.';
+            const primaryMatcher = FingerprintComparison.matcherByName(result, 'Modified Bozorth3');
+            const supportingMatchers = matchers.filter((matcher) => !['Modified Bozorth3', 'Bozorth3'].includes(matcher.algorithm));
+            const primaryResult = primaryMatcher?.result || 'UNAVAILABLE';
+            const requiresReview = !primaryMatcher
+                || primaryMatcher.status !== 'ok'
+                || primaryMatcher.reviewRecommended === true
+                || primaryResult === 'BORDERLINE';
+            const primaryLabel = requiresReview
+                ? 'REVIEW REQUIRED'
+                : primaryResult === 'MATCH'
+                    ? 'MATCH'
+                    : primaryResult === 'NO MATCH'
+                        ? 'NO MATCH'
+                        : 'REVIEW REQUIRED';
+            const primaryTone = primaryLabel === 'MATCH' ? 'success' : primaryLabel === 'NO MATCH' ? 'warning' : 'danger';
+
+            primaryEl.className = `operator-status ${primaryTone}`;
+            primaryEl.textContent = primaryLabel;
+            primaryMatcherPercentage.textContent = formatOperatorPercentage(primaryMatcher);
+            primaryHelp.textContent = requiresReview
+                ? 'The primary matcher needs authorized review.'
+                : 'Primary comparison completed.';
+
+            supportingEl.innerHTML = supportingMatchers.map((matcher) => {
+                const label = matcher.status !== 'ok'
+                    ? 'Unavailable'
+                    : matcher.result === 'MATCH'
+                        ? 'Match'
+                        : matcher.result === 'NO MATCH'
+                            ? 'No Match'
+                            : 'Review';
+                return `<div class="supporting-row"><span>${escapeHtml(matcher.algorithm)}</span><span class="supporting-result"><span>${label}</span><span class="matcher-percentage">Match Percentage: ${formatOperatorPercentage(matcher)}</span></span></div>`;
+            }).join('') || '<div class="supporting-row"><span>Supporting results</span><span>Unavailable</span></div>';
+
+            const completedMatchers = matchers.filter((matcher) => matcher.status === 'ok');
+            const agreeingMatchers = completedMatchers.filter((matcher) => matcher.result === primaryResult);
+            const agreementText = result.matcherAgreement?.label || `${agreeingMatchers.length} of ${completedMatchers.length}`;
+            agreementEl.textContent = `Matcher Agreement: ${agreementText}`;
+
+            const arbiterPercentage = Number(supportingArbiter.normalizedMatchPercentage);
+            arbiterPercentageEl.textContent = Number.isFinite(arbiterPercentage)
+                ? `${formatMatcherNumber(arbiterPercentage)}%`
+                : 'Not available';
+            const arbiterResult = supportingArbiter.result || 'REVIEW REQUIRED';
+            const arbiterTone = arbiterResult === 'MATCH' ? 'success' : arbiterResult === 'NO MATCH' ? 'warning' : 'danger';
+            arbiterDecisionEl.className = `operator-status ${arbiterTone}`;
+            arbiterDecisionEl.textContent = arbiterResult;
+            arbiterHelpEl.textContent = `${formatMatcherNumber(supportingArbiter.matchVotes)} MATCH / ${formatMatcherNumber(supportingArbiter.noMatchVotes)} NO MATCH · 3-of-4 required. ${supportingArbiter.warning || 'Calibrated percentages are not probabilities of identity.'}`;
+
+            const finalDecision = result.finalResult?.decision || primaryLabel;
+            if (finalDecision === 'REVIEW REQUIRED') {
+                finalEl.className = 'operator-status danger';
+                finalEl.textContent = 'REVIEW REQUIRED';
+                finalHelp.textContent = 'Do not make a final identification until an authorized reviewer checks this comparison.';
+            } else if (finalDecision === 'MATCH') {
+                finalEl.className = 'operator-status success';
+                finalEl.textContent = 'MATCH FOUND';
+                finalHelp.textContent = `${agreementText} fingerprint matchers agree with the primary match result.`;
+            } else {
+                finalEl.className = 'operator-status warning';
+                finalEl.textContent = 'NO MATCH FOUND';
+                finalHelp.textContent = `${agreementText} fingerprint matchers agree with the primary no-match result.`;
+            }
+
+            const openAfis = matchers.find((matcher) => matcher.algorithm === 'OpenAFIS');
+            const matchedPoints = openAfis?.matchedMinutiae?.available && Array.isArray(openAfis.matchedMinutiae.pairs)
+                ? openAfis.matchedMinutiae.pairs.length
+                : null;
+            matchedCountEl.textContent = matchedPoints === null
+                ? 'Matched Fingerprint Points: not available'
+                : `Matched Fingerprint Points: ${matchedPoints}`;
+        }
+
         function renderFingerprint(side) {
             const key = side === 'probe' ? 'probe' : 'candidate';
             const panel = state[key];
@@ -1463,6 +2146,7 @@
                 imagesEl.innerHTML = '';
                 jsonEl.textContent = `No ${key} result yet.`;
                 traceChip.textContent = 'Trace: waiting';
+                renderOperatorFingerprint(side);
                 renderPrimaryComparison();
                 return;
             }
@@ -1487,18 +2171,23 @@
             `;
 
             const originalSrc = resolveOriginalPreviewSrc(panel, result);
-            const normalizedSrc = toPngSrc(result.normalizedImage || result.image);
-            const enhancedSrc = toPngSrc(result.enhancedImage);
+            const denoisedSrc = toPngSrc(result.denoisedImage);
+            const enhancedSrc = toPngSrc(result.gaborEnhancedImage || result.enhancedImage);
+            const binarizedSrc = toPngSrc(result.binarizedImage);
             const thinnedSrc = toPngSrc(result.thinnedImage);
+            const minutiaeOverlaySrc = toPngSrc(result.minutiaeOverlayImage);
 
             imagesEl.innerHTML = [
-                renderFigure(originalSrc, 'Original Input', `${key} original`),
-                renderFigure(normalizedSrc, 'Normalized PNG', `${key} normalized`),
-                renderFigure(enhancedSrc, 'Enhanced Ridges', `${key} enhanced`),
-                renderFigure(thinnedSrc, 'Zhang-Suen Thinning', `${key} thinned`)
+                renderFigure(originalSrc, 'Original', `${key} original`),
+                renderFigure(denoisedSrc, 'Denoised', `${key} denoised`),
+                renderFigure(enhancedSrc, 'Gabor Enhanced', `${key} Gabor enhanced`),
+                renderFigure(binarizedSrc, 'Binarized', `${key} binarized`),
+                renderFigure(thinnedSrc, 'Zhang-Suen Thinned', `${key} Zhang-Suen thinned`),
+                renderFigure(minutiaeOverlaySrc, 'Minutiae Detected', `${key} minutiae detected`)
             ].join('');
 
             jsonEl.textContent = formatJson(result);
+            renderOperatorFingerprint(side);
             renderPrimaryComparison();
         }
 
@@ -1540,9 +2229,14 @@
             const offset = layout[side];
             const sourceWidth = Number(fingerprint?.width) || 500;
             const sourceHeight = Number(fingerprint?.height) || 500;
+            const scale = Math.min(layout.imageSize / sourceWidth, layout.imageSize / sourceHeight);
+            const renderedWidth = sourceWidth * scale;
+            const renderedHeight = sourceHeight * scale;
+            const imageX = offset.x + ((layout.imageSize - renderedWidth) / 2);
+            const imageY = offset.y + ((layout.imageSize - renderedHeight) / 2);
             return {
-                x: offset.x + ((Number(point?.x) || 0) / sourceWidth) * layout.imageSize,
-                y: offset.y + ((Number(point?.y) || 0) / sourceHeight) * layout.imageSize
+                x: imageX + ((Number(point?.x) || 0) * scale),
+                y: imageY + ((Number(point?.y) || 0) * scale)
             };
         }
 
@@ -1716,12 +2410,12 @@
             pairToggle.disabled = !allPairs.length;
             pairToggle.checked = !pairToggle.disabled && state.visualization.showMatchedPairs;
             document.getElementById('toggleMinutiae').checked = state.visualization.showMinutiae;
-            countHeading.textContent = `${allPairs.length} matched minutiae correspondences detected`;
+            countHeading.textContent = `Matched Fingerprint Points: ${allPairs.length}`;
 
             if (!probe || !reference) {
-                container.innerHTML = '<div class="empty">The Probe Fingerprint and Reference Fingerprint will appear here after both are processed.</div>';
+                container.innerHTML = '<div class="empty">The Applicant Fingerprint and Criminal Fingerprint will appear here after both are captured.</div>';
                 message.className = 'empty';
-                message.textContent = 'Process both fingerprints and run the comparison to inspect detected correspondence data.';
+                message.textContent = 'Capture both fingerprints and run the comparison to view detected points.';
                 list.innerHTML = '';
                 detail.innerHTML = pairDetailHtml(null);
                 status.textContent = 'No correspondences displayed';
@@ -1731,7 +2425,7 @@
 
             if (!result) {
                 message.className = 'empty';
-                message.textContent = 'The fingerprint pair is ready. Run the comparison to detect minutiae correspondences.';
+                message.textContent = 'Both fingerprints are ready. Run the comparison to find matching fingerprint points.';
             } else if (!matcher) {
                 message.className = 'empty danger';
                 message.textContent = 'Correspondence data was not returned for this comparison.';
@@ -1746,7 +2440,7 @@
                 message.textContent = 'No matched minutiae correspondences were detected for this fingerprint pair.';
             } else {
                 message.className = 'score-note';
-                message.textContent = 'Select any numbered correspondence on the image or in the details table to inspect it.';
+                message.textContent = 'Matched fingerprint points are connected across the two fingerprint images.';
             }
 
             const layout = comparisonLayout();
@@ -1760,9 +2454,9 @@
             const markers = state.visualization.showMinutiae ? pairs.map((pair) => ['probe', 'reference'].map((side) => {
                 const fingerprint = side === 'probe' ? probe : reference;
                 const plotted = comparisonPoint(pair[side], side, fingerprint, layout);
-                const title = escapeHtml(pairTooltip(pair));
-                return `<g class="pair-marker pair-group" tabindex="0" role="button" data-pair-id="${escapeHtml(pair.id)}" aria-label="${escapeHtml(pair.id)} ${escapeHtml(side)} matched minutia">
-                    <title>${title}</title>
+                const sideLabel = side === 'probe' ? 'applicant' : 'criminal';
+                return `<g class="pair-marker pair-group" tabindex="0" role="button" data-pair-id="${escapeHtml(pair.id)}" aria-label="${escapeHtml(pair.id)} ${sideLabel} matched fingerprint point">
+                    <title>Matched fingerprint point ${escapeHtml(pair.id)}</title>
                     ${markerShape(pair[side], plotted, { matched: true, showDirection: state.visualization.showDirections })}
                     <text class="pair-label" x="${plotted.x + 9}" y="${plotted.y - 8}">${escapeHtml(pair.id)}</text>
                 </g>`;
@@ -1771,9 +2465,9 @@
             container.innerHTML = `
                 <div class="comparison-viewport" aria-label="Zoomable fingerprint comparison">
                     <div class="comparison-transform-layer">
-                        <svg class="comparison-canvas" viewBox="0 0 ${layout.width} ${layout.height}" role="img" aria-label="Probe Fingerprint and Reference Fingerprint with detected correspondence overlay">
-                            <text class="image-label" x="${layout.probe.labelX}" y="${layout.probe.labelY}">Probe Fingerprint</text>
-                            <text class="image-label" x="${layout.reference.labelX}" y="${layout.reference.labelY}">Reference Fingerprint</text>
+                        <svg class="comparison-canvas" viewBox="0 0 ${layout.width} ${layout.height}" role="img" aria-label="Applicant Fingerprint and Criminal Fingerprint with detected correspondence overlay">
+                            <text class="image-label" x="${layout.probe.labelX}" y="${layout.probe.labelY}">Applicant Fingerprint</text>
+                            <text class="image-label" x="${layout.reference.labelX}" y="${layout.reference.labelY}">Criminal Fingerprint</text>
                             <rect x="${layout.probe.x}" y="${layout.probe.y}" width="${layout.imageSize}" height="${layout.imageSize}" rx="12" fill="white"/>
                             <rect x="${layout.reference.x}" y="${layout.reference.y}" width="${layout.imageSize}" height="${layout.imageSize}" rx="12" fill="white"/>
                             <image href="${String(probeSrc || '').replace(/"/g, '&quot;')}" x="${layout.probe.x}" y="${layout.probe.y}" width="${layout.imageSize}" height="${layout.imageSize}" preserveAspectRatio="xMidYMid meet"/>
@@ -1823,7 +2517,7 @@
                 const alignment = matcher.matcherDiagnostics?.alignment;
                 const available = alignment?.available === true;
                 const unavailable = alignment?.message
-                    || (matcher.algorithm === 'Bozorth3' || matcher.algorithm === 'SourceAFIS'
+                    || (['Modified Bozorth3', 'Bozorth3', 'SourceAFIS'].includes(matcher.algorithm)
                         ? 'The matcher API does not expose its selected rigid transform.'
                         : 'Not exposed by this matcher.');
                 return `<tr>
@@ -1892,11 +2586,13 @@
                 jsonEl.textContent = 'No comparison result yet.';
                 document.getElementById('finalScoreCard').textContent = '-';
                 document.getElementById('thresholdCard').textContent = '-';
+                renderOperatorResults();
                 renderPrimaryComparison();
                 return;
             }
 
             const matchers = Array.isArray(result.matchers) ? result.matchers : [];
+            const supportingArbiter = result.supportingArbiter || {};
             const inputDiagnostics = result.inputDiagnostics || {};
             const sharedMinutiae = result.sharedMinutiaeDiagnostics || {};
             const completed = matchers.filter((matcher) => matcher.status === 'ok').length;
@@ -1911,6 +2607,7 @@
                     <div class="mini-card"><strong>Trace ID</strong><span>${result.traceId || 'Not available'}</span></div>
                     <div class="mini-card"><strong>Score Fusion</strong><span>${result.scoreFusion ? 'Enabled' : 'Disabled'}</span></div>
                     <div class="mini-card"><strong>Matcher Errors</strong><span>${errors}</span></div>
+                    <div class="mini-card"><strong>Four-Model Arbiter</strong><span>${escapeHtml(supportingArbiter.result || 'REVIEW REQUIRED')} · ${Number.isFinite(Number(supportingArbiter.normalizedMatchPercentage)) ? `${formatMatcherNumber(supportingArbiter.normalizedMatchPercentage)}%` : 'Not available'} · ${formatMatcherNumber(supportingArbiter.matchVotes)}–${formatMatcherNumber(supportingArbiter.noMatchVotes)}</span></div>
                     <div class="mini-card"><strong>Probe ID / Hash</strong><span>${escapeHtml(inputDiagnostics.probe?.fingerprintId || '-')} · ${escapeHtml((inputDiagnostics.probe?.imageHash || '-').slice(0, 16))}</span></div>
                     <div class="mini-card"><strong>Candidate ID / Hash</strong><span>${escapeHtml(inputDiagnostics.candidate?.fingerprintId || '-')} · ${escapeHtml((inputDiagnostics.candidate?.imageHash || '-').slice(0, 16))}</span></div>
                     <div class="mini-card"><strong>Probe Finger / Source</strong><span>${escapeHtml(inputDiagnostics.probe?.fingerPosition || '-')} · ${escapeHtml(inputDiagnostics.probe?.filePath || '-')}</span></div>
@@ -1926,11 +2623,14 @@
                 <div class="matcher-result-grid" style="margin-bottom: 14px;">
                     ${matchers.map((matcher) => {
                         const tone = matcher.result === 'MATCH' ? 'success' : (matcher.result === 'NO MATCH' || matcher.result === 'BORDERLINE') ? 'warning' : 'danger';
-                        const normalized = matcher.normalizedSimilarity !== null
-                            && matcher.normalizedSimilarity !== undefined
-                            && Number.isFinite(Number(matcher.normalizedSimilarity))
-                            ? `${formatMatcherNumber(matcher.normalizedSimilarity)}%`
-                            : 'Not available';
+                        const normalized = formatOperatorPercentage(matcher);
+                        const normalization = matcher.normalization && typeof matcher.normalization === 'object'
+                            ? matcher.normalization
+                            : {};
+                        const distributions = matcher.normalization?.distributions;
+                        const calibrationRanges = distributions
+                            ? `Impostor p25 ${formatMatcherNumber(distributions.impostor?.p25)} / p95 ${formatMatcherNumber(distributions.impostor?.p95)} · Genuine p25 ${formatMatcherNumber(distributions.genuine?.p25)} / p95 ${formatMatcherNumber(distributions.genuine?.p95)} · Mapping ${formatMatcherNumber(normalization.mapping?.lowerScore)} → 0%, ${formatMatcherNumber(normalization.calibrationThreshold)} → 50%, ${formatMatcherNumber(normalization.mapping?.upperScore)} → 100%`
+                            : 'Calibration Required';
                         const quality = matcher.quality && typeof matcher.quality === 'object'
                             ? `Probe ${formatMatcherNumber(matcher.quality.probe)} · Reference ${formatMatcherNumber(matcher.quality.reference)}`
                             : 'Not provided';
@@ -1949,9 +2649,9 @@
                         const diagnostics = matcher.matcherDiagnostics && typeof matcher.matcherDiagnostics === 'object'
                             ? formatJson(matcher.matcherDiagnostics)
                             : 'Not reported';
-                        const bozorthDiagnostics = matcher.algorithm === 'Bozorth3'
+                        const bozorthDiagnostics = ['Modified Bozorth3', 'Bozorth3'].includes(matcher.algorithm)
                             ? `<details class="technical-details" style="margin-top: 12px;">
-                                <summary>Bozorth3 Diagnostics</summary>
+                                <summary>Modified Bozorth3 Diagnostics</summary>
                                 <dl>
                                     <dt>Quality Gate</dt><dd>${escapeHtml(matcher.qualityGate?.message || (matcher.qualityGate?.passed ? 'Passed' : 'Not reported'))}</dd>
                                     <dt>Decision State</dt><dd>${escapeHtml(matcher.decisionState || 'not reported')}${matcher.reviewRecommended ? ' · review recommended' : ''}</dd>
@@ -1968,9 +2668,14 @@
                             <dl>
                                 <dt>Raw Score</dt><dd>${formatMatcherNumber(matcher.score)}</dd>
                                 <dt>Score Direction</dt><dd>${escapeHtml(matcher.scoreDirection || 'not reported')}</dd>
-                                <dt>Normalized Similarity</dt><dd>${normalized}</dd>
+                                <dt>Normalized Match Percentage</dt><dd>${normalized}</dd>
                                 <dt>Threshold</dt><dd>${formatMatcherNumber(matcher.threshold)}</dd>
                                 <dt>Decision</dt><dd><span class="status-chip ${tone}">${escapeHtml(matcher.result)}</span></dd>
+                                <dt>Calibration Status</dt><dd>${escapeHtml(normalization.status || 'not reported')}</dd>
+                                <dt>Normalization Method</dt><dd>${escapeHtml(normalization.method || 'Calibration Required')}</dd>
+                                <dt>Calibration Ranges</dt><dd>${escapeHtml(calibrationRanges)}</dd>
+                                <dt>Calibration Dataset</dt><dd>${escapeHtml(normalization.dataset || 'Calibration Required')}</dd>
+                                <dt>Interpretation Warning</dt><dd>${escapeHtml(normalization.warning || 'A match percentage is not a probability of identity or system accuracy.')}</dd>
                                 <dt>Processing Time</dt><dd>${formatMatcherNumber(matcher.processingTimeMs)} ms</dd>
                                 <dt>Minutiae Used</dt><dd>${minutiae}</dd>
                                 <dt>Quality</dt><dd>${quality}</dd>
@@ -1989,15 +2694,11 @@
                 </div>
                 <div class="table-wrap">
                     <table class="comparison-table">
-                        <thead><tr><th>Matcher</th><th>Raw Score</th><th>Normalized Similarity</th><th>Threshold</th><th>Decision</th><th>Processing Time</th></tr></thead>
+                        <thead><tr><th>Matcher</th><th>Raw Score</th><th>Match Percentage</th><th>Threshold</th><th>Decision</th><th>Processing Time</th></tr></thead>
                         <tbody>
                             ${matchers.map((matcher) => {
                                 const tone = matcher.result === 'MATCH' ? 'success' : matcher.result === 'NO MATCH' ? 'warning' : 'danger';
-                                const normalized = matcher.normalizedSimilarity !== null
-                                    && matcher.normalizedSimilarity !== undefined
-                                    && Number.isFinite(Number(matcher.normalizedSimilarity))
-                                    ? `${formatMatcherNumber(matcher.normalizedSimilarity)}%`
-                                    : '-';
+                                const normalized = formatOperatorPercentage(matcher);
                                 return `<tr>
                                     <td><strong>${escapeHtml(matcher.algorithm)}</strong><div class="score-note">${escapeHtml(matcher.scoreScale || matcher.error || '')}</div></td>
                                     <td>${formatMatcherNumber(matcher.score)}</td>
@@ -2017,13 +2718,17 @@
             jsonEl.textContent = formatJson(result);
             document.getElementById('finalScoreCard').textContent = `${completed}/${matchers.length || 5}`;
             document.getElementById('thresholdCard').textContent = `${matches} M · ${nonMatches} NM`;
+            renderOperatorResults();
         }
 
-        async function processUpload(side) {
-            const fileInput = document.getElementById(`${side}File`);
+        async function processUpload(side, fileInputId = `${side}File`) {
+            const fileInput = document.getElementById(fileInputId);
             const file = fileInput.files[0];
             if (!file) {
-                alert(`Select a ${side} fingerprint image first.`);
+                const operatorMessage = document.getElementById(`${side}OperatorMessage`);
+                operatorMessage.textContent = side === 'probe'
+                    ? 'Select a current fingerprint image first.'
+                    : 'Select a stored fingerprint image first.';
                 return;
             }
 
@@ -2041,11 +2746,6 @@
                 });
                 result.sourceFileName = file.name;
                 state[side].result = result;
-                if (side === 'probe') {
-                    document.getElementById('probeQualityCard').textContent = `${result.afisQuality ?? result.quality ?? '-'}/100`;
-                } else {
-                    document.getElementById('candidateQualityCard').textContent = `${result.afisQuality ?? result.quality ?? '-'}/100`;
-                }
                 setActiveTrace(result.traceId);
                 renderFingerprint(side);
                 await refreshTraceFeed();
@@ -2053,6 +2753,8 @@
                 state[side].result = null;
                 setActiveTrace(error.payload?.traceId || '');
                 setPanelStatus(side, error.message, 'danger');
+                renderOperatorFingerprint(side);
+                document.getElementById(`${side}OperatorMessage`).textContent = error.message;
                 await refreshTraceFeed();
             } finally {
                 setButtonsDisabled(false);
@@ -2075,17 +2777,15 @@
                     body: JSON.stringify({ type })
                 });
                 state[side].result = result;
-                if (side === 'probe') {
-                    document.getElementById('probeQualityCard').textContent = `${result.afisQuality ?? result.quality ?? '-'}/100`;
-                } else {
-                    document.getElementById('candidateQualityCard').textContent = `${result.afisQuality ?? result.quality ?? '-'}/100`;
-                }
                 setActiveTrace(result.traceId);
                 renderFingerprint(side);
                 await refreshTraceFeed();
             } catch (error) {
+                state[side].result = null;
                 setActiveTrace(error.payload?.traceId || '');
                 setPanelStatus(side, error.message, 'danger');
+                renderOperatorFingerprint(side);
+                document.getElementById(`${side}OperatorMessage`).textContent = error.message;
                 await refreshTraceFeed();
             } finally {
                 setButtonsDisabled(false);
@@ -2094,16 +2794,23 @@
 
         async function runCompare() {
             if (!state.probe.result?.image || !state.candidate.result?.image) {
-                alert('Process or scan both fingerprints before comparing them.');
+                document.getElementById('operatorCompareHelp').textContent = 'Capture both fingerprints before starting the comparison.';
                 return;
             }
 
             setButtonsDisabled(true);
+            document.getElementById('primaryMatcherResult').className = 'operator-status neutral';
+            document.getElementById('primaryMatcherResult').textContent = 'Comparing fingerprints...';
+            document.getElementById('primaryMatcherPercentage').textContent = 'Please wait';
+            document.getElementById('operatorCompareHelp').textContent = 'Comparing fingerprints... Please wait while the fingerprints are being analyzed.';
+            document.getElementById('finalDecision').className = 'operator-status neutral';
+            document.getElementById('finalDecision').textContent = 'PLEASE WAIT';
+            document.getElementById('finalDecisionHelp').textContent = 'Please wait while the fingerprints are being analyzed.';
             const summaryEl = document.getElementById('compareSummary');
             summaryEl.className = 'empty';
-            summaryEl.textContent = 'Running Bozorth3, SourceAFIS, OpenAFIS, MCC, and Jiang Matcher independently...';
+            summaryEl.textContent = 'Running Modified Bozorth3, SourceAFIS, OpenAFIS, MCC, and Jiang Matcher independently...';
             try {
-                const result = await requestService('/afis/compare-all', {
+                const rawResult = await requestService('/afis/compare-all', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -2133,6 +2840,7 @@
                     })
                 });
 
+                const result = FingerprintComparison.ensureComparisonResult(rawResult);
                 state.compare = result;
                 state.selectedPairId = '';
                 state.visualization.showAllPairs = false;
@@ -2145,6 +2853,10 @@
                 setActiveTrace(error.payload?.traceId || '');
                 summaryEl.className = 'empty danger';
                 summaryEl.textContent = error.message;
+                renderOperatorResults();
+                document.getElementById('finalDecision').className = 'operator-status danger';
+                document.getElementById('finalDecision').textContent = 'COMPARISON FAILED';
+                document.getElementById('finalDecisionHelp').textContent = error.message;
                 await refreshTraceFeed();
             } finally {
                 setButtonsDisabled(false);
@@ -2191,7 +2903,33 @@
                 .replace(/'/g, '&#39;');
         }
 
+        function resetComparison() {
+            state.probe = { inputDataUrl: '', result: null };
+            state.candidate = { inputDataUrl: '', result: null };
+            state.compare = null;
+            state.selectedPairId = '';
+            state.visualization.showAllPairs = false;
+            ['probeFile', 'candidateFile', 'operatorProbeFile', 'operatorCandidateFile'].forEach((id) => {
+                document.getElementById(id).value = '';
+            });
+            resetVisualizationView();
+            setActiveTrace('');
+            renderFingerprint('probe');
+            renderFingerprint('candidate');
+            renderCompare();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
         function wireEvents() {
+            const advancedInfo = document.getElementById('advancedInfo');
+            const advancedInfoLabel = document.getElementById('advancedInfoLabel');
+            advancedInfo.addEventListener('toggle', () => {
+                advancedInfoLabel.textContent = advancedInfo.open ? 'Hide Advanced Info' : 'Show Advanced Info';
+                advancedInfo.querySelector(':scope > summary').setAttribute(
+                    'aria-label',
+                    advancedInfo.open ? 'Hide Advanced Info' : 'Show Advanced Info'
+                );
+            });
             document.getElementById('refreshHealthButton').addEventListener('click', refreshHealth);
             document.getElementById('refreshTraceButton').addEventListener('click', refreshTraceFeed);
             document.getElementById('clearTraceButton').addEventListener('click', clearTraceFeed);
@@ -2200,6 +2938,16 @@
             document.getElementById('probeScanButton').addEventListener('click', () => runScan('probe'));
             document.getElementById('candidateScanButton').addEventListener('click', () => runScan('candidate'));
             document.getElementById('compareButton').addEventListener('click', runCompare);
+            document.getElementById('advancedCompareButton').addEventListener('click', runCompare);
+            document.getElementById('operatorProbeUploadButton').addEventListener('click', () => processUpload('probe', 'operatorProbeFile'));
+            document.getElementById('operatorCandidateUploadButton').addEventListener('click', () => processUpload('candidate', 'operatorCandidateFile'));
+            document.getElementById('scanFingerprintButton').addEventListener('click', () => runScan('probe'));
+            document.getElementById('scanStoredFingerprintButton').addEventListener('click', () => runScan('candidate'));
+            document.getElementById('scanAgainButton').addEventListener('click', () => runScan('probe'));
+            document.getElementById('newComparisonButton').addEventListener('click', resetComparison);
+            document.getElementById('viewFingerprintComparisonButton').addEventListener('click', () => {
+                document.getElementById('operatorFingerprintComparison').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
             document.getElementById('toggleMinutiae').addEventListener('change', (event) => {
                 state.visualization.showMinutiae = event.target.checked;
                 renderPrimaryComparison();

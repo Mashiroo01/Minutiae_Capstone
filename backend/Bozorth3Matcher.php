@@ -15,6 +15,8 @@ class Bozorth3Matcher {
     private $bozorth3Path = 'C:\\bozorth3\\bozorth3.exe';
     private $resolvedPath = null;
     private $cygwinBash = 'C:\\cygwin64\\bin\\bash.exe';
+    private $afisBaseUrl = 'http://localhost:9000';
+    private $statusFetcher = null;
     
     // Confidence threshold for match (0-100, where higher = stricter)
     private $matchThreshold = 80;
@@ -25,13 +27,18 @@ class Bozorth3Matcher {
     /**
      * Initialize matcher
      */
-    public function __construct($bozorth3Path = null) {
+    public function __construct($bozorth3Path = null, $statusFetcher = null, $afisBaseUrl = null) {
+        $this->statusFetcher = $statusFetcher;
+        $cfg = null;
+        $configPath = __DIR__ . '/config.php';
+        if (file_exists($configPath)) {
+            $cfg = require $configPath;
+        }
+
         if ($bozorth3Path) {
             $this->bozorth3Path = $bozorth3Path;
         } else {
-            $configPath = __DIR__ . '/config.php';
-            if (file_exists($configPath)) {
-                $cfg = require $configPath;
+            if (is_array($cfg)) {
                 if (!empty($cfg['bozorth3']['path'])) {
                     $this->bozorth3Path = $cfg['bozorth3']['path'];
                 }
@@ -46,6 +53,8 @@ class Bozorth3Matcher {
                 }
             }
         }
+        $configuredAfisUrl = is_array($cfg) ? ($cfg['services']['fingerprint_service_url'] ?? null) : null;
+        $this->afisBaseUrl = rtrim((string)($afisBaseUrl ?: $configuredAfisUrl ?: 'http://localhost:9000'), '/');
         $envBash = getenv('CYGWIN_BASH');
         if (!empty($envBash)) {
             $this->cygwinBash = $envBash;
@@ -80,11 +89,57 @@ class Bozorth3Matcher {
      * Get bozorth3 installation status
      */
     public function getStatus() {
+        $serviceStatus = $this->getFingerprintServiceStatus();
+        if ($serviceStatus !== null) {
+            return $serviceStatus;
+        }
+
         return [
             'installed' => $this->isAvailable(),
             'path' => $this->resolvedPath ?: $this->bozorth3Path,
             'cygwin_bash' => $this->cygwinBash,
+            'source' => 'php_runtime',
             'message' => $this->isAvailable() ? 'Bozorth3 is ready' : 'Bozorth3 not found. Checked configured path, PATH, and Cygwin.'
+        ];
+    }
+
+    private function getFingerprintServiceStatus() {
+        $url = $this->afisBaseUrl . '/debug/config';
+        try {
+            if (is_callable($this->statusFetcher)) {
+                $raw = call_user_func($this->statusFetcher, $url);
+            } else {
+                $context = stream_context_create([
+                    'http' => [
+                        'method' => 'GET',
+                        'timeout' => 2,
+                        'ignore_errors' => true
+                    ]
+                ]);
+                $raw = @file_get_contents($url, false, $context);
+            }
+        } catch (Throwable $e) {
+            return null;
+        }
+
+        if (!is_string($raw) || trim($raw) === '') {
+            return null;
+        }
+        $payload = json_decode($raw, true);
+        $matcher = $payload['afis']['academicMatchers'] ?? null;
+        if (!is_array($matcher) || !array_key_exists('bozorth3Ready', $matcher)) {
+            return null;
+        }
+
+        $ready = (bool)$matcher['bozorth3Ready'];
+        return [
+            'installed' => $ready,
+            'path' => $matcher['bozorth3Path'] ?? $this->bozorth3Path,
+            'cygwin_bash' => $matcher['cygwinBashPath'] ?? $this->cygwinBash,
+            'source' => 'fingerprint_service',
+            'message' => $ready
+                ? 'Modified Bozorth3 is ready in the fingerprint service.'
+                : 'Modified Bozorth3 is not available in the fingerprint service.'
         ];
     }
     

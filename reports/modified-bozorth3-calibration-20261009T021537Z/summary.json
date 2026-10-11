@@ -1,0 +1,90 @@
+{
+  "generatedAt": "2026-10-09T02:15:37.496Z",
+  "dataset": "C:\\xampp\\htdocs\\Minutiae\\temp\\matcher-build\\openafis\\data\\valid\\fvc2004\\DB4_B",
+  "groundTruth": "FVC filename subject prefix; impressions sharing a prefix are genuine; adjacent subject prefixes are impostors",
+  "samples": 80,
+  "subjects": 10,
+  "pairs": {
+    "total": 560,
+    "genuine": 280,
+    "impostor": 280
+  },
+  "split": "Subjects 101-105 train; 106-110 held-out validation",
+  "calibrationDecision": {
+    "status": "rejected",
+    "activated": false,
+    "reason": "Genuine and impostor score distributions overlap severely and held-out validation failed the activation safety gate.",
+    "bestAllPairBalancedThreshold": 228,
+    "bestAllPairBalancedAccuracy": 0.5410714285714285,
+    "bestAllPairFar": 0.45714285714285713,
+    "bestAllPairFrr": 0.4607142857142857
+  },
+  "feeds": {
+    "modified": {
+      "chosenThreshold": 309,
+      "selectionRule": "minimum train errors; then fewer false accepts; then closest FAR/FRR; then lowest threshold on an equivalent plateau",
+      "train": {
+        "threshold": 309,
+        "tp": 8,
+        "fn": 132,
+        "fp": 0,
+        "tn": 140,
+        "accuracy": 0.5285714285714286,
+        "precision": 1,
+        "recall": 0.05714285714285714,
+        "f1": 0.1081081081081081,
+        "far": 0,
+        "frr": 0.9428571428571428,
+        "balancedAccuracy": 0.5285714285714286
+      },
+      "validation": {
+        "threshold": 309,
+        "tp": 6,
+        "fn": 134,
+        "fp": 0,
+        "tn": 140,
+        "accuracy": 0.5214285714285715,
+        "precision": 1,
+        "recall": 0.04285714285714286,
+        "f1": 0.0821917808219178,
+        "far": 0,
+        "frr": 0.9571428571428572,
+        "balancedAccuracy": 0.5214285714285715
+      },
+      "all": {
+        "threshold": 309,
+        "tp": 14,
+        "fn": 266,
+        "fp": 0,
+        "tn": 280,
+        "accuracy": 0.525,
+        "precision": 1,
+        "recall": 0.05,
+        "f1": 0.09523809523809523,
+        "far": 0,
+        "frr": 0.95,
+        "balancedAccuracy": 0.525
+      },
+      "genuine": {
+        "count": 280,
+        "minimum": 13,
+        "p25": 136,
+        "median": 231,
+        "p75": 272,
+        "p95": 308,
+        "maximum": 337,
+        "mean": 196.9
+      },
+      "impostor": {
+        "count": 280,
+        "minimum": 13,
+        "p25": 95,
+        "median": 222,
+        "p75": 270,
+        "p95": 296,
+        "maximum": 308,
+        "mean": 187.86
+      }
+    }
+  }
+}

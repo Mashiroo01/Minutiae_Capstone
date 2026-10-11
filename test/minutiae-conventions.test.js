@@ -3,8 +3,18 @@ const test = require('node:test');
 
 const {
     classifyMinutiaByCrossingNumber,
-    countRidgeTransitions
+    countRidgeTransitions,
+    ridgeNeighborRing
 } = require('../matchers/minutiae-conventions');
+
+test('the crossing-number ring contains each of the eight neighbors exactly once in clockwise order', () => {
+    const binary = Uint8Array.from([
+        1, 2, 3,
+        8, 0, 4,
+        7, 6, 5
+    ]);
+    assert.deepEqual(ridgeNeighborRing(binary, 3, 1, 1), [2, 3, 4, 5, 6, 7, 8, 1]);
+});
 
 test('one ridge transition is a ridge ending', () => {
     const neighbors = [1, 0, 0, 0, 0, 0, 0, 0];

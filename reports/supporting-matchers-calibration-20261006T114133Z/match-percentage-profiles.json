@@ -1,0 +1,220 @@
+{
+  "profiles": {
+    "SourceAFIS": {
+      "status": "calibrated",
+      "profileId": "sourceafis-20261006114133",
+      "matcher": "SourceAFIS",
+      "matcherFeed": "SourceAFIS 3.18.1 clean image templates",
+      "dataset": "DB4_B",
+      "report": "reports/supporting-matchers-calibration-20261006T114133Z/summary.json",
+      "generatedAt": "2026-10-06T11:41:33.491Z",
+      "threshold": 18.074729666,
+      "scoreDirection": "higher-is-more-similar",
+      "method": "piecewise-linear-threshold-anchored",
+      "mapping": {
+        "lowerScore": 1.122633901668,
+        "lowerBasis": "impostor p25",
+        "upperScore": 265.670993191865,
+        "upperBasis": "genuine p95"
+      },
+      "distributions": {
+        "impostor": {
+          "count": 140,
+          "minimum": 0,
+          "p25": 1.122633901668,
+          "median": 2.491769761284,
+          "p75": 4.890260624968,
+          "p95": 10.13113031958,
+          "maximum": 17.923036292105,
+          "mean": 3.5481
+        },
+        "genuine": {
+          "count": 140,
+          "minimum": 0.229062626881,
+          "p25": 59.270705906479,
+          "median": 96.048124428384,
+          "p75": 132.520695994302,
+          "p95": 265.670993191865,
+          "maximum": 345.194112258272,
+          "mean": 105.9871
+        }
+      },
+      "validation": {
+        "threshold": 18.074729666,
+        "tp": 66,
+        "fn": 4,
+        "fp": 0,
+        "tn": 70,
+        "accuracy": 0.9714285714285714,
+        "precision": 1,
+        "recall": 0.9428571428571428,
+        "f1": 0.9705882352941176,
+        "far": 0,
+        "frr": 0.05714285714285714,
+        "balancedAccuracy": 0.9714285714285714
+      }
+    },
+    "OpenAFIS": {
+      "status": "calibrated",
+      "profileId": "openafis-20261006114133",
+      "matcher": "OpenAFIS",
+      "matcherFeed": "OpenAFIS with SourceAFIS 3.18.1 score-independent minutiae",
+      "dataset": "DB4_B",
+      "report": "reports/supporting-matchers-calibration-20261006T114133Z/summary.json",
+      "generatedAt": "2026-10-06T11:41:33.491Z",
+      "threshold": 3.5,
+      "scoreDirection": "higher-is-more-similar",
+      "method": "piecewise-linear-threshold-anchored",
+      "mapping": {
+        "lowerScore": 0,
+        "lowerBasis": "impostor p25",
+        "upperScore": 59,
+        "upperBasis": "genuine p95"
+      },
+      "distributions": {
+        "impostor": {
+          "count": 140,
+          "minimum": 0,
+          "p25": 0,
+          "median": 0,
+          "p75": 0,
+          "p95": 2,
+          "maximum": 4,
+          "mean": 0.2714
+        },
+        "genuine": {
+          "count": 140,
+          "minimum": 0,
+          "p25": 10,
+          "median": 23,
+          "p75": 40,
+          "p95": 59,
+          "maximum": 76,
+          "mean": 25.8714
+        }
+      },
+      "validation": {
+        "threshold": 3.5,
+        "tp": 60,
+        "fn": 10,
+        "fp": 0,
+        "tn": 70,
+        "accuracy": 0.9285714285714286,
+        "precision": 1,
+        "recall": 0.8571428571428571,
+        "f1": 0.923076923076923,
+        "far": 0,
+        "frr": 0.14285714285714285,
+        "balancedAccuracy": 0.9285714285714286
+      }
+    },
+    "MCC": {
+      "status": "calibrated",
+      "profileId": "mcc-20261006114133",
+      "matcher": "MCC",
+      "matcherFeed": "mpi-afis MCC with SourceAFIS 3.18.1 score-independent minutiae",
+      "dataset": "DB4_B",
+      "report": "reports/supporting-matchers-calibration-20261006T114133Z/summary.json",
+      "generatedAt": "2026-10-06T11:41:33.491Z",
+      "threshold": 0.030879,
+      "scoreDirection": "higher-is-more-similar",
+      "method": "piecewise-linear-threshold-anchored",
+      "mapping": {
+        "lowerScore": 0.017691,
+        "lowerBasis": "impostor p25",
+        "upperScore": 0.293682,
+        "upperBasis": "genuine p95"
+      },
+      "distributions": {
+        "impostor": {
+          "count": 140,
+          "minimum": 0.013992,
+          "p25": 0.017691,
+          "median": 0.01956,
+          "p75": 0.021867,
+          "p95": 0.026016,
+          "maximum": 0.029959,
+          "mean": 0.02
+        },
+        "genuine": {
+          "count": 140,
+          "minimum": 0.016304,
+          "p25": 0.062859,
+          "median": 0.113758,
+          "p75": 0.171765,
+          "p95": 0.293682,
+          "maximum": 0.465125,
+          "mean": 0.1288
+        }
+      },
+      "validation": {
+        "threshold": 0.030879,
+        "tp": 68,
+        "fn": 2,
+        "fp": 0,
+        "tn": 70,
+        "accuracy": 0.9857142857142858,
+        "precision": 1,
+        "recall": 0.9714285714285714,
+        "f1": 0.9855072463768115,
+        "far": 0,
+        "frr": 0.02857142857142857,
+        "balancedAccuracy": 0.9857142857142858
+      }
+    },
+    "Jiang Matcher": {
+      "status": "calibrated",
+      "profileId": "jiang-matcher-20261006114133",
+      "matcher": "Jiang Matcher",
+      "matcherFeed": "mpi-afis Jiang with SourceAFIS 3.18.1 score-independent minutiae",
+      "dataset": "DB4_B",
+      "report": "reports/supporting-matchers-calibration-20261006T114133Z/summary.json",
+      "generatedAt": "2026-10-06T11:41:33.491Z",
+      "threshold": 0.2020075,
+      "scoreDirection": "higher-is-more-similar",
+      "method": "piecewise-linear-threshold-anchored",
+      "mapping": {
+        "lowerScore": 0.064659,
+        "lowerBasis": "impostor p25",
+        "upperScore": 0.508338,
+        "upperBasis": "genuine p95"
+      },
+      "distributions": {
+        "impostor": {
+          "count": 140,
+          "minimum": 0,
+          "p25": 0.064659,
+          "median": 0.087302,
+          "p75": 0.118907,
+          "p95": 0.175806,
+          "maximum": 0.227369,
+          "mean": 0.0946
+        },
+        "genuine": {
+          "count": 140,
+          "minimum": 0.061328,
+          "p25": 0.230843,
+          "median": 0.316722,
+          "p75": 0.401037,
+          "p95": 0.508338,
+          "maximum": 0.627454,
+          "mean": 0.3185
+        }
+      },
+      "validation": {
+        "threshold": 0.2020075,
+        "tp": 58,
+        "fn": 12,
+        "fp": 0,
+        "tn": 70,
+        "accuracy": 0.9142857142857143,
+        "precision": 1,
+        "recall": 0.8285714285714286,
+        "f1": 0.90625,
+        "far": 0,
+        "frr": 0.17142857142857143,
+        "balancedAccuracy": 0.9142857142857144
+      }
+    }
+  }
+}

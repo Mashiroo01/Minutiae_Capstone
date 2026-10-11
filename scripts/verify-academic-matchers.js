@@ -12,7 +12,7 @@ async function compare(probe, reference) {
         body: JSON.stringify({
             probeImage: probe.toString('base64'),
             referenceImage: reference.toString('base64'),
-            thresholds: { bozorth3: 40, sourceafis: 40, openafis: 6, mcc: 0.04, jiang: 0.245 }
+            thresholds: { bozorth3: 16, sourceafis: 18.074729666, openafis: 3.5, mcc: 0.030879, jiang: 0.2020075 }
         })
     });
     const payload = await response.json();
@@ -32,6 +32,9 @@ function assertRealResults(result, label) {
         if (!Number.isFinite(matcher.processingTimeMs) || matcher.processingTimeMs < 0) {
             throw new Error(`${label}: ${algorithm} processing time is invalid.`);
         }
+        if (!Number.isFinite(matcher.normalizedMatchPercentage) || matcher.normalization?.status !== 'calibrated') {
+            throw new Error(`${label}: ${algorithm} calibrated match percentage is invalid.`);
+        }
         if (algorithm === 'MCC' || algorithm === 'Jiang Matcher') {
             if (!Number.isFinite(matcher.normalizedSimilarity)) {
                 throw new Error(`${label}: ${algorithm} normalized similarity is invalid.`);
@@ -40,6 +43,12 @@ function assertRealResults(result, label) {
                 throw new Error(`${label}: ${algorithm} did not report its real minutiae input counts.`);
             }
         }
+    }
+    if (result.supportingArbiter?.status !== 'ok') {
+        throw new Error(`${label}: the four-model supporting arbiter is unavailable.`);
+    }
+    if (!Number.isFinite(result.supportingArbiter.normalizedMatchPercentage)) {
+        throw new Error(`${label}: the four-model supporting arbiter percentage is invalid.`);
     }
 }
 
@@ -163,6 +172,7 @@ async function main() {
         endpoint: `${SERVICE_BASE}/afis/compare-all`,
         scoreFusion: identical.scoreFusion,
         matcherCount: identical.matchers.length,
+        supportingArbiter: identical.supportingArbiter,
         matcherLogsVerified: true,
         summary,
         scenarioMatrix: scenarios.map((scenario) => ({

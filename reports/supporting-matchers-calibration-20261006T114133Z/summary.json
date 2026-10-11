@@ -1,0 +1,278 @@
+{
+  "generatedAt": "2026-10-06T11:41:33.491Z",
+  "dataset": "C:\\xampp\\htdocs\\Minutiae\\temp\\matcher-build\\openafis\\data\\valid\\fvc2004\\DB4_B",
+  "groundTruth": "FVC filename subject prefix; same prefix is genuine; adjacent subject prefix is impostor",
+  "samples": 80,
+  "pairs": {
+    "total": 280,
+    "genuine": 140,
+    "impostor": 140
+  },
+  "split": "Subjects 101-105 train; 106-110 held-out validation",
+  "matchers": {
+    "SourceAFIS": {
+      "chosenThreshold": 18.074729666,
+      "selectionRule": "minimum training errors; then fewer false accepts; then closest FAR/FRR; midpoint between adjacent observed scores",
+      "train": {
+        "threshold": 18.074729666,
+        "tp": 65,
+        "fn": 5,
+        "fp": 0,
+        "tn": 70,
+        "accuracy": 0.9642857142857143,
+        "precision": 1,
+        "recall": 0.9285714285714286,
+        "f1": 0.962962962962963,
+        "far": 0,
+        "frr": 0.07142857142857142,
+        "balancedAccuracy": 0.9642857142857143
+      },
+      "validation": {
+        "threshold": 18.074729666,
+        "tp": 66,
+        "fn": 4,
+        "fp": 0,
+        "tn": 70,
+        "accuracy": 0.9714285714285714,
+        "precision": 1,
+        "recall": 0.9428571428571428,
+        "f1": 0.9705882352941176,
+        "far": 0,
+        "frr": 0.05714285714285714,
+        "balancedAccuracy": 0.9714285714285714
+      },
+      "all": {
+        "threshold": 18.074729666,
+        "tp": 131,
+        "fn": 9,
+        "fp": 0,
+        "tn": 140,
+        "accuracy": 0.9678571428571429,
+        "precision": 1,
+        "recall": 0.9357142857142857,
+        "f1": 0.966789667896679,
+        "far": 0,
+        "frr": 0.06428571428571428,
+        "balancedAccuracy": 0.9678571428571429
+      },
+      "genuine": {
+        "count": 140,
+        "minimum": 0.229062626881,
+        "p25": 59.270705906479,
+        "median": 96.048124428384,
+        "p75": 132.520695994302,
+        "p95": 265.670993191865,
+        "maximum": 345.194112258272,
+        "mean": 105.9871
+      },
+      "impostor": {
+        "count": 140,
+        "minimum": 0,
+        "p25": 1.122633901668,
+        "median": 2.491769761284,
+        "p75": 4.890260624968,
+        "p95": 10.13113031958,
+        "maximum": 17.923036292105,
+        "mean": 3.5481
+      }
+    },
+    "OpenAFIS": {
+      "chosenThreshold": 3.5,
+      "selectionRule": "minimum training errors; then fewer false accepts; then closest FAR/FRR; midpoint between adjacent observed scores",
+      "train": {
+        "threshold": 3.5,
+        "tp": 61,
+        "fn": 9,
+        "fp": 1,
+        "tn": 69,
+        "accuracy": 0.9285714285714286,
+        "precision": 0.9838709677419355,
+        "recall": 0.8714285714285714,
+        "f1": 0.9242424242424242,
+        "far": 0.014285714285714285,
+        "frr": 0.12857142857142856,
+        "balancedAccuracy": 0.9285714285714286
+      },
+      "validation": {
+        "threshold": 3.5,
+        "tp": 60,
+        "fn": 10,
+        "fp": 0,
+        "tn": 70,
+        "accuracy": 0.9285714285714286,
+        "precision": 1,
+        "recall": 0.8571428571428571,
+        "f1": 0.923076923076923,
+        "far": 0,
+        "frr": 0.14285714285714285,
+        "balancedAccuracy": 0.9285714285714286
+      },
+      "all": {
+        "threshold": 3.5,
+        "tp": 121,
+        "fn": 19,
+        "fp": 1,
+        "tn": 139,
+        "accuracy": 0.9285714285714286,
+        "precision": 0.9918032786885246,
+        "recall": 0.8642857142857143,
+        "f1": 0.9236641221374046,
+        "far": 0.007142857142857143,
+        "frr": 0.1357142857142857,
+        "balancedAccuracy": 0.9285714285714286
+      },
+      "genuine": {
+        "count": 140,
+        "minimum": 0,
+        "p25": 10,
+        "median": 23,
+        "p75": 40,
+        "p95": 59,
+        "maximum": 76,
+        "mean": 25.8714
+      },
+      "impostor": {
+        "count": 140,
+        "minimum": 0,
+        "p25": 0,
+        "median": 0,
+        "p75": 0,
+        "p95": 2,
+        "maximum": 4,
+        "mean": 0.2714
+      }
+    },
+    "MCC": {
+      "chosenThreshold": 0.030879,
+      "selectionRule": "minimum training errors; then fewer false accepts; then closest FAR/FRR; midpoint between adjacent observed scores",
+      "train": {
+        "threshold": 0.030879,
+        "tp": 66,
+        "fn": 4,
+        "fp": 0,
+        "tn": 70,
+        "accuracy": 0.9714285714285714,
+        "precision": 1,
+        "recall": 0.9428571428571428,
+        "f1": 0.9705882352941176,
+        "far": 0,
+        "frr": 0.05714285714285714,
+        "balancedAccuracy": 0.9714285714285714
+      },
+      "validation": {
+        "threshold": 0.030879,
+        "tp": 68,
+        "fn": 2,
+        "fp": 0,
+        "tn": 70,
+        "accuracy": 0.9857142857142858,
+        "precision": 1,
+        "recall": 0.9714285714285714,
+        "f1": 0.9855072463768115,
+        "far": 0,
+        "frr": 0.02857142857142857,
+        "balancedAccuracy": 0.9857142857142858
+      },
+      "all": {
+        "threshold": 0.030879,
+        "tp": 134,
+        "fn": 6,
+        "fp": 0,
+        "tn": 140,
+        "accuracy": 0.9785714285714285,
+        "precision": 1,
+        "recall": 0.9571428571428572,
+        "f1": 0.9781021897810218,
+        "far": 0,
+        "frr": 0.04285714285714286,
+        "balancedAccuracy": 0.9785714285714286
+      },
+      "genuine": {
+        "count": 140,
+        "minimum": 0.016304,
+        "p25": 0.062859,
+        "median": 0.113758,
+        "p75": 0.171765,
+        "p95": 0.293682,
+        "maximum": 0.465125,
+        "mean": 0.1288
+      },
+      "impostor": {
+        "count": 140,
+        "minimum": 0.013992,
+        "p25": 0.017691,
+        "median": 0.01956,
+        "p75": 0.021867,
+        "p95": 0.026016,
+        "maximum": 0.029959,
+        "mean": 0.02
+      }
+    },
+    "Jiang Matcher": {
+      "chosenThreshold": 0.2020075,
+      "selectionRule": "minimum training errors; then fewer false accepts; then closest FAR/FRR; midpoint between adjacent observed scores",
+      "train": {
+        "threshold": 0.2020075,
+        "tp": 58,
+        "fn": 12,
+        "fp": 1,
+        "tn": 69,
+        "accuracy": 0.9071428571428571,
+        "precision": 0.9830508474576272,
+        "recall": 0.8285714285714286,
+        "f1": 0.8992248062015504,
+        "far": 0.014285714285714285,
+        "frr": 0.17142857142857143,
+        "balancedAccuracy": 0.9071428571428573
+      },
+      "validation": {
+        "threshold": 0.2020075,
+        "tp": 58,
+        "fn": 12,
+        "fp": 0,
+        "tn": 70,
+        "accuracy": 0.9142857142857143,
+        "precision": 1,
+        "recall": 0.8285714285714286,
+        "f1": 0.90625,
+        "far": 0,
+        "frr": 0.17142857142857143,
+        "balancedAccuracy": 0.9142857142857144
+      },
+      "all": {
+        "threshold": 0.2020075,
+        "tp": 116,
+        "fn": 24,
+        "fp": 1,
+        "tn": 139,
+        "accuracy": 0.9107142857142857,
+        "precision": 0.9914529914529915,
+        "recall": 0.8285714285714286,
+        "f1": 0.9027237354085603,
+        "far": 0.007142857142857143,
+        "frr": 0.17142857142857143,
+        "balancedAccuracy": 0.9107142857142858
+      },
+      "genuine": {
+        "count": 140,
+        "minimum": 0.061328,
+        "p25": 0.230843,
+        "median": 0.316722,
+        "p75": 0.401037,
+        "p95": 0.508338,
+        "maximum": 0.627454,
+        "mean": 0.3185
+      },
+      "impostor": {
+        "count": 140,
+        "minimum": 0,
+        "p25": 0.064659,
+        "median": 0.087302,
+        "p75": 0.118907,
+        "p95": 0.175806,
+        "maximum": 0.227369,
+        "mean": 0.0946
+      }
+    }
+  }
+}

@@ -983,6 +983,7 @@
         </div>
     </div>
 
+    <script src="fingerprint-comparison-result.js"></script>
     <script>
         // Tab Switching
         function switchTab(event, tabName) {
@@ -1005,6 +1006,7 @@
         let currentCheckSignature = null;
         let privacyNoticeVersion = '2026-03-28';
         let currentDashboardUser = null;
+        let latestFingerprintComparisonResult = null;
 
         const consentOverlay = document.getElementById('privacyConsentOverlay');
         const consentCheckbox = document.getElementById('privacyConsentCheckbox');
@@ -1383,7 +1385,7 @@
                 document.getElementById('checkLoading').style.display = 'block';
                 
                 const controller = new AbortController();
-                scanTimeout = setTimeout(() => controller.abort(), 40000);
+                scanTimeout = setTimeout(() => controller.abort(), 55000);
 
                 // Call fingerprint scanner service
                 const response = await fetch('http://localhost:9000/scan', {
@@ -1560,6 +1562,25 @@
                         return;
                     }
 
+                    latestFingerprintComparisonResult = matchData.comparison_result
+                        ? FingerprintComparison.ensureComparisonResult(matchData.comparison_result)
+                        : null;
+                    const finalDecision = String(latestFingerprintComparisonResult?.finalResult?.decision || '').trim().toUpperCase();
+                    const comparisonId = latestFingerprintComparisonResult?.comparisonId || 'Unavailable';
+                    console.info('[Dashboard] Fingerprint comparison completed');
+                    console.info(`[Dashboard] Comparison ID: ${comparisonId}`);
+                    console.info(`[Dashboard] Result: ${finalDecision || 'UNAVAILABLE'}`);
+                    if (finalDecision === 'MATCH') {
+                        console.info('[Dashboard] Saving notification event...');
+                        if (matchData.notification?.id) {
+                            console.info('[Dashboard] Notification event saved successfully');
+                            console.info(`[Dashboard] Notification ID = ${matchData.notification.id}`);
+                        } else {
+                            console.error('[Dashboard] MATCH returned without a saved notification event.');
+                        }
+                    } else {
+                        console.info('[Dashboard] No admin match notification created');
+                    }
                     displayFingerprintResults(matchData);
                 } catch (error) {
                     document.getElementById('checkLoading').style.display = 'none';
@@ -1659,37 +1680,24 @@
         }
 
         function displayFingerprintResults(data) {
-            const requiresManualReview = !!(data.requires_manual_review || data.clearance_status === 'UNDER_REVIEW');
-            const normalizedMatchScore = Number.isFinite(Number(data.match_score))
-                ? Math.max(0, Math.min(100, Math.round(Number(data.match_score))))
-                : 0;
-            let html = '<div class="result-card ' + (requiresManualReview ? 'caution' : (data.is_match ? 'rejected' : 'approved')) + ' show">';
+            const isConfirmedNoMatch = data?.is_match === false
+                && !data?.requires_manual_review
+                && String(data?.clearance_status || '').trim().toUpperCase() === 'APPROVED';
+            let html = '<div class="result-card approved show">';
             html += '<div class="result-title"><i class="bi bi-fingerprint"></i> Step 2: Fingerprint Verification</div>';
 
-            if (requiresManualReview) {
+            if (isConfirmedNoMatch) {
+                html += '<p class="result-lead">Application accepted.</p>';
+                html += '<p class="result-description">The demographic screening required fingerprint verification, and no fingerprint match was found.</p>';
+                html += '<div class="result-grid">';
+                html += '<div class="result-metric"><div class="result-metric-label">Status</div><div class="result-metric-value"><span class="result-badge badge-approved">ACCEPTED</span></div></div>';
+                html += '</div>';
+            } else {
                 html += '<p class="result-lead">Fingerprint verification is processing.</p>';
                 html += '<p class="result-description">The fingerprint check is still being processed. Please wait for the final application status update.</p>';
                 html += '<div class="result-grid">';
-                html += '<div class="result-metric"><div class="result-metric-label">Status</div><div class="result-metric-value"><span class="result-badge badge-caution">' + (data.public_status_label || 'PROCESSING...') + '</span></div></div>';
+                html += '<div class="result-metric"><div class="result-metric-label">Status</div><div class="result-metric-value"><span class="result-badge badge-approved">PROCESSING...</span></div></div>';
                 html += '</div>';
-            } else if (data.is_match) {
-                html += '<p class="result-lead">Confirmed fingerprint match.</p>';
-                html += '<p class="result-description">The applicant fingerprint matched an existing criminal biometric record and the application should not proceed as cleared.</p>';
-                html += '<div class="result-grid">';
-                html += '<div class="result-metric"><div class="result-metric-label">Decision</div><div class="result-metric-value"><span class="result-badge badge-rejected">Fingerprint Match</span></div></div>';
-                html += '<div class="result-metric"><div class="result-metric-label">Clearance Status</div><div class="result-metric-value">' + (data.clearance_status || 'REJECTED') + '</div></div>';
-                html += '<div class="result-metric"><div class="result-metric-label">Match Score</div><div class="result-metric-value">' + normalizedMatchScore + '/100</div></div>';
-                html += '</div>';
-                html += '<div class="result-note"><strong>Outcome:</strong> This biometric result indicates a confirmed match with an existing record.</div>';
-            } else {
-                html += '<p class="result-lead">No fingerprint match found.</p>';
-                html += '<p class="result-description">The fingerprint did not match any existing criminal biometric record. The applicant can continue with the clearance workflow.</p>';
-                html += '<div class="result-grid">';
-                html += '<div class="result-metric"><div class="result-metric-label">Decision</div><div class="result-metric-value"><span class="result-badge badge-approved">No Match</span></div></div>';
-                html += '<div class="result-metric"><div class="result-metric-label">Clearance Status</div><div class="result-metric-value">' + (data.clearance_status || 'APPROVED') + '</div></div>';
-                html += '<div class="result-metric"><div class="result-metric-label">Match Score</div><div class="result-metric-value">' + normalizedMatchScore + '/100</div></div>';
-                html += '</div>';
-                html += '<div class="result-note"><strong>Outcome:</strong> The applicant biometric data was checked and no criminal fingerprint match was detected.</div>';
             }
 
             html += '</div>';

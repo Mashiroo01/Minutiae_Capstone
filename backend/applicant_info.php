@@ -13,10 +13,16 @@ class ApplicantInfo {
     private $db;
     private $matcher;
     private $afisProfileCache = [];
+    private $afisBaseUrl;
     
     public function __construct($pdo = null) {
+        $config = require __DIR__ . '/config.php';
         $this->db = new FingerprintDB($pdo);
         $this->matcher = new Bozorth3Matcher();
+        $this->afisBaseUrl = rtrim(
+            $config['services']['fingerprint_service_url'] ?? 'http://localhost:9000',
+            '/'
+        );
     }
     
     /**
@@ -196,7 +202,7 @@ class ApplicantInfo {
             ]
         ]);
 
-        $response = @file_get_contents('http://localhost:9000/afis/from-image', false, $context);
+        $response = @file_get_contents($this->afisBaseUrl . '/afis/from-image', false, $context);
         if ($response === false) {
             $result = ['success' => false, 'error' => 'AFIS image conversion unavailable'];
             $this->afisProfileCache[$cacheKey] = $result;
@@ -229,7 +235,7 @@ class ApplicantInfo {
         return $result;
     }
 
-    private function compareFingerprintImagesViaAfis($probeImage, $candidateImage, $threshold = null, $requireBozorth3 = false) {
+    private function compareFingerprintImagesViaAfis($probeImage, $candidateImage, $threshold = null, $requireBozorth3 = false, $probeInfo = [], $referenceInfo = []) {
         $probeImage = $this->normalizeFingerprintImage($probeImage);
         $candidateImage = $this->normalizeFingerprintImage($candidateImage);
 
@@ -239,13 +245,10 @@ class ApplicantInfo {
 
         $payload = [
             'probeImage' => $probeImage,
-            'candidateImage' => $candidateImage,
-            'requireBozorth3' => !empty($requireBozorth3)
+            'referenceImage' => $candidateImage,
+            'probeInfo' => is_array($probeInfo) ? $probeInfo : [],
+            'referenceInfo' => is_array($referenceInfo) ? $referenceInfo : []
         ];
-        if ($threshold !== null) {
-            $payload['threshold'] = intval($threshold);
-        }
-
         $context = stream_context_create([
             'http' => [
                 'method' => 'POST',
@@ -256,40 +259,59 @@ class ApplicantInfo {
             ]
         ]);
 
-        $response = @file_get_contents('http://localhost:9000/afis/compare', false, $context);
+        $response = @file_get_contents($this->afisBaseUrl . '/afis/compare-all', false, $context);
         if ($response === false) {
-            return ['success' => false, 'error' => 'AFIS compare service unavailable'];
+            return ['success' => false, 'error' => 'Academic comparison service unavailable'];
         }
 
         $decoded = json_decode($response, true);
         if (empty($decoded['success'])) {
             return [
                 'success' => false,
-                'error' => is_array($decoded) ? ($decoded['error'] ?? 'AFIS compare failed') : 'AFIS compare failed'
+                'error' => is_array($decoded) ? ($decoded['error'] ?? 'Academic comparison failed') : 'Academic comparison failed'
             ];
         }
 
-        $consistency = is_array($decoded['consistency'] ?? null) ? $decoded['consistency'] : [];
-        $minutiaeRequirement = is_array($decoded['minutiaeRequirement'] ?? null) ? $decoded['minutiaeRequirement'] : [];
+        $primaryMatcher = null;
+        foreach (($decoded['matchers'] ?? []) as $matcherResult) {
+            if (in_array(($matcherResult['algorithm'] ?? ''), ['Modified Bozorth3', 'Bozorth3'], true)) {
+                $primaryMatcher = $matcherResult;
+                break;
+            }
+        }
+
+        if (!is_array($primaryMatcher) || ($requireBozorth3 && ($primaryMatcher['status'] ?? '') !== 'ok')) {
+            return [
+                'success' => false,
+                'error' => $primaryMatcher['error'] ?? 'Modified Bozorth3 did not return an available primary result.',
+                'comparison_result' => $decoded
+            ];
+        }
+
+        $rawScore = is_numeric($primaryMatcher['rawScore'] ?? null)
+            ? floatval($primaryMatcher['rawScore'])
+            : (is_numeric($primaryMatcher['score'] ?? null) ? floatval($primaryMatcher['score']) : null);
+        $matchPercentage = is_numeric($primaryMatcher['normalizedMatchPercentage'] ?? null)
+            ? floatval($primaryMatcher['normalizedMatchPercentage'])
+            : null;
+        $legacyScore = $matchPercentage !== null ? $matchPercentage : $rawScore;
 
         return [
             'success' => true,
-            'score' => intval($decoded['score'] ?? 0),
-            'match' => !empty($decoded['isMatch']),
-            'source' => 'afis_compare',
-            'algorithm' => $decoded['algorithm'] ?? null,
-            'threshold' => intval($decoded['threshold'] ?? 0),
-            'consistency_passes' => !empty($consistency['passes']),
-            'consistency_score' => intval($consistency['score'] ?? 0),
-            'consistency_threshold' => intval($consistency['threshold'] ?? 0),
-            'directional_threshold' => intval($consistency['directionalThreshold'] ?? 0),
-            'minutiae_passes' => !empty($minutiaeRequirement['passes']),
-            'probe_minutiae_count' => intval($minutiaeRequirement['probeCount'] ?? 0),
-            'candidate_minutiae_count' => intval($minutiaeRequirement['candidateCount'] ?? 0)
+            'score' => $legacyScore,
+            'raw_score' => $rawScore,
+            'match_percentage' => $matchPercentage,
+            'match' => strtoupper((string)($primaryMatcher['result'] ?? '')) === 'MATCH',
+            'source' => 'academic_compare_all',
+            'algorithm' => 'Modified Bozorth3',
+            'threshold' => is_numeric($primaryMatcher['threshold'] ?? null) ? floatval($primaryMatcher['threshold']) : null,
+            'final_result' => $decoded['finalResult']['decision'] ?? null,
+            'requires_manual_review' => ($decoded['finalResult']['decision'] ?? 'REVIEW REQUIRED') === 'REVIEW REQUIRED',
+            'comparison_result' => $decoded
         ];
     }
 
-    public function matchProbeToCriminalFingerprint($probeTemplate, $probeImage, $criminalFingerprint, $format = 'ISO', $threshold = null, $strictAfisBozorth = false) {
+    public function matchProbeToCriminalFingerprint($probeTemplate, $probeImage, $criminalFingerprint, $format = 'ISO', $threshold = null, $strictAfisBozorth = false, $probeInfo = []) {
         $storedTemplate = (string)($criminalFingerprint['template'] ?? '');
         $probeTemplate = (string)$probeTemplate;
         $strictMode = !empty($strictAfisBozorth);
@@ -357,11 +379,33 @@ class ApplicantInfo {
                 ];
             }
 
-            return $this->compareFingerprintImagesViaAfis($normalizedProbeImage, $normalizedCandidateImage, $threshold, true);
+            return $this->compareFingerprintImagesViaAfis(
+                $normalizedProbeImage,
+                $normalizedCandidateImage,
+                $threshold,
+                true,
+                $probeInfo,
+                [
+                    'fingerprintId' => isset($criminalFingerprint['id']) ? 'criminal-fingerprint-' . intval($criminalFingerprint['id']) : null,
+                    'fingerPosition' => $criminalFingerprint['finger_position'] ?? 'UNSPECIFIED',
+                    'fileName' => $criminalFingerprint['fingerprint_filename'] ?? null
+                ]
+            );
         }
 
         if ($normalizedProbeImage !== '' && $normalizedCandidateImage !== '') {
-            $imageResult = $this->compareFingerprintImagesViaAfis($normalizedProbeImage, $normalizedCandidateImage, $threshold, $strictAfisBozorth);
+            $imageResult = $this->compareFingerprintImagesViaAfis(
+                $normalizedProbeImage,
+                $normalizedCandidateImage,
+                $threshold,
+                $strictAfisBozorth,
+                $probeInfo,
+                [
+                    'fingerprintId' => isset($criminalFingerprint['id']) ? 'criminal-fingerprint-' . intval($criminalFingerprint['id']) : null,
+                    'fingerPosition' => $criminalFingerprint['finger_position'] ?? 'UNSPECIFIED',
+                    'fileName' => $criminalFingerprint['fingerprint_filename'] ?? null
+                ]
+            );
             if (!empty($imageResult['success'])) {
                 return $imageResult;
             }
@@ -629,6 +673,13 @@ class ApplicantInfo {
         }
         $fingerprints = $isSuperAdmin ? $this->db->getApplicantFingerprints($applicantId) : [];
         $matchHistory = $this->db->getMatchHistory($applicantId, $isSuperAdmin);
+        $fingerprintNotifications = $isSuperAdmin
+            ? array_values(array_filter($matchHistory, function ($match) {
+                return strtoupper(trim((string)($match['notification_final_result'] ?? ''))) === 'MATCH'
+                    && strtolower(trim((string)($match['notification_status'] ?? 'none'))) !== 'none'
+                    && trim((string)($match['comparison_id'] ?? '')) !== '';
+            }))
+            : [];
         $reviewSummary = $this->db->getApplicantReviewSummary($applicantId);
         $updateLogs = $this->db->getApplicationUpdateLogs($applicantId, $viewerRole);
 
@@ -640,6 +691,8 @@ class ApplicantInfo {
             'fingerprints_count' => intval($record['fingerprint_count'] ?? count($fingerprints)),
             'match_history' => $matchHistory,
             'matches_count' => count($matchHistory),
+            'fingerprint_notifications' => $fingerprintNotifications,
+            'fingerprint_notifications_count' => count($fingerprintNotifications),
             'update_logs' => $updateLogs,
             'update_logs_count' => count($updateLogs),
             'biometric_access' => $isSuperAdmin ? 'full' : 'restricted',
@@ -668,6 +721,22 @@ class ApplicantInfo {
 
     public function getPendingMatchAlerts($limit = 10) {
         return $this->db->getPendingMatchAlerts($limit);
+    }
+
+    public function getComparisonHistory($limit = 50) {
+        return $this->db->getComparisonHistory($limit);
+    }
+
+    public function getFingerprintMatchNotifications($state = 'active', $limit = 20) {
+        return $this->db->getFingerprintMatchNotifications($state, $limit);
+    }
+
+    public function updateFingerprintMatchNotificationStatus($notificationId, $status) {
+        return $this->db->updateFingerprintMatchNotificationStatus($notificationId, $status);
+    }
+
+    public function getComparisonResultByComparisonId($comparisonId) {
+        return $this->db->getComparisonResultByComparisonId($comparisonId);
     }
 
     /**
@@ -884,7 +953,7 @@ header('Content-Type: application/json');
                         'is_match' => false,
                         'requires_manual_review' => true,
                         'identity_integrity_conflict' => true,
-                        'comparison_pipeline' => 'AFIS -> Bozorth3',
+                        'comparison_pipeline' => 'shared academic compare-all pipeline',
                         'clearance_status' => 'UNDER_REVIEW',
                         'public_status_label' => 'Processing...',
                         'message' => 'Fingerprint ownership conflict detected. The application is under integrity review.'
@@ -910,7 +979,7 @@ header('Content-Type: application/json');
                         'identity_association_mismatch' => true,
                         'matched_criminal_id' => intval($activeAssociationIds[0]),
                         'demographic_basis' => 'stored_applicant_record',
-                        'comparison_pipeline' => 'AFIS -> Bozorth3',
+                        'comparison_pipeline' => 'shared academic compare-all pipeline',
                         'clearance_status' => 'APPROVED',
                         'message' => 'No fingerprint match found for the screened identity. The biometric template is linked to a different enrolled record.'
                     ]);
@@ -919,8 +988,14 @@ header('Content-Type: application/json');
 
                 $bestScore = 0;
                 $bestPositiveScore = 0;
+                $bestRawScore = null;
+                $bestComparisonRank = null;
+                $bestComparisonResult = null;
                 $positiveMatches = 0;
+                $reviewRequiredComparisons = 0;
                 $successfulComparisons = 0;
+                $createdNotifications = [];
+                $persistenceErrors = [];
                 $threshold = max(80, intval($matcher->getMatchThreshold()));
                 $comparisonErrors = [];
                 $integrityConflicts = [];
@@ -948,7 +1023,12 @@ header('Content-Type: application/json');
                             $crimFp,
                             $crimFp['template_format'] ?? $format,
                             $threshold,
-                            true
+                            true,
+                            [
+                                'fingerprintId' => 'applicant-' . $applicantId,
+                                'fingerPosition' => 'UNSPECIFIED',
+                                'fileName' => 'dashboard-applicant-capture'
+                            ]
                         );
 
                         if (empty($matched['success'])) {
@@ -959,15 +1039,37 @@ header('Content-Type: application/json');
                         $successfulComparisons++;
                         $score = intval($matched['score'] ?? 0);
                         $isPositive = !empty($matched['match']);
-                        $db->recordMatchResult(
+                        $requiresComparisonReview = !empty($matched['requires_manual_review']);
+                        $comparisonResult = is_array($matched['comparison_result'] ?? null)
+                            ? $matched['comparison_result']
+                            : null;
+                        $comparisonRank = is_numeric($matched['match_percentage'] ?? null)
+                            ? floatval($matched['match_percentage'])
+                            : (is_numeric($matched['raw_score'] ?? null) ? floatval($matched['raw_score']) : null);
+                        $recordedComparison = $db->recordMatchResult(
                             $applicantId,
                             $criminalId,
                             $crimFp['finger_position'],
                             $score,
                             $isPositive,
-                            $isPositive ? 'PENDING_REVIEW' : 'CLEAR',
-                            $isPositive ? 'RESTRICTED' : 'STANDARD'
+                            ($isPositive || $requiresComparisonReview) ? 'PENDING_REVIEW' : 'CLEAR',
+                            ($isPositive || $requiresComparisonReview) ? 'RESTRICTED' : 'STANDARD',
+                            $comparisonResult
                         );
+                        if (empty($recordedComparison['success'])) {
+                            $persistenceErrors[] = $recordedComparison['error'] ?? 'Unknown comparison persistence error.';
+                        }
+                        if (is_array($recordedComparison['notification'] ?? null)) {
+                            $createdNotifications[] = $recordedComparison['notification'];
+                        }
+
+                        if ($comparisonResult !== null && ($bestComparisonRank === null || ($comparisonRank !== null && $comparisonRank >= $bestComparisonRank))) {
+                            $bestComparisonRank = $comparisonRank;
+                            $bestComparisonResult = $comparisonResult;
+                            $bestRawScore = is_numeric($matched['raw_score'] ?? null)
+                                ? floatval($matched['raw_score'])
+                                : null;
+                        }
 
                         if ($score >= $bestScore) {
                             $bestScore = $score;
@@ -978,7 +1080,18 @@ header('Content-Type: application/json');
                                 $bestPositiveScore = $score;
                             }
                         }
+                        if ($requiresComparisonReview) {
+                            $reviewRequiredComparisons++;
+                        }
                     }
+                }
+
+                if (!empty($persistenceErrors)) {
+                    $auth->sendJson([
+                        'success' => false,
+                        'error' => 'Fingerprint comparison completed but its result could not be persisted.',
+                        'details' => $persistenceErrors[0]
+                    ], 500);
                 }
 
                 if ($successfulComparisons === 0 && !empty($integrityConflicts) && empty($comparisonErrors)) {
@@ -993,7 +1106,8 @@ header('Content-Type: application/json');
                         'applicant_id' => $applicantId,
                         'is_match' => true,
                         'requires_manual_review' => true,
-                        'comparison_pipeline' => 'AFIS -> Bozorth3',
+                        'comparison_pipeline' => 'shared academic compare-all pipeline',
+                        'comparison_result' => $bestComparisonResult,
                         'clearance_status' => 'UNDER_REVIEW',
                         'public_status_label' => 'Processing...',
                         'message' => 'The biometric database reported duplicate criminal templates. The application is now under super admin review.'
@@ -1004,13 +1118,25 @@ header('Content-Type: application/json');
                 if ($successfulComparisons === 0 && !empty($comparisonErrors)) {
                     $auth->sendJson([
                         'success' => false,
-                        'error' => 'AFIS minutiae extraction is available, but Bozorth3 comparison is not ready.',
+                        'error' => 'AFIS minutiae extraction is available, but Modified Bozorth3 comparison is not ready.',
                         'details' => $comparisonErrors[0],
-                        'comparison_pipeline' => 'AFIS -> Bozorth3'
+                        'comparison_pipeline' => 'shared academic compare-all pipeline'
                     ], 503);
                 }
 
                 $isMatch = $positiveMatches > 0;
+                $bestNotification = null;
+                $bestComparisonId = is_array($bestComparisonResult)
+                    ? trim((string)($bestComparisonResult['comparisonId'] ?? ''))
+                    : '';
+                foreach ($createdNotifications as $createdNotification) {
+                    if ($bestNotification === null || ($bestComparisonId !== '' && ($createdNotification['comparisonId'] ?? '') === $bestComparisonId)) {
+                        $bestNotification = $createdNotification;
+                    }
+                    if ($bestComparisonId !== '' && ($createdNotification['comparisonId'] ?? '') === $bestComparisonId) {
+                        break;
+                    }
+                }
 
                 if ($isMatch) {
                     $db->updateApplicantStatus($applicantId, 'UNDER_REVIEW');
@@ -1020,14 +1146,38 @@ header('Content-Type: application/json');
                         'applicant_id' => $applicantId,
                         'is_match' => true,
                         'match_score' => max(0, min(100, intval($bestPositiveScore))),
-                        'raw_match_score' => intval($bestPositiveScore),
+                        'raw_match_score' => $bestRawScore,
                         'best_score' => $bestScore,
                         'requires_manual_review' => true,
                         'demographic_basis' => 'stored_applicant_record',
-                        'comparison_pipeline' => 'AFIS -> Bozorth3',
+                        'comparison_pipeline' => 'shared academic compare-all pipeline',
+                        'comparison_result' => $bestComparisonResult,
+                        'notification' => $bestNotification,
+                        'notifications' => $createdNotifications,
                         'clearance_status' => 'UNDER_REVIEW',
                         'public_status_label' => 'Processing...',
                         'message' => 'A potential biometric match was detected. The application is now under review by an authorized super admin.'
+                    ]);
+                    break;
+                }
+
+                if ($reviewRequiredComparisons > 0) {
+                    $db->updateApplicantStatus($applicantId, 'UNDER_REVIEW');
+                    $db->updateApplicantFingerprintStatus($applicantId, 'POTENTIAL_MATCH', 'The primary matcher returned a review-required result.');
+                    echo json_encode([
+                        'success' => true,
+                        'applicant_id' => $applicantId,
+                        'is_match' => false,
+                        'match_score' => $bestScore,
+                        'raw_match_score' => $bestRawScore,
+                        'best_score' => $bestScore,
+                        'requires_manual_review' => true,
+                        'demographic_basis' => 'stored_applicant_record',
+                        'comparison_pipeline' => 'shared academic compare-all pipeline',
+                        'comparison_result' => $bestComparisonResult,
+                        'clearance_status' => 'UNDER_REVIEW',
+                        'public_status_label' => 'Processing...',
+                        'message' => 'The fingerprint comparison requires authorized human review before interpretation.'
                     ]);
                     break;
                 }
@@ -1039,12 +1189,13 @@ header('Content-Type: application/json');
                     'success' => true,
                     'applicant_id' => $applicantId,
                     'is_match' => false,
-                    'match_score' => 0,
-                    'raw_match_score' => intval($bestScore),
+                    'match_score' => $bestScore,
+                    'raw_match_score' => $bestRawScore,
                     'best_score' => $bestScore,
                     'threshold' => $threshold,
                     'demographic_basis' => 'stored_applicant_record',
-                    'comparison_pipeline' => 'AFIS -> Bozorth3',
+                    'comparison_pipeline' => 'shared academic compare-all pipeline',
+                    'comparison_result' => $bestComparisonResult,
                     'clearance_status' => 'APPROVED',
                     'message' => 'No fingerprint match found. Applicant approved.'
                 ]);
@@ -1065,6 +1216,19 @@ header('Content-Type: application/json');
                 $decision = $data['decision'] ?? '';
                 $notes = trim((string)($data['notes'] ?? ''));
                 $result = $applicantInfo->reviewApplicantMatch($applicantId, $decision, $notes, $user['id']);
+                echo json_encode($result);
+                break;
+
+            case 'notification_status':
+                $auth->requireRole(['admin', 'super_admin'], 'update_fingerprint_notification', 'applicant');
+                $data = json_decode(file_get_contents('php://input'), true) ?? [];
+                $result = $applicantInfo->updateFingerprintMatchNotificationStatus(
+                    intval($data['notification_id'] ?? 0),
+                    $data['status'] ?? ''
+                );
+                if (empty($result['success'])) {
+                    $auth->sendJson($result, 422);
+                }
                 echo json_encode($result);
                 break;
 
@@ -1103,6 +1267,45 @@ header('Content-Type: application/json');
                     'count' => count($alerts),
                     'latest_match_at' => !empty($alerts) ? ($alerts[0]['latest_match_at'] ?? null) : null
                 ]);
+                break;
+
+            case 'comparisons':
+                $auth->requireRole(['admin', 'super_admin'], 'view_fingerprint_comparison_results', 'applicant');
+                $limit = intval($_GET['limit'] ?? 50);
+                $comparisons = $applicantInfo->getComparisonHistory($limit);
+                echo json_encode([
+                    'comparisons' => $comparisons,
+                    'count' => count($comparisons),
+                    'latest_comparison_id' => !empty($comparisons) ? ($comparisons[0]['comparison_id'] ?? null) : null,
+                    'latest_matched_at' => !empty($comparisons) ? ($comparisons[0]['matched_at'] ?? null) : null
+                ]);
+                break;
+
+            case 'notifications':
+                $auth->requireRole(['admin', 'super_admin'], 'view_fingerprint_notifications', 'applicant');
+                $state = $_GET['state'] ?? 'active';
+                $limit = intval($_GET['limit'] ?? 20);
+                $notifications = $applicantInfo->getFingerprintMatchNotifications($state, $limit);
+                echo json_encode([
+                    'notifications' => $notifications,
+                    'count' => count($notifications),
+                    'unread_count' => count(array_filter($notifications, function ($notification) {
+                        return ($notification['status'] ?? '') === 'unread';
+                    }))
+                ]);
+                break;
+
+            case 'comparison':
+                $auth->requireRole(['admin', 'super_admin'], 'view_fingerprint_comparison_result', 'applicant');
+                $comparisonId = trim((string)($_GET['comparison_id'] ?? ''));
+                if ($comparisonId === '') {
+                    $auth->sendJson(['error' => 'Comparison ID is required.'], 422);
+                }
+                $comparison = $applicantInfo->getComparisonResultByComparisonId($comparisonId);
+                if ($comparison === null) {
+                    $auth->sendJson(['error' => 'Fingerprint comparison result not found.'], 404);
+                }
+                echo json_encode(['comparison' => $comparison]);
                 break;
 
             case 'status':

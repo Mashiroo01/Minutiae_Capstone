@@ -11,6 +11,19 @@ function countRidgeTransitions(neighbors) {
     return total;
 }
 
+function ridgeNeighborRing(binary, width, x, y) {
+    return [
+        binary[(y - 1) * width + x],
+        binary[(y - 1) * width + (x + 1)],
+        binary[y * width + (x + 1)],
+        binary[(y + 1) * width + (x + 1)],
+        binary[(y + 1) * width + x],
+        binary[(y + 1) * width + (x - 1)],
+        binary[y * width + (x - 1)],
+        binary[(y - 1) * width + (x - 1)]
+    ];
+}
+
 function classifyMinutiaByCrossingNumber(neighbors) {
     const crossingNumber = countRidgeTransitions(neighbors);
     if (crossingNumber === 1) return 'ending';
@@ -20,5 +33,6 @@ function classifyMinutiaByCrossingNumber(neighbors) {
 
 module.exports = {
     classifyMinutiaByCrossingNumber,
-    countRidgeTransitions
+    countRidgeTransitions,
+    ridgeNeighborRing
 };

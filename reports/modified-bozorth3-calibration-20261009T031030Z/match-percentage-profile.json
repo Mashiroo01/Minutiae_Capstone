@@ -1,0 +1,54 @@
+{
+  "status": "calibrated",
+  "profileId": "modified-bozorth3-enhanced-20261009031030",
+  "matcher": "Modified Bozorth3",
+  "matcherFeed": "Median denoising -> NIST MINDTCT candidates -> adaptive Gabor enhancement -> adaptive binarization -> Zhang-Suen skeleton validation -> Bozorth3 XYT",
+  "dataset": "DB4_B",
+  "report": "reports/modified-bozorth3-calibration-20261009T031030Z/summary.json",
+  "generatedAt": "2026-10-09T03:10:30.181Z",
+  "threshold": 16,
+  "scoreDirection": "higher-is-more-similar",
+  "method": "piecewise-linear-threshold-anchored",
+  "mapping": {
+    "lowerScore": 4,
+    "lowerBasis": "impostor p25",
+    "upperScore": 184,
+    "upperBasis": "genuine p95"
+  },
+  "distributions": {
+    "impostor": {
+      "count": 280,
+      "minimum": 0,
+      "p25": 4,
+      "median": 6,
+      "p75": 8,
+      "p95": 12,
+      "maximum": 19,
+      "mean": 6.55
+    },
+    "genuine": {
+      "count": 280,
+      "minimum": 3,
+      "p25": 20,
+      "median": 37,
+      "p75": 75,
+      "p95": 184,
+      "maximum": 274,
+      "mean": 58.28
+    }
+  },
+  "validation": {
+    "threshold": 16,
+    "tp": 107,
+    "fn": 33,
+    "fp": 2,
+    "tn": 138,
+    "accuracy": 0.875,
+    "precision": 0.981651376146789,
+    "recall": 0.7642857142857142,
+    "f1": 0.859437751004016,
+    "far": 0.014285714285714285,
+    "frr": 0.2357142857142857,
+    "balancedAccuracy": 0.875
+  }
+}

@@ -22,11 +22,16 @@ const { spawnSync } = require('child_process');
 const crypto = require('crypto');
 const sharp = require('sharp');
 const HID = require('node-hid');  // Real USB HID communication
+const { runScannerCommand } = require('./scanner-command-runner');
 const { runMccMatcher, runJiangMatcher } = require('./matchers/mpi-afis/mpi-afis-runner');
 const { runBozorth3Matcher } = require('./matchers/bozorth3/bozorth3-runner');
+const { filterMindtctMinutiaeBySkeleton, runMindtctExtractor } = require('./matchers/mindtct/mindtct-runner');
 const { extractMinutiaePair } = require('./matchers/sourceafis/sourceafis-minutiae-runner');
-const { classifyMinutiaByCrossingNumber } = require('./matchers/minutiae-conventions');
+const { classifyMinutiaByCrossingNumber, ridgeNeighborRing } = require('./matchers/minutiae-conventions');
 const { createIsotropicCanvas, estimateAlignmentFromPairs, toOpenAfisCsv } = require('./matchers/openafis/openafis-adapter');
+const { attachMatchPercentage } = require('./matchers/calibration/match-percentage');
+const { buildSupportingMatcherArbiter } = require('./matchers/calibration/supporting-arbiter');
+const { buildFingerprintComparisonResult } = require('./fingerprint-comparison-result');
 const app = express();
 const port = Number(process.env.PORT || 9000);
 
@@ -49,8 +54,14 @@ const DEFAULT_CAPTURE_COMMAND = (process.env.SCANNER_CAPTURE_COMMAND || ZKTECO_C
 const DEFAULT_APP_TEMP_DIR = path.join(os.tmpdir(), 'Minutiae', 'work');
 const DEFAULT_SCANNER_CAPTURE_TEMP_DIR = path.join(os.tmpdir(), 'Minutiae', 'scanner');
 
+function positiveInteger(value, fallback) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : fallback;
+}
+
 const SCANNER_RUNTIME_CONFIG = {
-    timeout: 30000,
+    timeout: positiveInteger(process.env.SCANNER_CAPTURE_TIMEOUT_MS, 30000),
+    processGraceMs: positiveInteger(process.env.SCANNER_CAPTURE_GRACE_MS, 15000),
     qualityThreshold: 70,
     tempDir: (process.env.MINUTIAE_TEMP_DIR || DEFAULT_APP_TEMP_DIR).trim(),
     scannerTempDir: (process.env.SCANNER_CAPTURE_TEMP_DIR || DEFAULT_SCANNER_CAPTURE_TEMP_DIR).trim()
@@ -101,6 +112,10 @@ const AFIS_CONFIG = {
         bifurcationMinTraceLength: 7,
         traceMaxSteps: 18,
         descriptorNeighbors: 5
+    },
+    mindtct: {
+        executablePath: process.env.MINDTCT_RAW_PATH || path.join(__dirname, 'matchers', 'mindtct', 'mindtct-raw.exe'),
+        skeletonRadius: positiveInteger(process.env.MINDTCT_SKELETON_RADIUS, 6)
     },
     bozorth3Path: process.env.BOZORTH3_PATH || '/home/mendi/nbis/bozorth3/bin/bozorth3',
     cygwinBashPath: process.env.CYGWIN_BASH || 'C:\\cygwin64\\bin\\bash.exe',
@@ -176,17 +191,16 @@ const AFIS_CONFIG = {
     academicMatchers: {
         // Calibrated on 280 genuine and 280 impostor FVC2004 DB4_B pairs
         // using score-independent SourceAFIS minutiae and held-out subjects.
-        bozorth3Threshold: Number(process.env.BOZORTH3_MATCH_THRESHOLD || 20),
+        bozorth3Threshold: Number(process.env.BOZORTH3_MATCH_THRESHOLD || 16),
         bozorth3BorderlineBand: Number(process.env.BOZORTH3_BORDERLINE_BAND || 3),
         bozorth3MinimumMinutiae: Number(process.env.BOZORTH3_MINIMUM_MINUTIAE || 18),
         bozorth3MinimumImageQuality: Number(process.env.BOZORTH3_MINIMUM_IMAGE_QUALITY || 35),
-        sourceAfisThreshold: Number(process.env.SOURCEAFIS_MATCH_THRESHOLD || 40),
-        // Calibrated on FVC2004 DB2_B using score-independent SourceAFIS
-        // feature extraction. Override these for the deployment scanner after
-        // collecting a representative local genuine/impostor score set.
-        openAfisThreshold: Number(process.env.OPENAFIS_MATCH_THRESHOLD || 6),
-        mccThreshold: Number(process.env.MCC_MATCH_THRESHOLD || 0.04),
-        jiangThreshold: Number(process.env.JIANG_MATCH_THRESHOLD || 0.245),
+        // Calibrated on balanced FVC2004 DB4_B genuine/impostor pairs using
+        // each matcher's exact production feed and held-out subjects.
+        sourceAfisThreshold: Number(process.env.SOURCEAFIS_MATCH_THRESHOLD || 18.074729666),
+        openAfisThreshold: Number(process.env.OPENAFIS_MATCH_THRESHOLD || 3.5),
+        mccThreshold: Number(process.env.MCC_MATCH_THRESHOLD || 0.030879),
+        jiangThreshold: Number(process.env.JIANG_MATCH_THRESHOLD || 0.2020075),
         sourceAfisDpi: Number(process.env.SOURCEAFIS_DPI || 500),
         javaPath: process.env.JAVA_PATH || 'java',
         sourceAfisClassPath: process.env.SOURCEAFIS_CLASSPATH || [
@@ -198,6 +212,23 @@ const AFIS_CONFIG = {
         jiangPath: process.env.JIANG_EXECUTABLE || path.join(__dirname, 'matchers', 'mpi-afis', 'jiang-match.exe')
     }
 };
+
+function isBozorth3Ready() {
+    if (fs.existsSync(AFIS_CONFIG.bozorth3Path)) {
+        return true;
+    }
+    if (!AFIS_CONFIG.bozorth3Path.startsWith('/') || !fs.existsSync(AFIS_CONFIG.cygwinBashPath)) {
+        return false;
+    }
+
+    const quotedPath = `'${AFIS_CONFIG.bozorth3Path.replace(/'/g, `'"'"'`)}'`;
+    const result = spawnSync(AFIS_CONFIG.cygwinBashPath, ['-lc', `test -x ${quotedPath}`], {
+        encoding: 'utf8',
+        timeout: 5000,
+        windowsHide: true
+    });
+    return result.status === 0;
+}
 
 const DEBUG_TRACE_LIMIT = 500;
 const serviceDebugEvents = [];
@@ -408,7 +439,20 @@ async function captureFingerprint(type, traceContext = null) {
         });
 
         if (isCommandScannerProvider()) {
-            return await captureFromScannerCommand(type, traceContext);
+            try {
+                return await captureFromScannerCommand(type, traceContext);
+            } catch (error) {
+                if (!SCANNER_CONFIG.allowSimulation) {
+                    throw error;
+                }
+
+                console.log(`[SCAN] ${error.message} Using simulation because SCANNER_ALLOW_SIMULATION=1.`);
+                logServiceEvent(traceContext, 'scanner_fallback', 'Scanner capture failed; using the enabled simulation fallback.', {
+                    type,
+                    error: error.message
+                }, 'warning');
+                return await captureFromSimulation(type, traceContext);
+            }
         }
 
         if (SCANNER_CONFIG.provider === 'simulation') {
@@ -564,13 +608,17 @@ async function buildCaptureResponseFromImageBuffer(imageBuffer, source, scanned,
         image: afisData.image,
         originalImage: afisData.originalImage,
         normalizedImage: afisData.normalizedImage,
+        denoisedImage: afisData.denoisedImage,
         format: 'ISO',
         quality: afisData.quality,
         source,
         imageFormat: 'PNG',
         scanned,
         enhancedImage: afisData.enhancedImage,
+        gaborEnhancedImage: afisData.gaborEnhancedImage,
+        binarizedImage: afisData.binarizedImage,
         thinnedImage: afisData.thinnedImage,
+        minutiaeOverlayImage: afisData.minutiaeOverlayImage,
         minutiae: afisData.minutiae,
         academicMinutiae: afisData.academicMinutiae,
         afisQuality: afisData.quality,
@@ -642,26 +690,29 @@ async function captureFromScannerCommand(type, traceContext = null) {
     });
 
     const startedAt = Date.now();
-    const result = spawnSync(SCANNER_CONFIG.captureCommand, args, {
-        cwd: __dirname,
-        encoding: 'utf8',
-        input: JSON.stringify({
-            type,
-            output: outputPath,
-            timeout: SCANNER_RUNTIME_CONFIG.timeout,
-            format: SCANNER_CONFIG.outputExtension
-        }),
-        timeout: SCANNER_RUNTIME_CONFIG.timeout + 5000,
-        windowsHide: true,
-        maxBuffer: 1024 * 1024 * 20
-    });
-
-    if (result.error) {
+    let result;
+    try {
+        result = await runScannerCommand(SCANNER_CONFIG.captureCommand, args, {
+            cwd: __dirname,
+            input: JSON.stringify({
+                type,
+                output: outputPath,
+                timeout: SCANNER_RUNTIME_CONFIG.timeout,
+                format: SCANNER_CONFIG.outputExtension
+            }),
+            timeoutMs: SCANNER_RUNTIME_CONFIG.timeout + SCANNER_RUNTIME_CONFIG.processGraceMs,
+            maxBuffer: 1024 * 1024 * 20
+        });
+    } catch (error) {
         logServiceEvent(traceContext, 'scanner_command_error', 'Scanner SDK command failed to start or timed out.', {
-            error: result.error.message,
+            error: error.message,
+            code: error.code || null,
             durationMs: Date.now() - startedAt
         }, 'error');
-        throw result.error;
+        if (error.code === 'SCANNER_CAPTURE_TIMEOUT') {
+            throw new Error('ZKTeco ZK9500 capture timed out while the SDK was finishing. Lift your finger, place it flat on the scanner, and try again.');
+        }
+        throw error;
     }
 
     if (result.status !== 0) {
@@ -763,13 +814,17 @@ function captureFromScannerSimulation(resolve, traceContext = null) {
                 image: afisData.image,
                 originalImage: afisData.originalImage,
                 normalizedImage: afisData.normalizedImage,
+                denoisedImage: afisData.denoisedImage,
                 format: 'ISO',
                 quality: 90,
                 source: 'Simulated (ZK9500 not available)',
                 imageFormat: 'PNG',
                 scanned: false,
                 enhancedImage: afisData.enhancedImage,
+                gaborEnhancedImage: afisData.gaborEnhancedImage,
+                binarizedImage: afisData.binarizedImage,
                 thinnedImage: afisData.thinnedImage,
+                minutiaeOverlayImage: afisData.minutiaeOverlayImage,
                 minutiae: afisData.minutiae,
                 afisQuality: afisData.quality,
                 qualityMetrics: afisData.qualityMetrics,
@@ -1034,23 +1089,19 @@ async function prepareFingerprintInput(imageBuffer, traceContext = null, label =
     const cropBuffer = trimmedIsUsable ? trimmedAttempt.data : originalPreview;
     const inputSize = AFIS_CONFIG.enhancement.inputSize;
 
-    let normalizedPipeline = sharp(cropBuffer)
+    let basicPreparationPipeline = sharp(cropBuffer)
         .resize(inputSize, inputSize, {
             fit: 'contain',
             position: 'centre',
             background: { r: 255, g: 255, b: 255 }
         });
 
-    if (AFIS_CONFIG.enhancement.medianSize > 1) {
-        normalizedPipeline = normalizedPipeline.median(AFIS_CONFIG.enhancement.medianSize);
-    }
-
     if (AFIS_CONFIG.enhancement.normalize) {
-        normalizedPipeline = normalizedPipeline.normalize();
+        basicPreparationPipeline = basicPreparationPipeline.normalize();
     }
 
     if (AFIS_CONFIG.enhancement.clahe) {
-        normalizedPipeline = normalizedPipeline.clahe({
+        basicPreparationPipeline = basicPreparationPipeline.clahe({
             width: AFIS_CONFIG.enhancement.claheWindow,
             height: AFIS_CONFIG.enhancement.claheWindow,
             maxSlope: AFIS_CONFIG.enhancement.claheMaxSlope
@@ -1058,14 +1109,21 @@ async function prepareFingerprintInput(imageBuffer, traceContext = null, label =
     }
 
     if (AFIS_CONFIG.enhancement.sharpenSigma > 0) {
-        normalizedPipeline = normalizedPipeline.sharpen({ sigma: AFIS_CONFIG.enhancement.sharpenSigma });
+        basicPreparationPipeline = basicPreparationPipeline.sharpen({ sigma: AFIS_CONFIG.enhancement.sharpenSigma });
     }
 
-    const normalizedPng = await normalizedPipeline
+    const normalizedPng = await basicPreparationPipeline
         .png()
         .toBuffer();
 
-    const normalizedInfo = await sharp(normalizedPng).metadata();
+    // Median filtering is the authoritative denoising stage. It is deliberately
+    // materialized as its own image so the exact bytes passed to ridge
+    // enhancement can also be displayed and audited.
+    const denoisedPng = AFIS_CONFIG.enhancement.medianSize > 1
+        ? await sharp(normalizedPng).median(AFIS_CONFIG.enhancement.medianSize).png().toBuffer()
+        : Buffer.from(normalizedPng);
+
+    const normalizedInfo = await sharp(denoisedPng).metadata();
     logServiceEvent(traceContext, 'input_prepared', 'Prepared canonical fingerprint input for AFIS.', {
         label,
         originalWidth: baseMetadata.width || 0,
@@ -1084,7 +1142,8 @@ async function prepareFingerprintInput(imageBuffer, traceContext = null, label =
 
     return {
         originalPreview,
-        normalizedPng,
+        normalizedPng: denoisedPng,
+        denoisedPng,
         metadata: {
             originalWidth: baseMetadata.width || 0,
             originalHeight: baseMetadata.height || 0,
@@ -1107,6 +1166,9 @@ async function prepareFingerprintInput(imageBuffer, traceContext = null, label =
             trimThreshold: AFIS_CONFIG.enhancement.trimThreshold,
             medianFiltered: AFIS_CONFIG.enhancement.medianSize > 1,
             medianSize: AFIS_CONFIG.enhancement.medianSize,
+            denoisingAlgorithm: AFIS_CONFIG.enhancement.medianSize > 1
+                ? `${AFIS_CONFIG.enhancement.medianSize}x${AFIS_CONFIG.enhancement.medianSize} median filter`
+                : 'disabled',
             normalizedContrast: !!AFIS_CONFIG.enhancement.normalize,
             claheApplied: !!AFIS_CONFIG.enhancement.clahe,
             claheWindow: AFIS_CONFIG.enhancement.claheWindow,
@@ -1267,40 +1329,99 @@ function getBlockFeatureForPixel(blockFeatures, width, height, x, y) {
     };
 }
 
-function applyOrientationEnhancement(pixels, width, height, blockFeatures) {
+function getInterpolatedBlockFeatureForPixel(blockFeatures, width, height, x, y) {
+    const gridX = (x / blockFeatures.blockSize) - 0.5;
+    const gridY = (y / blockFeatures.blockSize) - 0.5;
+    const bx0 = clamp(Math.floor(gridX), 0, blockFeatures.blocksX - 1);
+    const by0 = clamp(Math.floor(gridY), 0, blockFeatures.blocksY - 1);
+    const bx1 = clamp(bx0 + 1, 0, blockFeatures.blocksX - 1);
+    const by1 = clamp(by0 + 1, 0, blockFeatures.blocksY - 1);
+    const tx = clamp(gridX - Math.floor(gridX), 0, 1);
+    const ty = clamp(gridY - Math.floor(gridY), 0, 1);
+    const samples = [
+        [bx0, by0, (1 - tx) * (1 - ty)],
+        [bx1, by0, tx * (1 - ty)],
+        [bx0, by1, (1 - tx) * ty],
+        [bx1, by1, tx * ty]
+    ];
+    let orientationX = 0;
+    let orientationY = 0;
+    let coherence = 0;
+    let frequency = 0;
+    let quality = 0;
+    let foregroundScore = 0;
+    let mean = 0;
+
+    for (const [bx, by, weight] of samples) {
+        const index = getBlockIndex(blockFeatures.blocksX, bx, by);
+        const theta = blockFeatures.orientation[index];
+        // Double-angle interpolation respects the 180-degree ridge-axis
+        // symmetry and prevents discontinuities between adjacent blocks.
+        orientationX += Math.cos(2 * theta) * weight;
+        orientationY += Math.sin(2 * theta) * weight;
+        coherence += blockFeatures.coherence[index] * weight;
+        frequency += blockFeatures.frequency[index] * weight;
+        quality += blockFeatures.quality[index] * weight;
+        foregroundScore += blockFeatures.foreground[index] * weight;
+        mean += blockFeatures.mean[index] * weight;
+    }
+
+    return {
+        orientation: 0.5 * Math.atan2(orientationY, orientationX),
+        coherence,
+        frequency,
+        quality,
+        foreground: foregroundScore >= 0.35 ? 1 : 0,
+        foregroundScore,
+        mean
+    };
+}
+
+function applyGaborRidgeEnhancement(pixels, width, height, blockFeatures) {
     const enhanced = new Uint8Array(pixels.length);
     const radiusBase = AFIS_CONFIG.enhancement.gaborRadius;
     const gain = AFIS_CONFIG.enhancement.gaborGain;
+    const sigma = Math.max(1.5, radiusBase / 1.75);
+    const gamma = 0.65;
 
     for (let y = 0; y < height; y++) {
         for (let x = 0; x < width; x++) {
             const idx = y * width + x;
-            const feature = getBlockFeatureForPixel(blockFeatures, width, height, x, y);
+            const feature = getInterpolatedBlockFeatureForPixel(blockFeatures, width, height, x, y);
             if (!feature.foreground) {
-                enhanced[idx] = 255;
+                enhanced[idx] = pixels[idx];
                 continue;
             }
 
-            const theta = feature.orientation;
-            const ridgeDx = Math.cos(theta);
-            const ridgeDy = Math.sin(theta);
-            const normalDx = -ridgeDy;
-            const normalDy = ridgeDx;
-            const dynamicRadius = clamp(Math.round((1 / Math.max(0.06, feature.frequency)) * 0.5), 2, radiusBase + 2);
-            let along = 0;
-            let across = 0;
-            let samples = 0;
+            // The local orientation describes the ridge direction. A Gabor
+            // carrier must oscillate across the ridges, so xPrime is aligned
+            // with the local ridge normal and yPrime follows the ridge.
+            const normalTheta = feature.orientation + (Math.PI / 2);
+            const cosTheta = Math.cos(normalTheta);
+            const sinTheta = Math.sin(normalTheta);
+            const frequency = clamp(feature.frequency, 0.075, 0.16);
+            let response = 0;
+            let absoluteWeight = 0;
 
-            for (let step = -dynamicRadius; step <= dynamicRadius; step++) {
-                along += sampleGrayBilinear(pixels, width, height, x + ridgeDx * step, y + ridgeDy * step);
-                across += sampleGrayBilinear(pixels, width, height, x + normalDx * step, y + normalDy * step);
-                samples++;
+            for (let oy = -radiusBase; oy <= radiusBase; oy++) {
+                for (let ox = -radiusBase; ox <= radiusBase; ox++) {
+                    const xPrime = (ox * cosTheta) + (oy * sinTheta);
+                    const yPrime = (-ox * sinTheta) + (oy * cosTheta);
+                    const gaussian = Math.exp(-((xPrime * xPrime) + (gamma * gamma * yPrime * yPrime)) / (2 * sigma * sigma));
+                    const weight = gaussian * Math.cos(2 * Math.PI * frequency * xPrime);
+                    const sample = sampleGrayBilinear(pixels, width, height, x + ox, y + oy) - feature.mean;
+                    response += sample * weight;
+                    absoluteWeight += Math.abs(weight);
+                }
             }
 
-            const alongAvg = along / Math.max(1, samples);
-            const acrossAvg = across / Math.max(1, samples);
-            const response = (acrossAvg - alongAvg) * gain * (0.65 + (feature.coherence * 0.7));
-            const value = feature.mean + ((pixels[idx] - feature.mean) * 0.55) + response;
+            const normalizedResponse = absoluteWeight > 0 ? response / absoluteWeight : 0;
+            const coherenceGain = 0.65 + (feature.coherence * 0.55);
+            const filteredValue = feature.mean + (normalizedResponse * gain * coherenceGain * 1.8);
+            // Preserve weak real ridges while still letting the Gabor response
+            // improve continuity. This avoids inventing block-shaped ridges.
+            const blend = clamp(0.28 + (feature.coherence * 0.30), 0.28, 0.58);
+            const value = (pixels[idx] * (1 - blend)) + (filteredValue * blend);
             enhanced[idx] = clamp(Math.round(value), 0, 255);
         }
     }
@@ -1314,7 +1435,7 @@ function adaptiveBinarize(pixels, width, height, blockFeatures) {
     for (let y = 0; y < height; y++) {
         for (let x = 0; x < width; x++) {
             const idx = y * width + x;
-            const feature = getBlockFeatureForPixel(blockFeatures, width, height, x, y);
+            const feature = getInterpolatedBlockFeatureForPixel(blockFeatures, width, height, x, y);
             if (!feature.foreground) {
                 binary[idx] = 0;
                 continue;
@@ -1401,19 +1522,6 @@ function zhangSuenThin(binary, width, height) {
     }
 
     return thinned;
-}
-
-function ridgeNeighbors(binary, width, x, y) {
-    return [
-        binary[(y - 1) * width + x],
-        binary[(y - 1) * width + (x + 1)],
-        binary[y * width + (x + 1)],
-        binary[(y + 1) * width + (x + 1)],
-        binary[(y + 1) * width + x],
-        binary[(y + 1) * width + (x - 1)],
-        binary[y * width + (x - 1)],
-        binary[(y - 1) * width + (x - 1)]
-    ];
 }
 
 function ridgeNeighborPoints(binary, width, height, x, y) {
@@ -1601,7 +1709,7 @@ function extractMinutiaePoints(thinnedBinary, width, height, blockFeatures, opti
                 continue;
             }
 
-            const neighbors = ridgeNeighbors(thinnedBinary, width, x, y);
+            const neighbors = ridgeNeighborRing(thinnedBinary, width, x, y);
             const ridgeCount = neighbors.reduce((sum, value) => sum + value, 0);
             if (ridgeCount < 1 || ridgeCount > 6) {
                 continue;
@@ -1766,6 +1874,20 @@ async function rawToPngBuffer(pixels, width, height) {
     }).png().toBuffer();
 }
 
+async function createMinutiaeOverlayBuffer(backgroundPng, minutiae, width, height) {
+    const markers = minutiae.map((point) => {
+        const color = point.type === 'bifurcation' ? '#2563eb' : '#dc2626';
+        const imageX = Number.isFinite(Number(point.imageX)) ? Number(point.imageX) : point.x;
+        const imageY = Number.isFinite(Number(point.imageY)) ? Number(point.imageY) : point.y;
+        const imageAngle = Number.isFinite(Number(point.imageAngle)) ? Number(point.imageAngle) : (point.angle || 0);
+        const directionX = imageX + (Math.cos(imageAngle) * 12);
+        const directionY = imageY + (Math.sin(imageAngle) * 12);
+        return `<g><circle cx="${imageX}" cy="${imageY}" r="4" fill="none" stroke="${color}" stroke-width="2"/><line x1="${imageX}" y1="${imageY}" x2="${directionX}" y2="${directionY}" stroke="${color}" stroke-width="2"/></g>`;
+    }).join('');
+    const overlay = Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">${markers}</svg>`);
+    return sharp(backgroundPng).composite([{ input: overlay, blend: 'over' }]).png().toBuffer();
+}
+
 async function processFingerprintForAfis(imageBuffer, traceContext = null, options = {}) {
     const startedAt = Date.now();
     const label = traceContext?.label || 'fingerprint';
@@ -1787,6 +1909,7 @@ async function processFingerprintForAfis(imageBuffer, traceContext = null, optio
         preparedInput = {
             originalPreview: imageBuffer,
             normalizedPng: imageBuffer,
+            denoisedPng: imageBuffer,
             metadata: {
                 originalWidth: preparedMetadata.width || 0,
                 originalHeight: preparedMetadata.height || 0,
@@ -1813,7 +1936,23 @@ async function processFingerprintForAfis(imageBuffer, traceContext = null, optio
         preparedInput = await prepareFingerprintInput(imageBuffer, traceContext, label, options);
     }
 
-    const grayscale = await grayscaleFingerprintImage(preparedInput.normalizedPng);
+    if (options.modifiedBozorth3) {
+        console.log(`[Modified Bozorth3] ${label} denoising started`);
+    }
+    const denoisedPng = preparedInput.denoisedPng || preparedInput.normalizedPng;
+    if (options.modifiedBozorth3) {
+        console.log(`[Modified Bozorth3] ${label} denoising completed`);
+        console.log(`[Modified Bozorth3] ${label} denoising output image: in-memory PNG (${denoisedPng.length} bytes)`);
+    }
+    logServiceEvent(traceContext, 'denoising_complete', 'Median denoising completed and its output was selected for downstream processing.', {
+        label,
+        algorithm: preparedInput.preprocessing.denoisingAlgorithm || 'preprocessed input reused',
+        outputField: 'denoisedImage',
+        outputBytes: denoisedPng.length,
+        durationMs: Date.now() - startedAt
+    });
+
+    const grayscale = await grayscaleFingerprintImage(denoisedPng);
     logServiceEvent(traceContext, 'grayscale_complete', 'Fingerprint converted to grayscale.', {
         label,
         width: grayscale.width,
@@ -1832,33 +1971,94 @@ async function processFingerprintForAfis(imageBuffer, traceContext = null, optio
         durationMs: Date.now() - startedAt
     });
 
-    const enhancedRaw = applyOrientationEnhancement(grayscale.pixels, grayscale.width, grayscale.height, blockFeatures);
-    logServiceEvent(traceContext, 'enhancement_complete', 'Applied ridge-oriented enhancement.', {
+    if (options.modifiedBozorth3) {
+        console.log(`[Modified Bozorth3] ${label} Gabor ridge enhancement started`);
+    }
+    const enhancedRaw = applyGaborRidgeEnhancement(grayscale.pixels, grayscale.width, grayscale.height, blockFeatures);
+    if (options.modifiedBozorth3) {
+        console.log(`[Modified Bozorth3] ${label} Gabor ridge enhancement completed`);
+    }
+    logServiceEvent(traceContext, 'gabor_enhancement_complete', 'Applied orientation- and frequency-adaptive Gabor ridge enhancement.', {
         label,
         gaborEnhanced: true,
+        outputField: 'gaborEnhancedImage',
         durationMs: Date.now() - startedAt
     });
 
     const binary = adaptiveBinarize(enhancedRaw, grayscale.width, grayscale.height, blockFeatures);
+    if (options.modifiedBozorth3) {
+        console.log(`[Modified Bozorth3] ${label} binarization completed`);
+    }
     logServiceEvent(traceContext, 'binarization_complete', 'Adaptive binarization completed.', {
         label,
+        inputField: 'gaborEnhancedImage',
+        outputField: 'binarizedImage',
         durationMs: Date.now() - startedAt
     });
 
     const thinned = zhangSuenThin(binary, grayscale.width, grayscale.height);
+    if (options.modifiedBozorth3) {
+        console.log(`[Modified Bozorth3] ${label} Zhang-Suen thinning completed`);
+    }
     logServiceEvent(traceContext, 'thinning_complete', 'Zhang-Suen thinning completed.', {
         label,
+        inputField: 'binarizedImage',
+        outputField: 'thinnedImage',
         durationMs: Date.now() - startedAt
     });
 
-    const minutiae = extractMinutiaePoints(thinned, grayscale.width, grayscale.height, blockFeatures, {
-        legacyCrossingNumber: true
-    });
-    const academicMinutiae = extractMinutiaePoints(thinned, grayscale.width, grayscale.height, blockFeatures);
+    const crossingNumberMinutiae = extractMinutiaePoints(thinned, grayscale.width, grayscale.height, blockFeatures);
+    let minutiae = crossingNumberMinutiae;
+    let extractionDiagnostics = {
+        engine: 'crossing-number',
+        candidateCount: crossingNumberMinutiae.length,
+        skeletonAccepted: crossingNumberMinutiae.length,
+        skeletonRejected: 0,
+        skeletonRadius: 0
+    };
+    if (options.modifiedBozorth3) {
+        const mindtct = runMindtctExtractor({
+            pixels: grayscale.pixels,
+            width: grayscale.width,
+            height: grayscale.height,
+            ppi: preparedInput.metadata.dpi || 500,
+            config: {
+                executablePath: AFIS_CONFIG.mindtct.executablePath,
+                cygwinBashPath: AFIS_CONFIG.cygwinBashPath,
+                tempDir: SCANNER_RUNTIME_CONFIG.tempDir,
+                timeoutMs: 30000
+            }
+        });
+        const validated = filterMindtctMinutiaeBySkeleton(
+            mindtct.minutiae,
+            thinned,
+            grayscale.width,
+            grayscale.height,
+            { radius: AFIS_CONFIG.mindtct.skeletonRadius }
+        );
+        minutiae = validated.accepted;
+        extractionDiagnostics = {
+            engine: mindtct.engineName,
+            candidateCount: mindtct.minutiae.length,
+            skeletonAccepted: validated.accepted.length,
+            skeletonRejected: validated.rejected.length,
+            skeletonRadius: validated.radius,
+            execution: mindtct.execution
+        };
+    }
+    const academicMinutiae = crossingNumberMinutiae;
+    if (options.modifiedBozorth3) {
+        console.log(`[Modified Bozorth3] ${label} minutiae extracted: ${minutiae.length}`);
+    }
     logServiceEvent(traceContext, 'minutiae_extracted', 'Extracted and quality-scored minutiae.', {
         label,
         bozorth3CompatibleCount: minutiae.length,
         standardsCorrectedCount: academicMinutiae.length,
+        extractionEngine: extractionDiagnostics.engine,
+        candidateCount: extractionDiagnostics.candidateCount,
+        skeletonAccepted: extractionDiagnostics.skeletonAccepted,
+        skeletonRejected: extractionDiagnostics.skeletonRejected,
+        skeletonRadius: extractionDiagnostics.skeletonRadius,
         topQuality: minutiae.length > 0 ? Math.max(...minutiae.map((item) => item.quality || 0)) : 0,
         durationMs: Date.now() - startedAt
     });
@@ -1874,11 +2074,17 @@ async function processFingerprintForAfis(imageBuffer, traceContext = null, optio
     });
 
     const enhancedPng = await rawToPngBuffer(enhancedRaw, grayscale.width, grayscale.height);
+    const binaryForPng = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+        binaryForPng[i] = binary[i] === 1 ? 0 : 255;
+    }
+    const binaryPng = await rawToPngBuffer(binaryForPng, grayscale.width, grayscale.height);
     const thinnedForPng = new Uint8Array(thinned.length);
     for (let i = 0; i < thinned.length; i++) {
         thinnedForPng[i] = thinned[i] === 1 ? 0 : 255;
     }
     const thinnedPng = await rawToPngBuffer(thinnedForPng, grayscale.width, grayscale.height);
+    const minutiaeOverlayPng = await createMinutiaeOverlayBuffer(enhancedPng, minutiae, grayscale.width, grayscale.height);
     const geometryDescriptor = buildPairwiseGeometryDescriptor(minutiae);
     logServiceEvent(traceContext, 'process_complete', 'AFIS preprocessing pipeline completed.', {
         label,
@@ -1889,11 +2095,17 @@ async function processFingerprintForAfis(imageBuffer, traceContext = null, optio
     });
 
     return {
+        width: grayscale.width,
+        height: grayscale.height,
         image: preparedInput.normalizedPng.toString('base64'),
         originalImage: preparedInput.originalPreview.toString('base64'),
         normalizedImage: preparedInput.normalizedPng.toString('base64'),
+        denoisedImage: denoisedPng.toString('base64'),
         enhancedImage: enhancedPng.toString('base64'),
+        gaborEnhancedImage: enhancedPng.toString('base64'),
+        binarizedImage: binaryPng.toString('base64'),
         thinnedImage: thinnedPng.toString('base64'),
+        minutiaeOverlayImage: minutiaeOverlayPng.toString('base64'),
         minutiae,
         academicMinutiae,
         quality: qualityMetrics.score,
@@ -1912,10 +2124,29 @@ async function processFingerprintForAfis(imageBuffer, traceContext = null, optio
         geometryDescriptor,
         preprocessing: {
             ...preparedInput.preprocessing,
+            denoised: true,
+            denoisingAlgorithm: preparedInput.preprocessing.denoisingAlgorithm || 'preprocessed input reused',
             gaborEnhanced: true,
+            gaborImplementation: 'orientation- and frequency-adaptive spatial Gabor convolution',
+            binarized: true,
             zhangSuenThinned: true,
             orientationFrequencyAnalysis: true,
-            minutiaeQualityScored: true
+            minutiaeQualityScored: true,
+            falseMinutiaeFiltered: true,
+            mindtctCandidatesExtracted: options.modifiedBozorth3 === true,
+            skeletonValidated: options.modifiedBozorth3 === true,
+            minutiaeExtractionEngine: extractionDiagnostics.engine,
+            minutiaeExtractionDiagnostics: extractionDiagnostics,
+            stages: [
+                'grayscale',
+                'denoising',
+                'gabor-ridge-enhancement',
+                'binarization',
+                'zhang-suen-thinning',
+                options.modifiedBozorth3 ? 'nist-mindtct-candidate-extraction' : 'crossing-number-minutiae-extraction',
+                options.modifiedBozorth3 ? 'zhang-suen-skeleton-validation' : 'crossing-number-validation',
+                'bozorth3-matching'
+            ]
         },
         inputMetrics: preparedInput.metadata
     };
@@ -2693,6 +2924,104 @@ function runAcademicBozorth3(probeMinutiae, referenceMinutiae, threshold, option
     });
 }
 
+function runModifiedBozorth3Comparison(probe, reference, threshold, options = {}) {
+    const log = typeof options.log === 'function' ? options.log : () => {};
+    const requiredStages = [
+        ['denoised', 'denoising'],
+        ['gaborEnhanced', 'Gabor ridge enhancement'],
+        ['binarized', 'binarization'],
+        ['zhangSuenThinned', 'Zhang-Suen thinning'],
+        ['mindtctCandidatesExtracted', 'NIST MINDTCT candidate extraction'],
+        ['skeletonValidated', 'Zhang-Suen skeleton candidate validation'],
+        ['minutiaeQualityScored', 'minutiae extraction and validation']
+    ];
+    const missingStages = requiredStages
+        .filter(([flag]) => probe?.preprocessing?.[flag] !== true || reference?.preprocessing?.[flag] !== true)
+        .map(([, label]) => label);
+
+    log('modified_bozorth3_start', 'Starting Modified Bozorth3 comparison.', {
+        baseMatcher: 'Bozorth3',
+        probeMinutiaeCount: probe?.minutiae?.length || 0,
+        referenceMinutiaeCount: reference?.minutiae?.length || 0
+    });
+    if (missingStages.length > 0) {
+        const message = `Modified Bozorth3 preprocessing failed: missing ${missingStages.join(', ')}.`;
+        log('modified_bozorth3_preprocessing_failed', message, { missingStages }, 'error');
+        return {
+            algorithm: 'Modified Bozorth3',
+            engine: 'Modified Bozorth3',
+            baseMatcher: 'Bozorth3',
+            status: 'error',
+            score: null,
+            rawScore: null,
+            threshold,
+            result: 'UNAVAILABLE',
+            isMatch: null,
+            error: message,
+            preprocessing: {
+                denoising: probe?.preprocessing?.denoised === true && reference?.preprocessing?.denoised === true,
+                gaborEnhancement: probe?.preprocessing?.gaborEnhanced === true && reference?.preprocessing?.gaborEnhanced === true,
+                binarization: probe?.preprocessing?.binarized === true && reference?.preprocessing?.binarized === true,
+                zhangSuenThinning: probe?.preprocessing?.zhangSuenThinned === true && reference?.preprocessing?.zhangSuenThinned === true,
+                bothFingerprintsProcessed: true
+            }
+        };
+    }
+
+    log('modified_bozorth3_templates_generated', 'Generated Bozorth3-compatible XYT templates from the enhanced probe and reference minutiae.', {
+        probeMinutiaeCount: probe.minutiae.length,
+        referenceMinutiaeCount: reference.minutiae.length
+    });
+    const nativeResult = runAcademicBozorth3(probe.minutiae, reference.minutiae, threshold, {
+        probeWidth: probe.width,
+        probeHeight: probe.height,
+        referenceWidth: reference.width,
+        referenceHeight: reference.height,
+        probeQuality: probe.quality,
+        referenceQuality: reference.quality,
+        log
+    });
+    const result = {
+        ...nativeResult,
+        algorithm: 'Modified Bozorth3',
+        engine: 'Modified Bozorth3',
+        baseMatcher: 'Bozorth3',
+        implementation: 'NIST MINDTCT candidates validated by the enhanced Zhang-Suen skeleton and matched by NIST Bozorth3',
+        calibrationStatus: 'calibrated',
+        calibrationProfileId: 'modified-bozorth3-enhanced-20261009031030',
+        calibrationWarning: null,
+        preprocessing: {
+            denoising: true,
+            denoisingAlgorithm: probe.preprocessing.denoisingAlgorithm,
+            gaborEnhancement: true,
+            gaborImplementation: probe.preprocessing.gaborImplementation,
+            binarization: true,
+            zhangSuenThinning: true,
+            minutiaeExtraction: true,
+            minutiaeExtractionEngine: probe.preprocessing.minutiaeExtractionEngine,
+            skeletonValidationRadius: probe.preprocessing.minutiaeExtractionDiagnostics?.skeletonRadius,
+            falseMinutiaeFiltering: true,
+            bothFingerprintsProcessed: true,
+            stages: probe.preprocessing.stages
+        },
+        inputMinutiae: {
+            probeExtracted: probe.minutiae.length,
+            probeUsed: nativeResult.inputMinutiae?.probeUsed ?? probe.minutiae.length,
+            referenceExtracted: reference.minutiae.length,
+            referenceUsed: nativeResult.inputMinutiae?.referenceUsed ?? reference.minutiae.length,
+            format: 'NIST Bozorth3 XYT generated from MINDTCT candidates validated against the Gabor/binarized/Zhang-Suen skeleton'
+        },
+        processingTime: nativeResult.processingTimeMs ?? null,
+        warnings: Array.isArray(nativeResult.warnings) ? nativeResult.warnings : []
+    };
+    log('modified_bozorth3_complete', 'Modified Bozorth3 comparison completed.', {
+        rawScore: result.rawScore ?? result.score,
+        decision: result.result,
+        status: result.status
+    }, result.status === 'ok' ? 'info' : 'error');
+    return result;
+}
+
 function parseMatcherJson(output, matcherName) {
     const line = String(output || '').split(/\r?\n/).map((item) => item.trim()).filter(Boolean).pop();
     if (!line) throw new Error(`${matcherName} did not return a result.`);
@@ -2715,12 +3044,12 @@ function runAcademicSourceAfis(probeImageBuffer, referenceImageBuffer, threshold
         fs.writeFileSync(probeFile, probeImageBuffer);
         fs.writeFileSync(referenceFile, referenceImageBuffer);
         log('sourceafis_initialized', 'SourceAFIS initialized.', { implementation: 'SourceAFIS 3.18.1 Java API' });
-        log('sourceafis_probe_image_loaded', 'SourceAFIS probe image loaded from clean source pixels.', {
+        log('sourceafis_probe_image_loaded', 'SourceAFIS probe image loaded from canonical normalized pixels.', {
             bytes: probeImageBuffer.length,
             dpi: probeDpi,
             imageHash: sha256Hex(probeImageBuffer)
         });
-        log('sourceafis_candidate_image_loaded', 'SourceAFIS candidate image loaded from clean source pixels.', {
+        log('sourceafis_candidate_image_loaded', 'SourceAFIS candidate image loaded from canonical normalized pixels.', {
             bytes: referenceImageBuffer.length,
             dpi: referenceDpi,
             imageHash: sha256Hex(referenceImageBuffer)
@@ -2762,7 +3091,7 @@ function runAcademicSourceAfis(probeImageBuffer, referenceImageBuffer, threshold
             imageInput: {
                 probeDpi,
                 candidateDpi: referenceDpi,
-                format: 'clean grayscale PNG derived from original scanner/upload image; no application binarization, skeletonization, or square resize',
+                format: 'canonical 500x500 grayscale/denoised PNG; no application binarization or skeletonization',
                 probeImageHash: sha256Hex(probeImageBuffer),
                 candidateImageHash: sha256Hex(referenceImageBuffer)
             },
@@ -2923,7 +3252,7 @@ function runAcademicOpenAfis(probe, reference, threshold, options = {}) {
             score,
             rawScore: score,
             normalizedSimilarity: null,
-            scoreScale: 'Native OpenAFIS percentage-like similarity (0-100)',
+            scoreScale: 'Native OpenAFIS similarity score (nominal 0-100; not a calibrated match percentage)',
             scoreDirection: 'higher-is-more-similar',
             threshold,
             result: score >= threshold ? 'MATCH' : 'NO MATCH',
@@ -3125,7 +3454,12 @@ app.get('/debug/config', (req, res) => {
             fusion: AFIS_CONFIG.fusion,
             matchThreshold: AFIS_CONFIG.matchThreshold,
             academicMatchers: {
+                bozorth3Ready: isBozorth3Ready(),
+                bozorth3Path: AFIS_CONFIG.bozorth3Path,
+                cygwinBashPath: AFIS_CONFIG.cygwinBashPath,
                 bozorth3Threshold: AFIS_CONFIG.academicMatchers.bozorth3Threshold,
+                mindtctReady: fs.existsSync(AFIS_CONFIG.mindtct.executablePath),
+                mindtctSkeletonRadius: AFIS_CONFIG.mindtct.skeletonRadius,
                 sourceAfisThreshold: AFIS_CONFIG.academicMatchers.sourceAfisThreshold,
                 openAfisThreshold: AFIS_CONFIG.academicMatchers.openAfisThreshold,
                 mccThreshold: AFIS_CONFIG.academicMatchers.mccThreshold,
@@ -3146,6 +3480,8 @@ app.get('/debug/config', (req, res) => {
             statusArgs: SCANNER_CONFIG.statusArgs,
             outputExtension: SCANNER_CONFIG.outputExtension,
             dpi: SCANNER_CONFIG.dpi,
+            captureTimeoutMs: SCANNER_RUNTIME_CONFIG.timeout,
+            processGraceMs: SCANNER_RUNTIME_CONFIG.processGraceMs,
             simulationAllowed: SCANNER_CONFIG.allowSimulation,
             tempDir: SCANNER_RUNTIME_CONFIG.tempDir,
             scannerTempDir: SCANNER_RUNTIME_CONFIG.scannerTempDir
@@ -3202,6 +3538,7 @@ app.post('/scan', async (req, res) => {
             image: result.image,       // PNG as base64
             originalImage: result.originalImage || result.image,
             normalizedImage: result.normalizedImage || result.image,
+            denoisedImage: result.denoisedImage,
             imageFormat: result.imageFormat,
             format: result.format,
             quality: result.quality,
@@ -3212,7 +3549,10 @@ app.post('/scan', async (req, res) => {
             dpi: result.dpi,
             dpiSource: result.dpiSource,
             enhancedImage: result.enhancedImage,
+            gaborEnhancedImage: result.gaborEnhancedImage,
+            binarizedImage: result.binarizedImage,
             thinnedImage: result.thinnedImage,
+            minutiaeOverlayImage: result.minutiaeOverlayImage,
             minutiae: result.minutiae,
             academicMinutiae: result.academicMinutiae,
             afisQuality: result.afisQuality,
@@ -3241,21 +3581,27 @@ app.post('/scan', async (req, res) => {
 // Process one fingerprint image through enhancement + minutiae extraction.
 app.post('/afis/process', async (req, res) => {
     try {
-        const { image } = req.body;
+        const { image, modifiedBozorth3 = false } = req.body;
         const traceContext = createTraceContext('afis_process', { route: '/afis/process' });
         if (!image) {
             return res.status(400).json({ success: false, error: 'Missing image (base64 PNG)' });
         }
         const imageBuffer = Buffer.from(parseFingerprintImageInput(image), 'base64');
-        const result = await processFingerprintForAfis(imageBuffer, traceContext);
+        const result = await processFingerprintForAfis(imageBuffer, traceContext, {
+            modifiedBozorth3: modifiedBozorth3 === true
+        });
         return res.json({
             success: true,
             traceId: traceContext.traceId,
             image: result.image,
             originalImage: result.originalImage,
             normalizedImage: result.normalizedImage,
+            denoisedImage: result.denoisedImage,
             enhancedImage: result.enhancedImage,
+            gaborEnhancedImage: result.gaborEnhancedImage,
+            binarizedImage: result.binarizedImage,
             thinnedImage: result.thinnedImage,
+            minutiaeOverlayImage: result.minutiaeOverlayImage,
             minutiae: result.minutiae,
             academicMinutiae: result.academicMinutiae,
             quality: result.quality,
@@ -3299,8 +3645,12 @@ app.post('/afis/from-image', async (req, res) => {
             image: afis.image,
             originalImage: afis.originalImage,
             normalizedImage: afis.normalizedImage,
+            denoisedImage: afis.denoisedImage,
             enhancedImage: afis.enhancedImage,
+            gaborEnhancedImage: afis.gaborEnhancedImage,
+            binarizedImage: afis.binarizedImage,
             thinnedImage: afis.thinnedImage,
+            minutiaeOverlayImage: afis.minutiaeOverlayImage,
             minutiae: afis.minutiae,
             academicMinutiae: afis.academicMinutiae,
             afisQuality: afis.quality,
@@ -3360,13 +3710,17 @@ app.post('/afis/compare', async (req, res) => {
             ...traceContext,
             label: 'probe'
         }, {
-            skipPreparation: !!probePreprocessed
+            // Modified Bozorth3 must execute every stage for every comparison;
+            // a caller cannot bypass denoising by marking input preprocessed.
+            skipPreparation: false,
+            modifiedBozorth3: true
         });
         const candidate = await processFingerprintForAfis(Buffer.from(parseFingerprintImageInput(candidateImage), 'base64'), {
             ...traceContext,
             label: 'candidate'
         }, {
-            skipPreparation: !!candidatePreprocessed
+            skipPreparation: false,
+            modifiedBozorth3: true
         });
         const comparison = compareWithBozorth3(probe.minutiae, candidate.minutiae);
         const requestedThreshold = Number.isFinite(Number(threshold)) ? Number(threshold) : matcherConfig.matchThreshold;
@@ -3571,10 +3925,14 @@ app.post('/afis/compare', async (req, res) => {
             probe: {
                 image: probe.image,
                 originalImage: probe.originalImage,
+                denoisedImage: probe.denoisedImage,
                 quality: probe.quality,
                 minutiaeCount: probe.minutiae.length,
                 enhancedImage: probe.enhancedImage,
+                gaborEnhancedImage: probe.gaborEnhancedImage,
+                binarizedImage: probe.binarizedImage,
                 thinnedImage: probe.thinnedImage,
+                minutiaeOverlayImage: probe.minutiaeOverlayImage,
                 qualityMetrics: probe.qualityMetrics,
                 blockMetrics: probe.blockMetrics,
                 inputMetrics: probe.inputMetrics,
@@ -3584,10 +3942,14 @@ app.post('/afis/compare', async (req, res) => {
             candidate: {
                 image: candidate.image,
                 originalImage: candidate.originalImage,
+                denoisedImage: candidate.denoisedImage,
                 quality: candidate.quality,
                 minutiaeCount: candidate.minutiae.length,
                 enhancedImage: candidate.enhancedImage,
+                gaborEnhancedImage: candidate.gaborEnhancedImage,
+                binarizedImage: candidate.binarizedImage,
                 thinnedImage: candidate.thinnedImage,
+                minutiaeOverlayImage: candidate.minutiaeOverlayImage,
                 qualityMetrics: candidate.qualityMetrics,
                 blockMetrics: candidate.blockMetrics,
                 inputMetrics: candidate.inputMetrics,
@@ -3641,20 +4003,23 @@ app.post('/afis/compare-all', async (req, res) => {
         });
 
         const probe = await processFingerprintForAfis(probeBuffer, { ...traceContext, label: 'probe' }, {
-            skipPreparation: !!probePreprocessed,
-            inputDpi: probeInfo.dpi
+            skipPreparation: false,
+            inputDpi: probeInfo.dpi,
+            modifiedBozorth3: true
         });
         const reference = await processFingerprintForAfis(referenceBuffer, { ...traceContext, label: 'reference' }, {
-            skipPreparation: !!referencePreprocessed,
-            inputDpi: referenceInfo.dpi
+            skipPreparation: false,
+            inputDpi: referenceInfo.dpi,
+            modifiedBozorth3: true
         });
-        // SourceAFIS matching remains independent and receives clean source
-        // pixels. A separate score-independent SourceAFIS feature extractor
-        // supplies high-quality minutiae to Bozorth3, OpenAFIS, MCC, and Jiang.
-        // This prevents the matcher from consuming the legacy crossing-number
-        // feed that was shown by calibration to be non-discriminative.
-        const sourceAfisProbe = probeBuffer;
-        const sourceAfisReference = referenceBuffer;
+        // SourceAFIS remains an independent matcher, but all four supporting
+        // matchers must see a common 500x500 pixel geometry. Feeding a raw
+        // 500x500 scanner capture against a 300x375 imported record changes
+        // ridge scale and minutia coordinates enough to create false negatives.
+        // The canonical images include grayscale normalization and denoising,
+        // but not the Modified Bozorth3 binarization or skeletonization stages.
+        const sourceAfisProbe = Buffer.from(probe.normalizedImage || probe.image, 'base64');
+        const sourceAfisReference = Buffer.from(reference.normalizedImage || reference.image, 'base64');
         const inputDiagnostics = matcherPairDiagnostics(
             probeBuffer,
             referenceBuffer,
@@ -3684,11 +4049,14 @@ app.post('/afis/compare-all', async (req, res) => {
                 referenceCount: sharedTemplates.reference.minutiae.length,
                 probeDimensions: { width: sharedTemplates.probe.width, height: sharedTemplates.probe.height },
                 referenceDimensions: { width: sharedTemplates.reference.width, height: sharedTemplates.reference.height },
+                imageFeed: 'canonical 500x500 grayscale/denoised PNG',
+                probeImageHash: sha256Hex(sourceAfisProbe),
+                referenceImageHash: sha256Hex(sourceAfisReference),
                 coordinateConvention: sharedTemplates.probe.coordinateConvention,
                 angleConvention: sharedTemplates.probe.angleConvention,
                 processingTimeMs: sharedTemplates.processingTimeMs
             };
-            logServiceEvent(traceContext, 'shared_minutiae_extracted', 'Extracted score-independent minutiae for Bozorth3, OpenAFIS, MCC, and Jiang.', sharedMinutiaeDiagnostics);
+            logServiceEvent(traceContext, 'shared_minutiae_extracted', 'Extracted score-independent minutiae for OpenAFIS, MCC, and Jiang.', sharedMinutiaeDiagnostics);
         } catch (error) {
             sharedTemplates = {
                 probe: { width: inputDiagnostics.probe.imageWidth, height: inputDiagnostics.probe.imageHeight, minutiae: [] },
@@ -3713,14 +4081,8 @@ app.post('/afis/compare-all', async (req, res) => {
         const matcherRegistry = [
             {
                 key: 'bozorth3',
-                run: () => runAcademicBozorth3(sharedTemplates.probe.minutiae, sharedTemplates.reference.minutiae, appliedThresholds.bozorth3, {
-                    probeWidth: sharedTemplates.probe.width,
-                    probeHeight: sharedTemplates.probe.height,
-                    referenceWidth: sharedTemplates.reference.width,
-                    referenceHeight: sharedTemplates.reference.height,
-                    probeQuality: probe.quality,
-                    referenceQuality: reference.quality,
-                    log: matcherLog('BOZORTH3')
+                run: () => runModifiedBozorth3Comparison(probe, reference, appliedThresholds.bozorth3, {
+                    log: matcherLog('Modified Bozorth3')
                 })
             },
             {
@@ -3766,66 +4128,98 @@ app.post('/afis/compare-all', async (req, res) => {
                 })
             }
         ];
-        const matchers = matcherRegistry.map((matcher) => ({
-            ...matcher.run(),
-            inputDiagnostics: {
-                probeFingerprintId: inputDiagnostics.probe.fingerprintId,
-                candidateFingerprintId: inputDiagnostics.candidate.fingerprintId,
-                probeFilePath: inputDiagnostics.probe.filePath,
-                candidateFilePath: inputDiagnostics.candidate.filePath,
-                probeFingerPosition: inputDiagnostics.probe.fingerPosition,
-                candidateFingerPosition: inputDiagnostics.candidate.fingerPosition,
-                probeImageHash: inputDiagnostics.probe.imageHash,
-                candidateImageHash: inputDiagnostics.candidate.imageHash,
-                sameSourceImage: inputDiagnostics.sameSourceImage,
-                verifiedSharedPair: true
-            }
-        }));
+        const matchers = matcherRegistry.map((matcher) => {
+            const decorated = attachMatchPercentage({
+                ...matcher.run(),
+                inputDiagnostics: {
+                    probeFingerprintId: inputDiagnostics.probe.fingerprintId,
+                    candidateFingerprintId: inputDiagnostics.candidate.fingerprintId,
+                    probeFilePath: inputDiagnostics.probe.filePath,
+                    candidateFilePath: inputDiagnostics.candidate.filePath,
+                    probeFingerPosition: inputDiagnostics.probe.fingerPosition,
+                    candidateFingerPosition: inputDiagnostics.candidate.fingerPosition,
+                    probeImageHash: inputDiagnostics.probe.imageHash,
+                    candidateImageHash: inputDiagnostics.candidate.imageHash,
+                    sameSourceImage: inputDiagnostics.sameSourceImage,
+                    verifiedSharedPair: true
+                }
+            });
+            return matcher.key === 'bozorth3'
+                ? { ...decorated, matchPercentage: decorated.normalizedMatchPercentage }
+                : decorated;
+        });
+        const supportingArbiter = buildSupportingMatcherArbiter(matchers);
 
         logServiceEvent(traceContext, 'academic_compare_complete', 'Independent academic matcher comparison finished.', {
             matchers: matchers.map((matcher) => ({
                 algorithm: matcher.algorithm,
                 status: matcher.status,
                 score: matcher.score,
+                normalizedMatchPercentage: matcher.normalizedMatchPercentage,
                 threshold: matcher.threshold,
                 result: matcher.result,
                 processingTimeMs: matcher.processingTimeMs,
                 matchedPairCount: matcher.matchedMinutiae?.pairs?.length || 0
-            }))
+            })),
+            supportingArbiter
         });
 
-        return res.json({
+        const comparisonResult = buildFingerprintComparisonResult({
             success: true,
             traceId: traceContext.traceId,
             purpose: 'Academic fingerprint-matching comparison only',
             scoreFusion: false,
-            scoreNotice: 'Raw scores use matcher-specific scales and are not compared or averaged.',
+            scoreNotice: 'Raw scores use matcher-specific scales and are not compared or averaged. Match percentages are matcher-specific calibrated interpretations, not probabilities of identity or system accuracy.',
             inputDiagnostics,
             sharedMinutiaeDiagnostics,
             matchers,
+            supportingArbiter,
             probe: {
                 image: probe.originalImage,
                 originalImage: probe.originalImage,
-                minutiae: sharedTemplates.probe.minutiae,
+                normalizedImage: probe.image,
+                denoisedImage: probe.denoisedImage,
+                enhancedImage: probe.enhancedImage,
+                gaborEnhancedImage: probe.gaborEnhancedImage,
+                binarizedImage: probe.binarizedImage,
+                thinnedImage: probe.thinnedImage,
+                minutiaeOverlayImage: probe.minutiaeOverlayImage,
+                quality: probe.quality,
+                qualityMetrics: probe.qualityMetrics,
+                preprocessing: probe.preprocessing,
+                inputMetrics: probe.inputMetrics,
+                minutiae: probe.minutiae,
                 crossingNumberMinutiae: probe.academicMinutiae,
-                bozorth3Minutiae: sharedTemplates.probe.minutiae,
-                minutiaeCount: sharedTemplates.probe.minutiae.length,
-                bozorth3MinutiaeCount: sharedTemplates.probe.minutiae.length,
-                width: sharedTemplates.probe.width,
-                height: sharedTemplates.probe.height
+                bozorth3Minutiae: probe.minutiae,
+                minutiaeCount: probe.minutiae.length,
+                bozorth3MinutiaeCount: probe.minutiae.length,
+                width: probe.width,
+                height: probe.height
             },
             reference: {
                 image: reference.originalImage,
                 originalImage: reference.originalImage,
-                minutiae: sharedTemplates.reference.minutiae,
+                normalizedImage: reference.image,
+                denoisedImage: reference.denoisedImage,
+                enhancedImage: reference.enhancedImage,
+                gaborEnhancedImage: reference.gaborEnhancedImage,
+                binarizedImage: reference.binarizedImage,
+                thinnedImage: reference.thinnedImage,
+                minutiaeOverlayImage: reference.minutiaeOverlayImage,
+                quality: reference.quality,
+                qualityMetrics: reference.qualityMetrics,
+                preprocessing: reference.preprocessing,
+                inputMetrics: reference.inputMetrics,
+                minutiae: reference.minutiae,
                 crossingNumberMinutiae: reference.academicMinutiae,
-                bozorth3Minutiae: sharedTemplates.reference.minutiae,
-                minutiaeCount: sharedTemplates.reference.minutiae.length,
-                bozorth3MinutiaeCount: sharedTemplates.reference.minutiae.length,
-                width: sharedTemplates.reference.width,
-                height: sharedTemplates.reference.height
+                bozorth3Minutiae: reference.minutiae,
+                minutiaeCount: reference.minutiae.length,
+                bozorth3MinutiaeCount: reference.minutiae.length,
+                width: reference.width,
+                height: reference.height
             }
         });
+        return res.json(comparisonResult);
     } catch (error) {
         logServiceEvent(traceContext, 'academic_compare_failed', 'Academic matcher comparison could not prepare the shared fingerprints.', {
             error: error.message

@@ -34,6 +34,13 @@ return [
         'charset' => 'utf8mb4'
     ],
 
+    'services' => [
+        'fingerprint_service_url' => rtrim(
+            getenv('MINUTIAE_AFIS_BASE_URL') ?: 'http://localhost:9000',
+            '/'
+        )
+    ],
+
     'quality' => [
         'min_quality_score' => 50,
         'reject_poor_quality' => true
@@ -86,4 +93,3 @@ return [
         ]
     ]
 ];
-

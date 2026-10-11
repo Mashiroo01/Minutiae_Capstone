@@ -14,6 +14,50 @@ const SOURCEAFIS_CLASSES = path.join(ROOT, 'matchers', 'sourceafis', 'target', '
 const SOURCEAFIS_LIBS = path.join(ROOT, 'matchers', 'sourceafis', 'lib', '*');
 const BOZORTH3 = process.env.BOZORTH3_PATH || '/home/mendi/nbis/bozorth3/bin/bozorth3';
 const CYGWIN_BASH = process.env.CYGWIN_BASH || 'C:\\cygwin64\\bin\\bash.exe';
+const CALIBRATION_CONFIG_PATH = path.join(ROOT, 'config', 'matcher-calibration.json');
+
+function resolveCalibrationFeed(argv = process.argv) {
+    return argv.includes('--modified') ? 'modified' : 'sourceafis';
+}
+
+function calibrationActivationError(profile) {
+    if (profile?.status !== 'calibrated' || !profile?.matcher) {
+        return 'Only a complete calibrated matcher profile can be activated.';
+    }
+    const threshold = Number(profile.threshold);
+    const lowerScore = Number(profile.mapping?.lowerScore);
+    const upperScore = Number(profile.mapping?.upperScore);
+    if (!Number.isFinite(threshold)
+        || !Number.isFinite(lowerScore)
+        || !Number.isFinite(upperScore)
+        || !(lowerScore < threshold && threshold < upperScore)) {
+        return 'Calibration cannot be activated because its score mapping does not bracket the selected threshold.';
+    }
+    const far = Number(profile.validation?.far);
+    const frr = Number(profile.validation?.frr);
+    const balancedAccuracy = Number(profile.validation?.balancedAccuracy ?? profile.validation?.accuracy);
+    if (!Number.isFinite(far)
+        || !Number.isFinite(frr)
+        || !Number.isFinite(balancedAccuracy)
+        || far > 0.05
+        || frr > 0.25
+        || balancedAccuracy < 0.80) {
+        return 'Calibration cannot be activated because held-out validation does not meet the FAR, FRR, and balanced-accuracy safety gate.';
+    }
+    return null;
+}
+
+function activateCalibrationProfile(calibration, profile) {
+    const activationError = calibrationActivationError(profile);
+    if (activationError) throw new Error(activationError);
+    return {
+        ...calibration,
+        profiles: {
+            ...(calibration?.profiles || {}),
+            [profile.matcher]: profile
+        }
+    };
+}
 
 function shouldIncludeLegacy(environment = process.env) {
     return /^(1|true|yes|on)$/i.test(String(environment.CALIBRATE_LEGACY || '').trim());
@@ -82,11 +126,14 @@ function extractSourceAfis(samples) {
     }));
 }
 
-async function processLegacySample(sample) {
+async function processLegacySample(sample, options = {}) {
     const response = await fetch(`${SERVICE_BASE}/afis/process`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ image: fs.readFileSync(sample.filePath).toString('base64') })
+        body: JSON.stringify({
+            image: fs.readFileSync(sample.filePath).toString('base64'),
+            modifiedBozorth3: options.modifiedBozorth3 === true
+        })
     });
     const payload = await response.json();
     if (!response.ok || !payload.success) throw new Error(payload.error || `HTTP ${response.status}`);
@@ -98,18 +145,22 @@ async function processLegacySample(sample) {
     }];
 }
 
-async function extractLegacy(samples, concurrency = 4) {
+async function extractServiceFeed(samples, concurrency = 4, progressLabel = 'service extraction', options = {}) {
     const results = [];
     let cursor = 0;
     async function worker() {
         while (cursor < samples.length) {
             const index = cursor++;
-            results[index] = await processLegacySample(samples[index]);
-            if ((index + 1) % 10 === 0) process.stderr.write(`legacy extraction ${index + 1}/${samples.length}\n`);
+            results[index] = await processLegacySample(samples[index], options);
+            if ((index + 1) % 10 === 0) process.stderr.write(`${progressLabel} ${index + 1}/${samples.length}\n`);
         }
     }
     await Promise.all(Array.from({ length: concurrency }, worker));
     return new Map(results);
+}
+
+async function extractLegacy(samples, concurrency = 4) {
+    return extractServiceFeed(samples, concurrency, 'legacy extraction');
 }
 
 function buildPairs(samples) {
@@ -234,11 +285,58 @@ function summarizeScores(rows) {
     };
 }
 
+function buildMatchPercentageProfile(summary, reportPath, feedName = 'sourceafis') {
+    const feed = summary?.feeds?.[feedName];
+    if (!feed
+        || !Number.isFinite(Number(feed.chosenThreshold))
+        || !Number.isFinite(Number(feed.impostor?.p25))
+        || !Number.isFinite(Number(feed.genuine?.p95))) {
+        throw new Error('Cannot build a match-percentage profile without threshold, impostor p25, and genuine p95 statistics.');
+    }
+    const candidate = {
+        status: 'calibrated',
+        profileId: `${feedName === 'modified' ? 'modified-bozorth3-enhanced' : 'bozorth3-sourceafis'}-${String(summary.generatedAt || 'undated').replace(/[^0-9]/g, '').slice(0, 14)}`,
+        matcher: feedName === 'modified' ? 'Modified Bozorth3' : 'Bozorth3',
+        matcherFeed: feedName === 'modified'
+            ? 'Median denoising -> NIST MINDTCT candidates -> adaptive Gabor enhancement -> adaptive binarization -> Zhang-Suen skeleton validation -> Bozorth3 XYT'
+            : 'SourceAFIS 3.18.1 score-independent minutiae',
+        dataset: path.basename(String(summary.dataset || 'unknown dataset')),
+        report: reportPath,
+        generatedAt: summary.generatedAt,
+        threshold: Number(feed.chosenThreshold),
+        scoreDirection: 'higher-is-more-similar',
+        method: 'piecewise-linear-threshold-anchored',
+        mapping: {
+            lowerScore: Number(feed.impostor.p25),
+            lowerBasis: 'impostor p25',
+            upperScore: Number(feed.genuine.p95),
+            upperBasis: 'genuine p95'
+        },
+        distributions: {
+            impostor: feed.impostor,
+            genuine: feed.genuine
+        },
+        validation: feed.validation
+    };
+    const activationError = calibrationActivationError(candidate);
+    return activationError
+        ? {
+            ...candidate,
+            status: 'calibration_required',
+            method: null,
+            candidateThreshold: candidate.threshold,
+            candidateMapping: candidate.mapping,
+            mapping: null,
+            reason: activationError
+        }
+        : candidate;
+}
+
 function percent(value) {
     return `${(value * 100).toFixed(2)}%`;
 }
 
-function createSvg(feedRows, threshold, filePath) {
+function createSvg(feedRows, threshold, filePath, options = {}) {
     const width = 1100;
     const height = 620;
     const margin = { left: 75, right: 35, top: 55, bottom: 65 };
@@ -282,6 +380,7 @@ function createSvg(feedRows, threshold, filePath) {
         const impostorHeight = (impostor[index] / maximumBin) * topHeight;
         return `<rect x="${x.toFixed(1)}" y="${(margin.top + topHeight - genuineHeight).toFixed(1)}" width="${Math.max(1, barWidth - 1).toFixed(1)}" height="${genuineHeight.toFixed(1)}" fill="#2478d4" opacity="0.62"/><rect x="${x.toFixed(1)}" y="${(margin.top + topHeight - impostorHeight).toFixed(1)}" width="${Math.max(1, barWidth - 1).toFixed(1)}" height="${impostorHeight.toFixed(1)}" fill="#e05252" opacity="0.58"/>`;
     }).join('');
+    const chartTitle = options.title || 'Bozorth3 score distributions and ROC — SourceAFIS minutiae';
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
 <rect width="100%" height="100%" fill="#fbfcfe"/>
 ${countTicks}
@@ -300,18 +399,26 @@ ${rocTicks}
 <text x="${margin.left}" y="${curveTop - 12}" font-family="system-ui" font-size="15" font-weight="650">ROC (all labeled pairs)</text>
 <text x="${width / 2}" y="${height - 22}" text-anchor="middle" font-family="system-ui" font-size="13">False accept rate</text>
 <text x="22" y="${curveTop + curveHeight / 2}" transform="rotate(-90 22 ${curveTop + curveHeight / 2})" text-anchor="middle" font-family="system-ui" font-size="13">True accept rate</text>
-<text x="${margin.left}" y="30" font-family="system-ui" font-size="20" font-weight="700" fill="#172033">Bozorth3 score distributions and ROC — SourceAFIS minutiae</text>
+<text x="${margin.left}" y="30" font-family="system-ui" font-size="20" font-weight="700" fill="#172033">${chartTitle}</text>
 </svg>`;
     fs.writeFileSync(filePath, svg, 'utf8');
 }
 
 async function main() {
+    const calibrationFeed = resolveCalibrationFeed();
+    const activate = process.argv.includes('--activate');
     const samples = listSamples();
     if (!samples.length) throw new Error(`No FVC TIFF samples found at ${DATASET_ROOT}`);
     const pairs = buildPairs(samples);
     process.stderr.write(`dataset=${path.basename(DATASET_ROOT)} samples=${samples.length} pairs=${pairs.length}\n`);
-    const feeds = [['sourceafis', extractSourceAfis(samples)]];
-    if (INCLUDE_LEGACY) {
+    const feeds = [];
+    if (calibrationFeed === 'modified') {
+        await assertLegacyServiceAvailable();
+        feeds.push(['modified', await extractServiceFeed(samples, 4, 'modified extraction', { modifiedBozorth3: true })]);
+    } else {
+        feeds.push(['sourceafis', extractSourceAfis(samples)]);
+    }
+    if (INCLUDE_LEGACY && calibrationFeed !== 'modified') {
         await assertLegacyServiceAvailable();
         feeds.push(['legacy', await extractLegacy(samples)]);
     }
@@ -326,7 +433,7 @@ async function main() {
     }
 
     const timestamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
-    const outputDir = path.join(ROOT, 'reports', `bozorth3-calibration-${timestamp}`);
+    const outputDir = path.join(ROOT, 'reports', `${calibrationFeed === 'modified' ? 'modified-bozorth3' : 'bozorth3'}-calibration-${timestamp}`);
     fs.mkdirSync(outputDir, { recursive: true });
     writeCsv(path.join(outputDir, 'scores.csv'), scoreRows);
 
@@ -353,7 +460,14 @@ async function main() {
     }
     writeCsv(path.join(outputDir, 'threshold-sweep.csv'), thresholdRows);
     const chartSvgPath = path.join(outputDir, 'score-distributions-and-roc.svg');
-    createSvg(scoreRows.filter((row) => row.feed === 'sourceafis'), reportFeeds.sourceafis.chosenThreshold, chartSvgPath);
+    createSvg(
+        scoreRows.filter((row) => row.feed === calibrationFeed),
+        reportFeeds[calibrationFeed].chosenThreshold,
+        chartSvgPath,
+        { title: calibrationFeed === 'modified'
+            ? 'Modified Bozorth3 score distributions and ROC — enhanced pipeline'
+            : 'Bozorth3 score distributions and ROC — SourceAFIS minutiae' }
+    );
     await sharp(chartSvgPath).png().toFile(path.join(outputDir, 'score-distributions-and-roc.png'));
 
     const summary = {
@@ -370,9 +484,18 @@ async function main() {
         split: 'Subjects 101-105 train; 106-110 held-out validation',
         feeds: reportFeeds
     };
-    fs.writeFileSync(path.join(outputDir, 'summary.json'), JSON.stringify(summary, null, 2) + '\n', 'utf8');
+    const summaryPath = path.join(outputDir, 'summary.json');
+    fs.writeFileSync(summaryPath, JSON.stringify(summary, null, 2) + '\n', 'utf8');
+    const relativeSummaryPath = path.relative(ROOT, summaryPath).replace(/\\/g, '/');
+    const matchPercentageProfile = buildMatchPercentageProfile(summary, relativeSummaryPath, calibrationFeed);
+    fs.writeFileSync(path.join(outputDir, 'match-percentage-profile.json'), JSON.stringify(matchPercentageProfile, null, 2) + '\n', 'utf8');
+    if (activate) {
+        const existingCalibration = JSON.parse(fs.readFileSync(CALIBRATION_CONFIG_PATH, 'utf8'));
+        const activatedCalibration = activateCalibrationProfile(existingCalibration, matchPercentageProfile);
+        fs.writeFileSync(CALIBRATION_CONFIG_PATH, JSON.stringify(activatedCalibration, null, 2) + '\n', 'utf8');
+    }
     const section = (name, result) => `### ${name}\n\n- Chosen threshold: **${result.chosenThreshold}**\n- Train: FAR ${percent(result.train.far)}, FRR ${percent(result.train.frr)}, F1 ${percent(result.train.f1)} (${result.train.fp} FP, ${result.train.fn} FN)\n- Held-out validation: FAR ${percent(result.validation.far)}, FRR ${percent(result.validation.frr)}, F1 ${percent(result.validation.f1)} (${result.validation.fp} FP, ${result.validation.fn} FN)\n- All pairs: FAR ${percent(result.all.far)}, FRR ${percent(result.all.frr)}, accuracy ${percent(result.all.accuracy)}, precision ${percent(result.all.precision)}, recall ${percent(result.all.recall)}, F1 ${percent(result.all.f1)}\n- Genuine scores: ${JSON.stringify(result.genuine)}\n- Impostor scores: ${JSON.stringify(result.impostor)}\n`;
-    const markdown = `# Bozorth3 calibration report\n\nGenerated ${summary.generatedAt}.\n\n## Ground truth and protocol\n\n- Dataset: \`${DATASET_ROOT}\`\n- ${summary.samples} images, ${summary.subjects} FVC subjects, ${summary.pairs.genuine} genuine and ${summary.pairs.impostor} balanced impostor pairs.\n- Labels come only from the FVC filename subject prefix, never from matcher output or application criminal IDs.\n- ${summary.split}.\n- Native scores are preserved. Higher scores mean more similar.\n- Threshold selection: minimum training errors, then fewer false accepts, then closest FAR/FRR, then the lowest threshold on an equivalent plateau.\n\n## Results\n\n${Object.entries(reportFeeds).map(([name, result]) => section(name === 'sourceafis' ? 'After: SourceAFIS minutiae → Bozorth3' : 'Before: legacy application minutiae → Bozorth3', result)).join('\n')}\n## Artifacts\n\n- \`scores.csv\`: every labeled comparison and native score.\n- \`threshold-sweep.csv\`: confusion matrix and metrics for every integer threshold.\n- \`score-distributions-and-roc.svg\`: genuine/impostor score distributions and ROC curve for the selected feed.\n- \`summary.json\`: machine-readable protocol and metrics.\n`;
+    const markdown = `# ${calibrationFeed === 'modified' ? 'Modified ' : ''}Bozorth3 calibration report\n\nGenerated ${summary.generatedAt}.\n\n## Ground truth and protocol\n\n- Dataset: \`${DATASET_ROOT}\`\n- ${summary.samples} images, ${summary.subjects} FVC subjects, ${summary.pairs.genuine} genuine and ${summary.pairs.impostor} balanced impostor pairs.\n- Labels come only from the FVC filename subject prefix, never from matcher output or application criminal IDs.\n- ${summary.split}.\n- Native scores are preserved. Higher scores mean more similar.\n- Threshold selection: minimum training errors, then fewer false accepts, then closest FAR/FRR, then the lowest threshold on an equivalent plateau.\n- Active feed: ${calibrationFeed === 'modified' ? 'denoised NIST MINDTCT candidates validated against the Gabor/binarized/Zhang-Suen skeleton' : 'SourceAFIS minutiae'}.\n\n## Results\n\n${Object.entries(reportFeeds).map(([name, result]) => section(name === 'sourceafis' ? 'SourceAFIS minutiae → Bozorth3' : name === 'modified' ? 'Enhanced pipeline → Modified Bozorth3' : 'Legacy application minutiae → Bozorth3', result)).join('\n')}\n## Artifacts\n\n- \`scores.csv\`: every labeled comparison and native score.\n- \`threshold-sweep.csv\`: confusion matrix and metrics for every integer threshold.\n- \`score-distributions-and-roc.svg\`: genuine/impostor score distributions and ROC curve for the selected feed.\n- \`summary.json\`: machine-readable protocol and metrics.\n- \`match-percentage-profile.json\`: reusable threshold-anchored normalization profile${activate ? ' activated in config/matcher-calibration.json' : ' for review before activation'}.\n`;
     fs.writeFileSync(path.join(outputDir, 'REPORT.md'), markdown, 'utf8');
     console.log(JSON.stringify({ outputDir, summary }, null, 2));
 }
@@ -385,11 +508,14 @@ if (require.main === module) {
 }
 
 module.exports = {
+    activateCalibrationProfile,
     assertLegacyServiceAvailable,
+    buildMatchPercentageProfile,
     buildPairs,
     chooseThreshold,
     confusion,
     createSvg,
+    resolveCalibrationFeed,
     shouldIncludeLegacy,
     sweep
 };

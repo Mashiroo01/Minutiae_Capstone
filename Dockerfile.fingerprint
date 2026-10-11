@@ -1,0 +1,63 @@
+# syntax=docker/dockerfile:1
+
+ARG NBIS_COMMIT=3d3b05f0144b706bed56407957bc00779baf2fa5
+
+FROM node:22-bookworm-slim AS builder
+ARG NBIS_COMMIT
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends build-essential ca-certificates git libudev-dev libusb-1.0-0-dev python3 \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /build
+RUN mkdir -p /opt/nbis \
+    && git clone https://github.com/lessandro/nbis.git \
+    && cd nbis \
+    && git checkout "$NBIS_COMMIT"
+RUN cd /build/nbis \
+    && ./setup.sh /opt/nbis --without-X11 --STDLIBS --64 \
+    && sed -i 's/CFLAGS\t:= -O2/CFLAGS\t:= -O2 -fcommon/' rules.mak \
+    && make -j"$(nproc)" config
+RUN cd /build/nbis \
+    && make -j"$(nproc)" it \
+    && make install LIBNBIS=no
+
+COPY matchers/mindtct/mindtct-raw.c /build/mindtct-raw.c
+RUN gcc -O2 -I/opt/nbis/include /build/mindtct-raw.c \
+    -Wl,--start-group /opt/nbis/lib/*.a -Wl,--end-group -lm \
+    -o /opt/nbis/bin/mindtct-raw
+
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev
+
+FROM node:22-bookworm-slim
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates libudev1 libusb-1.0-0 openjdk-17-jre-headless tini \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /opt/nbis/bin/bozorth3 /usr/local/bin/bozorth3
+COPY --from=builder /opt/nbis/bin/mindtct-raw /usr/local/bin/mindtct-raw
+COPY package.json package-lock.json ./
+COPY fingerprint-service.js fingerprint-comparison-result.js scanner-command-runner.js ./
+COPY config/ ./config/
+COPY matchers/ ./matchers/
+
+ENV NODE_ENV=production \
+    PORT=9000 \
+    BOZORTH3_PATH=/usr/local/bin/bozorth3 \
+    MINDTCT_RAW_PATH=/usr/local/bin/mindtct-raw \
+    OPENAFIS_PATH=/opt/minutiae-unavailable/openafis-match \
+    MCC_EXECUTABLE=/opt/minutiae-unavailable/mcc-match \
+    JIANG_EXECUTABLE=/opt/minutiae-unavailable/jiang-match
+
+EXPOSE 9000
+
+HEALTHCHECK --interval=10s --timeout=3s --start-period=20s --retries=5 \
+    CMD node -e "fetch('http://127.0.0.1:9000/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
+
+ENTRYPOINT ["/usr/bin/tini", "--"]
+CMD ["node", "fingerprint-service.js"]

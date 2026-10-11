@@ -111,19 +111,26 @@ function classifyBozorthDecision({ score, threshold, borderlineBand = 3, quality
         };
     }
     const distance = Number(score) - Number(threshold);
-    if (Math.abs(distance) <= Math.max(0, Number(borderlineBand) || 0)) {
+    if (distance >= 0) {
+        return {
+            result: 'MATCH',
+            isMatch: true,
+            decisionState: 'match',
+            reviewRecommended: false
+        };
+    }
+    if (distance >= -Math.max(0, Number(borderlineBand) || 0)) {
         return {
             result: 'BORDERLINE',
             isMatch: null,
-            decisionState: distance >= 0 ? 'borderline-match' : 'borderline-no-match',
+            decisionState: 'borderline-no-match',
             reviewRecommended: true
         };
     }
-    const isMatch = distance > 0;
     return {
-        result: isMatch ? 'MATCH' : 'NO MATCH',
-        isMatch,
-        decisionState: isMatch ? 'match' : 'no-match',
+        result: 'NO MATCH',
+        isMatch: false,
+        decisionState: 'no-match',
         reviewRecommended: false
     };
 }

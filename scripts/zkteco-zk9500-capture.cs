@@ -13,7 +13,6 @@ public static class ZktecoZk9500Capture
     private const int ParamImageHeight = 2;
     private const int DefaultWidth = 300;
     private const int DefaultHeight = 375;
-    private const int TemplateBufferSize = 4096;
 
     public static int Main(string[] args)
     {
@@ -91,36 +90,14 @@ public static class ZktecoZk9500Capture
             if (height <= 0) height = DefaultHeight;
 
             byte[] imageBuffer = new byte[width * height];
-            byte[] templateBuffer = new byte[TemplateBufferSize];
-            int templateSize = TemplateBufferSize;
             int lastResult = -1;
             DateTime deadline = DateTime.UtcNow.AddMilliseconds(timeoutMs);
 
             while (DateTime.UtcNow < deadline)
             {
-                templateSize = TemplateBufferSize;
                 Array.Clear(imageBuffer, 0, imageBuffer.Length);
-                Array.Clear(templateBuffer, 0, templateBuffer.Length);
-
-                lastResult = zkfp2.AcquireFingerprint(deviceHandle, imageBuffer, templateBuffer, ref templateSize);
+                lastResult = zkfp2.AcquireFingerprintImage(deviceHandle, imageBuffer);
                 if (lastResult == ZkOk && HasFingerprintPixels(imageBuffer))
-                {
-                    string imagePath = SaveGrayscaleImage(imageBuffer, width, height, outputPath);
-                    string templateBase64 = Convert.ToBase64String(templateBuffer, 0, Math.Max(0, Math.Min(templateSize, templateBuffer.Length)));
-                    WriteJson("{\"success\":true,\"imagePath\":\"" + JsonEscape(imagePath) +
-                        "\",\"source\":\"ZKTeco ZK9500\",\"deviceCount\":" + deviceCount +
-                        ",\"type\":\"" + JsonEscape(type) +
-                        "\",\"format\":\"" + JsonEscape(Path.GetExtension(imagePath).TrimStart('.').ToLowerInvariant()) +
-                        "\",\"width\":" + width +
-                        ",\"height\":" + height +
-                        ",\"zkTemplateSize\":" + templateSize +
-                        ",\"zkTemplateBase64\":\"" + templateBase64 + "\"}");
-                    return 0;
-                }
-
-                Array.Clear(imageBuffer, 0, imageBuffer.Length);
-                int imageOnlyResult = zkfp2.AcquireFingerprintImage(deviceHandle, imageBuffer);
-                if (imageOnlyResult == ZkOk && HasFingerprintPixels(imageBuffer))
                 {
                     string imagePath = SaveGrayscaleImage(imageBuffer, width, height, outputPath);
                     WriteJson("{\"success\":true,\"imagePath\":\"" + JsonEscape(imagePath) +
@@ -131,11 +108,6 @@ public static class ZktecoZk9500Capture
                         ",\"height\":" + height +
                         ",\"captureMode\":\"image-only\"}");
                     return 0;
-                }
-
-                if (imageOnlyResult != ZkOk)
-                {
-                    lastResult = imageOnlyResult;
                 }
 
                 Thread.Sleep(150);

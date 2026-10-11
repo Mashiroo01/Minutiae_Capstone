@@ -2,10 +2,15 @@
   "scripts": {
     "test": "node --test \"test/*.test.js\"",
     "scanner:diagnose": "node check-zkteco-zk9500.js",
+    "scanner:start-real": "powershell -NoProfile -ExecutionPolicy Bypass -File .\\scripts\\start-zkteco-service.ps1",
     "matchers:setup": "powershell -ExecutionPolicy Bypass -File .\\scripts\\setup-academic-matchers.ps1",
     "matchers:verify": "node scripts/verify-academic-matchers.js",
     "matchers:verify-repeated": "node scripts/verify-three-matchers.js",
-    "bozorth3:calibrate": "node scripts/calibrate-bozorth3.js"
+    "bozorth3:calibrate": "node scripts/calibrate-bozorth3.js",
+    "modified-bozorth3:calibrate": "node scripts/calibrate-bozorth3.js --modified",
+    "modified-bozorth3:calibrate-and-activate": "node scripts/calibrate-bozorth3.js --modified --activate",
+    "modified-bozorth3:verify-quality": "node scripts/verify-modified-bozorth3-quality.js",
+    "supporting-matchers:calibrate": "node scripts/calibrate-supporting-matchers.js"
   },
   "dependencies": {
     "cors": "^2.8.6",

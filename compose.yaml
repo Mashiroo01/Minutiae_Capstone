@@ -1,0 +1,54 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "${MINUTIAE_WEB_PORT:-8080}:80"
+    environment:
+      MINUTIAE_DB_HOST: database
+      MINUTIAE_DB_PORT: 3306
+      MINUTIAE_DB_NAME: ${MINUTIAE_DB_NAME:-minutiae_runtime}
+      MINUTIAE_DB_USER: root
+      MINUTIAE_DB_PASSWORD: "${MINUTIAE_DB_PASSWORD:?Set MINUTIAE_DB_PASSWORD in .env}"
+      MINUTIAE_AFIS_BASE_URL: ${MINUTIAE_AFIS_BASE_URL:-http://host.docker.internal:9000}
+      MINUTIAE_ADMIN_USERNAME: ${MINUTIAE_ADMIN_USERNAME:-admin}
+      MINUTIAE_ADMIN_PASSWORD: "${MINUTIAE_ADMIN_PASSWORD:?Set MINUTIAE_ADMIN_PASSWORD in .env}"
+      MINUTIAE_TEMP_DIR: /var/www/html/temp
+      MINUTIAE_LOG_FILE: /var/www/html/logs/system.log
+    depends_on:
+      database:
+        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+  database:
+    image: mariadb:11.4
+    environment:
+      MARIADB_DATABASE: ${MINUTIAE_DB_NAME:-minutiae_runtime}
+      MARIADB_ROOT_PASSWORD: "${MINUTIAE_DB_PASSWORD:?Set MINUTIAE_DB_PASSWORD in .env}"
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+    restart: unless-stopped
+
+  fingerprint:
+    profiles: ["simulation"]
+    build:
+      context: .
+      dockerfile: Dockerfile.fingerprint
+    ports:
+      - "${MINUTIAE_FINGERPRINT_PORT:-9000}:9000"
+    environment:
+      SCANNER_PROVIDER: simulation
+      SCANNER_ALLOW_SIMULATION: "true"
+    restart: unless-stopped
+
+volumes:
+  db_data:

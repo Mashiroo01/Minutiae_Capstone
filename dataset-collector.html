@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academic Fingerprint Dataset Collector</title>
+    <style>
+        :root {
+            --blue: #0038a8;
+            --blue-dark: #06265f;
+            --red: #ce1126;
+            --gold: #f4c430;
+            --green: #087443;
+            --ink: #172338;
+            --muted: #60708b;
+            --line: #d8e2f0;
+            --soft: #f3f7fd;
+            --white: #fff;
+            --shadow: 0 20px 45px rgba(10, 39, 94, .12);
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            color: var(--ink);
+            font-family: "Segoe UI", system-ui, sans-serif;
+            background:
+                radial-gradient(circle at 10% 0%, rgba(244, 196, 48, .16), transparent 26rem),
+                linear-gradient(180deg, #f8fbff 0%, #edf3fc 100%);
+        }
+        button, input { font: inherit; }
+        button { cursor: pointer; }
+        button:disabled { cursor: not-allowed; opacity: .55; }
+
+        .topbar {
+            color: var(--white);
+            background: linear-gradient(105deg, var(--blue-dark), var(--blue) 70%, #174eb8);
+            border-bottom: 4px solid var(--gold);
+            box-shadow: 0 12px 30px rgba(0, 35, 100, .2);
+        }
+        .topbar-inner {
+            width: min(1180px, calc(100% - 32px));
+            margin: 0 auto;
+            padding: 18px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+        }
+        .brand { display: flex; align-items: center; gap: 12px; }
+        .brand-mark {
+            display: grid;
+            place-items: center;
+            width: 42px;
+            height: 42px;
+            border-radius: 14px;
+            background: rgba(255,255,255,.14);
+            font-size: 24px;
+        }
+        .brand strong { display: block; font-size: 18px; }
+        .brand span { display: block; opacity: .78; font-size: 12px; margin-top: 2px; }
+        .nav-actions { display: flex; align-items: center; gap: 12px; font-size: 13px; }
+        .back-link {
+            color: var(--white);
+            text-decoration: none;
+            padding: 9px 13px;
+            border: 1px solid rgba(255,255,255,.25);
+            border-radius: 999px;
+        }
+
+        main { width: min(1180px, calc(100% - 32px)); margin: 34px auto 50px; }
+        .hero {
+            padding: 28px;
+            border-radius: 24px;
+            background: var(--white);
+            border: 1px solid var(--line);
+            box-shadow: var(--shadow);
+        }
+        .eyebrow {
+            margin: 0 0 9px;
+            color: var(--blue);
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+        }
+        h1 { margin: 0; font-size: clamp(28px, 4vw, 42px); color: var(--blue-dark); }
+        .hero-copy { max-width: 850px; margin: 12px 0 0; color: var(--muted); line-height: 1.65; }
+        .scope-note {
+            margin-top: 20px;
+            padding: 15px 17px;
+            border: 1px solid #ead58a;
+            border-radius: 15px;
+            background: #fff9df;
+            color: #654f00;
+            line-height: 1.55;
+        }
+
+        .view-navigation {
+            display: inline-grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5px;
+            margin-top: 22px;
+            padding: 5px;
+            border: 1px solid var(--line);
+            border-radius: 15px;
+            background: var(--soft);
+        }
+        .view-button {
+            border: 0;
+            border-radius: 11px;
+            padding: 11px 18px;
+            color: var(--muted);
+            background: transparent;
+            font-weight: 800;
+        }
+        .view-button.selected {
+            color: var(--white);
+            background: var(--blue-dark);
+            box-shadow: 0 7px 16px rgba(6, 38, 95, .2);
+        }
+
+        .mode-switch {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 22px;
+        }
+        .mode-button {
+            padding: 16px 18px;
+            border-radius: 16px;
+            border: 2px solid var(--line);
+            background: var(--soft);
+            color: var(--blue-dark);
+            font-weight: 800;
+        }
+        .mode-button.selected {
+            color: var(--white);
+            border-color: var(--blue);
+            background: linear-gradient(135deg, var(--blue), var(--blue-dark));
+            box-shadow: 0 10px 22px rgba(0, 56, 168, .2);
+        }
+
+        .layout { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(310px, .75fr); gap: 20px; margin-top: 20px; }
+        .stack { display: grid; gap: 20px; align-content: start; }
+        .card {
+            padding: 22px;
+            border-radius: 20px;
+            border: 1px solid var(--line);
+            background: var(--white);
+            box-shadow: 0 12px 28px rgba(10, 39, 94, .08);
+        }
+        .card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 18px; }
+        .step-label { color: var(--blue); font-size: 11px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
+        h2 { margin: 4px 0 0; color: var(--blue-dark); font-size: 21px; }
+        h3 { margin: 0; font-size: 14px; color: var(--blue-dark); }
+        .participant-name { font-size: 20px; font-weight: 900; color: var(--blue-dark); }
+        .participant-meta { color: var(--muted); margin-top: 5px; font-size: 13px; }
+        .secondary-button, .primary-button {
+            border: 0;
+            border-radius: 12px;
+            padding: 11px 15px;
+            font-weight: 800;
+        }
+        .secondary-button { color: var(--blue); background: #eaf1ff; }
+        .primary-button { color: var(--white); background: linear-gradient(135deg, var(--blue), var(--blue-dark)); }
+        .primary-button.green { background: linear-gradient(135deg, #0b8f58, #07613d); }
+
+        .consent-panel {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+            margin-top: 16px;
+            padding: 13px 14px;
+            background: #eefbf5;
+            border: 1px solid #b7e6cf;
+            border-radius: 13px;
+            color: #155e3e;
+            line-height: 1.45;
+            font-size: 13px;
+        }
+        .consent-panel input { margin-top: 3px; }
+
+        .hand-group { border: 0; margin: 0 0 18px; padding: 0; }
+        .hand-group:last-child { margin-bottom: 0; }
+        .hand-group legend { margin-bottom: 10px; color: var(--muted); font-size: 12px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+        .finger-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 9px; }
+        .finger-button {
+            min-height: 68px;
+            padding: 10px 6px;
+            border: 1px solid var(--line);
+            border-radius: 13px;
+            color: var(--ink);
+            background: var(--soft);
+            font-weight: 700;
+        }
+        .finger-button small { display: block; margin-top: 4px; color: var(--muted); text-transform: uppercase; }
+        .finger-button.selected {
+            color: var(--white);
+            border-color: var(--blue);
+            background: var(--blue);
+            box-shadow: 0 8px 18px rgba(0, 56, 168, .22);
+        }
+        .finger-button.selected small { color: rgba(255,255,255,.78); }
+
+        .selection-summary { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 18px; }
+        .summary-cell, .entry-grid > div {
+            padding: 13px 14px;
+            border-radius: 13px;
+            border: 1px solid var(--line);
+            background: #f8faff;
+        }
+        .summary-cell span, dt { display: block; color: var(--muted); font-size: 11px; font-weight: 900; letter-spacing: .07em; text-transform: uppercase; }
+        .summary-cell strong, dd { display: block; margin: 5px 0 0; color: var(--blue-dark); font-weight: 800; overflow-wrap: anywhere; }
+        .scan-action { display: grid; grid-template-columns: 1fr auto; gap: 10px; margin-top: 16px; }
+        .scan-action .primary-button { min-height: 48px; }
+
+        .preview-shell {
+            min-height: 310px;
+            display: grid;
+            grid-template-columns: minmax(220px, .8fr) minmax(0, 1.2fr);
+            gap: 18px;
+        }
+        .preview-image-wrap {
+            min-height: 300px;
+            display: grid;
+            place-items: center;
+            padding: 14px;
+            border-radius: 16px;
+            background: #101827;
+            overflow: hidden;
+        }
+        .preview-image-wrap img { display: block; max-width: 100%; max-height: 380px; object-fit: contain; image-rendering: auto; }
+        .quality-value { margin-top: 12px; font-size: 18px; font-weight: 900; }
+        .quality-good { color: var(--green); }
+        .quality-acceptable { color: #9a6700; }
+        .quality-poor, .quality-unavailable { color: var(--red); }
+        .quality-notice { color: var(--muted); line-height: 1.5; }
+        .entry-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 0 0 16px; }
+        .entry-grid > div { min-width: 0; }
+        .empty-state { color: var(--muted); padding: 24px 0; text-align: center; }
+        .import-button { width: 100%; min-height: 50px; }
+
+        .progress-grid { display: grid; gap: 20px; }
+        .progress-hand { display: grid; gap: 8px; }
+        .progress-row {
+            display: grid;
+            grid-template-columns: 24px 70px 1fr;
+            gap: 8px;
+            align-items: center;
+            padding: 8px 10px;
+            border-radius: 10px;
+            background: var(--soft);
+        }
+        .progress-row small { color: var(--muted); overflow-wrap: anywhere; }
+        .progress-mark { color: #8a98ae; font-size: 18px; font-weight: 900; }
+        .progress-mark.complete { color: var(--green); }
+        .progress-count {
+            margin-top: 18px;
+            padding: 14px;
+            text-align: center;
+            border-radius: 13px;
+            background: #eaf1ff;
+            color: var(--blue-dark);
+            font-weight: 900;
+        }
+
+        .dataset-browser { margin-top: 20px; }
+        .dataset-toolbar {
+            display: grid;
+            grid-template-columns: minmax(240px, 1fr) auto;
+            gap: 12px;
+            align-items: end;
+            margin-bottom: 18px;
+        }
+        .search-field { display: grid; gap: 7px; }
+        .search-field span { color: var(--muted); font-size: 12px; font-weight: 800; }
+        .search-field input {
+            width: 100%;
+            min-height: 44px;
+            padding: 10px 13px;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            color: var(--ink);
+            background: var(--white);
+        }
+        .dataset-layout { display: grid; grid-template-columns: minmax(280px, .72fr) minmax(0, 1.28fr); gap: 20px; }
+        .dataset-list { display: grid; gap: 9px; max-height: 720px; overflow: auto; padding-right: 4px; }
+        .dataset-person {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            color: var(--ink);
+            background: var(--soft);
+            text-align: left;
+        }
+        .dataset-person.selected { border-color: var(--blue); background: #eaf1ff; box-shadow: inset 4px 0 0 var(--blue); }
+        .dataset-person strong { display: block; color: var(--blue-dark); }
+        .dataset-person span { display: block; margin-top: 5px; color: var(--muted); font-size: 12px; }
+        .dataset-list-summary { margin: 0 0 12px; color: var(--muted); font-size: 13px; }
+        .dataset-pagination { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 14px; color: var(--muted); font-size: 12px; }
+        .dataset-detail-head { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; }
+        .dataset-detail-head p { margin: 6px 0 0; color: var(--muted); }
+        .status-pill { padding: 6px 9px; border-radius: 999px; color: #155e3e; background: #e2f7ed; font-size: 11px; font-weight: 900; text-transform: uppercase; }
+        .dataset-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 9px; margin: 18px 0; }
+        .dataset-fact { padding: 11px; border: 1px solid var(--line); border-radius: 12px; background: #f8faff; }
+        .dataset-fact span { display: block; color: var(--muted); font-size: 10px; font-weight: 900; text-transform: uppercase; }
+        .dataset-fact strong { display: block; margin-top: 4px; color: var(--blue-dark); overflow-wrap: anywhere; }
+        .sample-gallery { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+        .sample-card { overflow: hidden; border: 1px solid var(--line); border-radius: 15px; background: var(--soft); }
+        .sample-thumb { min-height: 180px; display: grid; place-items: center; padding: 10px; background: #101827; }
+        .sample-thumb img { display: block; width: 100%; height: 210px; object-fit: contain; }
+        .sample-info { padding: 12px; }
+        .sample-info strong { color: var(--blue-dark); overflow-wrap: anywhere; }
+        .sample-info span { display: block; margin-top: 5px; color: var(--muted); font-size: 12px; }
+
+        .status-message {
+            margin-top: 20px;
+            padding: 14px 16px;
+            border-radius: 14px;
+            border: 1px solid var(--line);
+            background: var(--white);
+            box-shadow: 0 8px 20px rgba(10, 39, 94, .07);
+        }
+        .status-message.success { border-color: #a9dfc5; background: #eefbf5; color: #155e3e; }
+        .status-message.error { border-color: #efb2b9; background: #fff1f3; color: #8f1420; }
+        .status-message.info { border-color: #b9ceef; background: #eef4ff; color: #183d79; }
+        [hidden] { display: none !important; }
+
+        @media (max-width: 900px) {
+            .layout { grid-template-columns: 1fr; }
+            .dataset-layout { grid-template-columns: 1fr; }
+            .dataset-list { max-height: 360px; }
+            .preview-shell { grid-template-columns: 1fr; }
+            .preview-image-wrap { min-height: 240px; }
+        }
+        @media (max-width: 640px) {
+            main, .topbar-inner { width: min(100% - 20px, 1180px); }
+            .hero, .card { padding: 18px; border-radius: 17px; }
+            .mode-switch, .selection-summary, .entry-grid, .dataset-toolbar, .dataset-facts, .sample-gallery { grid-template-columns: 1fr; }
+            .view-navigation { display: grid; }
+            .finger-grid { grid-template-columns: repeat(2, 1fr); }
+            .scan-action { grid-template-columns: 1fr; }
+            .nav-actions span { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <header class="topbar">
+        <div class="topbar-inner">
+            <div class="brand">
+                <div class="brand-mark" aria-hidden="true">◉</div>
+                <div><strong>Research Dataset Collector</strong><span>Minutiae academic workspace</span></div>
+            </div>
+            <div class="nav-actions"><span id="collectorUser">Checking session…</span><a class="back-link" href="admin.html">Back to Admin</a></div>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <p class="eyebrow">Academic Dataset Collection</p>
+            <h1>Fingerprint Dataset Collector</h1>
+            <p class="hero-copy">Capture, label, preview, and store original fingerprint samples with the project’s existing ZKTeco ZK9500 integration. Collection is separated from fingerprint matching.</p>
+            <div class="scope-note"><strong>Research scope only.</strong> Use synthetic reference profiles or fingerprint samples from participants who have explicitly consented. “Criminal Dataset” below means a synthetic/reference dataset for academic testing and does not retrieve real criminal identities or connect to government identity systems.</div>
+            <nav id="viewNavigation" class="view-navigation" aria-label="Dataset workspace">
+                <button class="view-button selected" type="button" data-workspace-view="collect" aria-pressed="true">Collect Fingerprints</button>
+                <button class="view-button" type="button" data-workspace-view="browse" aria-pressed="false">Browse Dataset</button>
+            </nav>
+            <div class="mode-switch" role="group" aria-label="Dataset collection mode">
+                <button class="mode-button selected" type="button" data-dataset-mode="applicant" aria-pressed="true">Applicant Dataset</button>
+                <button class="mode-button" type="button" data-dataset-mode="criminal" aria-pressed="false">Criminal Dataset <small>(Synthetic Reference)</small></button>
+            </div>
+        </section>
+
+        <div id="collectorStatus" class="status-message info" hidden aria-live="polite"></div>
+
+        <div id="collectionView" class="layout">
+            <div class="stack">
+                <section class="card">
+                    <div class="card-head">
+                        <div><span class="step-label">Participant</span><div id="participantLabel" class="participant-name">Loading…</div><div id="participantMeta" class="participant-meta"></div></div>
+                        <button id="newParticipantButton" class="secondary-button" type="button">Start Participant</button>
+                    </div>
+                    <label id="consentPanel" class="consent-panel">
+                        <input id="consentCheckbox" type="checkbox">
+                        <span>I confirm that this participant explicitly consented to academic fingerprint dataset collection and storage.</span>
+                    </label>
+                </section>
+
+                <section class="card">
+                    <div class="card-head"><div><span class="step-label">Step 1</span><h2>Select Finger</h2></div></div>
+                    <div id="fingerSelector"></div>
+                    <div class="selection-summary">
+                        <div class="summary-cell"><span>Selected Finger</span><strong id="selectedFinger">Right Thumb</strong></div>
+                        <div class="summary-cell"><span>Generated Filename</span><strong id="generatedFilename">ptrth1.png</strong></div>
+                    </div>
+                    <div class="scan-action">
+                        <button id="scanButton" class="primary-button" type="button" disabled>Scan Fingerprint</button>
+                        <button id="captureAnotherButton" class="secondary-button" type="button" hidden>Capture Another Sample</button>
+                    </div>
+                </section>
+
+                <section id="previewPanel" class="card" hidden>
+                    <div class="card-head"><div><span class="step-label">Steps 2–3</span><h2>Original Capture &amp; Entry Preview</h2></div></div>
+                    <div class="preview-shell">
+                        <div>
+                            <div class="preview-image-wrap"><img id="previewImage" alt="Original fingerprint capture"></div>
+                            <div id="qualityValue" class="quality-value">Unavailable</div>
+                            <p id="qualityNotice" class="quality-notice"></p>
+                        </div>
+                        <div>
+                            <h3>Dataset Entry Preview</h3>
+                            <div id="entryPreview"><p class="empty-state">Scan the selected finger to prepare a dataset entry.</p></div>
+                            <button id="importButton" class="primary-button green import-button" type="button" disabled>Import to Database</button>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <aside class="card">
+                <div class="card-head"><div><span class="step-label">Collection Progress</span><h2>10-Finger Checklist</h2></div></div>
+                <div id="collectionProgress" class="progress-grid"></div>
+                <div id="progressCount" class="progress-count">0 / 10 fingers collected</div>
+            </aside>
+        </div>
+
+        <section id="datasetView" class="dataset-browser" hidden>
+            <div class="card">
+                <div class="card-head">
+                    <div><span class="step-label">Stored Dataset</span><h2>Imported Participants</h2></div>
+                </div>
+                <div class="dataset-toolbar">
+                    <label class="search-field">
+                        <span>Search participant number, name, or case number</span>
+                        <input id="datasetSearch" type="search" placeholder="Example: 311 or CASE-2026-311" autocomplete="off">
+                    </label>
+                    <button id="datasetSearchButton" class="secondary-button" type="button">Search Dataset</button>
+                </div>
+                <div class="dataset-layout">
+                    <aside>
+                        <p id="datasetListSummary" class="dataset-list-summary">Loading participants…</p>
+                        <div id="datasetParticipantList" class="dataset-list" aria-label="Imported dataset participants"></div>
+                        <div class="dataset-pagination">
+                            <button id="datasetPreviousPage" class="secondary-button" type="button">Previous</button>
+                            <span id="datasetPageLabel">Page 1</span>
+                            <button id="datasetNextPage" class="secondary-button" type="button">Next</button>
+                        </div>
+                    </aside>
+                    <section id="datasetParticipantDetail" class="card" aria-live="polite">
+                        <p class="empty-state">Select an imported participant to view their dataset samples.</p>
+                    </section>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="dataset-collector.js"></script>
+</body>
+</html>

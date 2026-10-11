@@ -1,0 +1,57 @@
+{
+  "status": "calibration_required",
+  "profileId": "modified-bozorth3-enhanced-20261009021537-rejected",
+  "matcher": "Modified Bozorth3",
+  "matcherFeed": "Median denoising -> adaptive Gabor enhancement -> adaptive binarization -> Zhang-Suen thinning -> cleaned minutiae -> Bozorth3 XYT",
+  "dataset": "DB4_B",
+  "report": "reports/modified-bozorth3-calibration-20261009T021537Z/summary.json",
+  "generatedAt": "2026-10-09T02:15:37.496Z",
+  "threshold": 20,
+  "scoreDirection": "higher-is-more-similar",
+  "method": null,
+  "mapping": null,
+  "candidateThreshold": 309,
+  "candidateMapping": {
+    "lowerScore": 95,
+    "lowerBasis": "impostor p25",
+    "upperScore": 308,
+    "upperBasis": "genuine p95"
+  },
+  "reason": "Calibration rejected: the candidate score mapping does not bracket threshold 309 and held-out validation failed the safety gate with 95.71% FRR and 52.14% balanced accuracy.",
+  "distributions": {
+    "impostor": {
+      "count": 280,
+      "minimum": 13,
+      "p25": 95,
+      "median": 222,
+      "p75": 270,
+      "p95": 296,
+      "maximum": 308,
+      "mean": 187.86
+    },
+    "genuine": {
+      "count": 280,
+      "minimum": 13,
+      "p25": 136,
+      "median": 231,
+      "p75": 272,
+      "p95": 308,
+      "maximum": 337,
+      "mean": 196.9
+    }
+  },
+  "validation": {
+    "threshold": 309,
+    "tp": 6,
+    "fn": 134,
+    "fp": 0,
+    "tn": 140,
+    "accuracy": 0.5214285714285715,
+    "precision": 1,
+    "recall": 0.04285714285714286,
+    "f1": 0.0821917808219178,
+    "far": 0,
+    "frr": 0.9571428571428572,
+    "balancedAccuracy": 0.5214285714285715
+  }
+}

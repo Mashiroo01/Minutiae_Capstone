@@ -1,0 +1,98 @@
+{
+  "generatedAt": "2026-10-09T03:10:30.181Z",
+  "dataset": "C:\\xampp\\htdocs\\Minutiae\\temp\\matcher-build\\openafis\\data\\valid\\fvc2004\\DB4_B",
+  "groundTruth": "FVC filename subject prefix; impressions sharing a prefix are genuine; adjacent subject prefixes are impostors",
+  "samples": 80,
+  "subjects": 10,
+  "pairs": {
+    "total": 560,
+    "genuine": 280,
+    "impostor": 280
+  },
+  "split": "Subjects 101-105 train; 106-110 held-out validation",
+  "pipeline": {
+    "candidateExtractor": "NIST NBIS MINDTCT on denoised grayscale",
+    "validationStages": [
+      "adaptive Gabor enhancement",
+      "adaptive binarization",
+      "Zhang-Suen thinning",
+      "6-pixel skeleton agreement"
+    ],
+    "matcher": "NIST NBIS Bozorth3"
+  },
+  "templateMinutiae": {
+    "minimum": 31,
+    "maximum": 115,
+    "mean": 66.81,
+    "at140PointLimit": 0,
+    "below18PointQualityFloor": 0
+  },
+  "feeds": {
+    "modified": {
+      "chosenThreshold": 16,
+      "selectionRule": "minimum train errors; then fewer false accepts; then closest FAR/FRR; then lowest threshold on an equivalent plateau",
+      "train": {
+        "threshold": 16,
+        "tp": 123,
+        "fn": 17,
+        "fp": 1,
+        "tn": 139,
+        "accuracy": 0.9357142857142857,
+        "precision": 0.9919354838709677,
+        "recall": 0.8785714285714286,
+        "f1": 0.9318181818181818,
+        "far": 0.007142857142857143,
+        "frr": 0.12142857142857143,
+        "balancedAccuracy": 0.9357142857142857
+      },
+      "validation": {
+        "threshold": 16,
+        "tp": 107,
+        "fn": 33,
+        "fp": 2,
+        "tn": 138,
+        "accuracy": 0.875,
+        "precision": 0.981651376146789,
+        "recall": 0.7642857142857142,
+        "f1": 0.859437751004016,
+        "far": 0.014285714285714285,
+        "frr": 0.2357142857142857,
+        "balancedAccuracy": 0.875
+      },
+      "all": {
+        "threshold": 16,
+        "tp": 230,
+        "fn": 50,
+        "fp": 3,
+        "tn": 277,
+        "accuracy": 0.9053571428571429,
+        "precision": 0.9871244635193133,
+        "recall": 0.8214285714285714,
+        "f1": 0.8966861598440545,
+        "far": 0.010714285714285714,
+        "frr": 0.17857142857142858,
+        "balancedAccuracy": 0.9053571428571429
+      },
+      "genuine": {
+        "count": 280,
+        "minimum": 3,
+        "p25": 20,
+        "median": 37,
+        "p75": 75,
+        "p95": 184,
+        "maximum": 274,
+        "mean": 58.28
+      },
+      "impostor": {
+        "count": 280,
+        "minimum": 0,
+        "p25": 4,
+        "median": 6,
+        "p75": 8,
+        "p95": 12,
+        "maximum": 19,
+        "mean": 6.55
+      }
+    }
+  }
+}
