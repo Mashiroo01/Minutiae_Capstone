@@ -3428,6 +3428,7 @@ app.get('/', (req, res) => {
 
 // Health check endpoint
 app.get('/health', (req, res) => {
+    checkScannerStatus();
     res.json({
         status: 'running',
         scanner_available: scannerAvailable,
@@ -3439,6 +3440,7 @@ app.get('/health', (req, res) => {
 });
 
 app.get('/debug/config', (req, res) => {
+    checkScannerStatus();
     res.json({
         success: true,
         afis: {
@@ -4230,6 +4232,7 @@ app.post('/afis/compare-all', async (req, res) => {
 
 // Get scanner info
 app.get('/scanner-info', (req, res) => {
+    checkScannerStatus();
     const sdkAdapterConfigured = isCommandScannerProvider() && !!SCANNER_CONFIG.captureCommand;
     res.json({
         available: scannerAvailable,

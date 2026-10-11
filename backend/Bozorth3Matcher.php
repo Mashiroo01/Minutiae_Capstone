@@ -94,12 +94,28 @@ class Bozorth3Matcher {
             return $serviceStatus;
         }
 
+        $available = $this->isAvailable();
         return [
-            'installed' => $this->isAvailable(),
+            'installed' => $available,
+            'ready' => $available,
             'path' => $this->resolvedPath ?: $this->bozorth3Path,
             'cygwin_bash' => $this->cygwinBash,
             'source' => 'php_runtime',
-            'message' => $this->isAvailable() ? 'Bozorth3 is ready' : 'Bozorth3 not found. Checked configured path, PATH, and Cygwin.'
+            'message' => $available
+                ? 'Modified Bozorth3 is ready in the PHP runtime.'
+                : 'The fingerprint service is offline, so its Modified Bozorth3 installation could not be verified.',
+            'service_status' => [
+                'connected' => false,
+                'url' => $this->afisBaseUrl,
+                'message' => 'Fingerprint service is unreachable.'
+            ],
+            'scanner_status' => [
+                'available' => false,
+                'provider' => 'unknown',
+                'capture_command_configured' => false,
+                'simulation_allowed' => false
+            ],
+            'matcher_status' => []
         ];
     }
 
@@ -132,14 +148,34 @@ class Bozorth3Matcher {
         }
 
         $ready = (bool)$matcher['bozorth3Ready'];
+        $scanner = is_array($payload['scanner'] ?? null) ? $payload['scanner'] : [];
         return [
             'installed' => $ready,
+            'ready' => $ready,
             'path' => $matcher['bozorth3Path'] ?? $this->bozorth3Path,
             'cygwin_bash' => $matcher['cygwinBashPath'] ?? $this->cygwinBash,
             'source' => 'fingerprint_service',
             'message' => $ready
                 ? 'Modified Bozorth3 is ready in the fingerprint service.'
-                : 'Modified Bozorth3 is not available in the fingerprint service.'
+                : 'Modified Bozorth3 is not available in the fingerprint service.',
+            'service_status' => [
+                'connected' => true,
+                'url' => $this->afisBaseUrl,
+                'message' => 'Fingerprint service is online.'
+            ],
+            'scanner_status' => [
+                'available' => (bool)($scanner['available'] ?? false),
+                'provider' => $scanner['provider'] ?? 'unknown',
+                'capture_command_configured' => (bool)($scanner['captureCommandConfigured'] ?? false),
+                'simulation_allowed' => (bool)($scanner['simulationAllowed'] ?? false)
+            ],
+            'matcher_status' => [
+                'mindtct' => (bool)($matcher['mindtctReady'] ?? false),
+                'sourceafis' => (bool)($matcher['sourceAfisReady'] ?? false),
+                'openafis' => (bool)($matcher['openAfisReady'] ?? false),
+                'mcc' => (bool)($matcher['mccReady'] ?? false),
+                'jiang' => (bool)($matcher['jiangReady'] ?? false)
+            ]
         ];
     }
     

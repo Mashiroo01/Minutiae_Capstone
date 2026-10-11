@@ -29,7 +29,8 @@ test('applicant statistics API exposes decision, fingerprint, throughput, and tr
     assert.equal(stats.daily_trend.length, 2);
 });
 
-test('statistics page renders accessible operational analytics instead of two static counters', () => {
+test('Analytics navigation renders accessible operational analytics instead of two static counters', () => {
+    assert.match(adminPage, /switchSection\('statistics', event\)[\s\S]*?<i class="bi bi-bar-chart"><\/i> Analytics/);
     assert.match(adminPage, /class="analytics-kpi-grid"/);
     assert.match(adminPage, /id="analyticsTrendChart"/);
     assert.match(adminPage, /id="clearanceOutcomeChart"/);

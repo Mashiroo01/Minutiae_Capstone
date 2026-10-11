@@ -19,11 +19,11 @@ if (-not (Test-Path -LiteralPath $cygwinBash)) {
 
 $adapterStatusJson = & $adapterPath --status
 if ($LASTEXITCODE -ne 0) {
-    throw 'The ZKTeco SDK adapter could not query the scanner.'
+    Write-Warning 'The ZKTeco SDK adapter could not query the scanner. Service will start in real-only mode for diagnostics.'
 }
-$adapterStatus = $adapterStatusJson | ConvertFrom-Json
-if (-not $adapterStatus.available) {
-    throw 'No ZKTeco ZK9500 was detected. Check its USB connection and FPSensor driver.'
+$adapterStatus = $adapterStatusJson | ConvertFrom-Json -ErrorAction SilentlyContinue
+if (-not $adapterStatus -or -not $adapterStatus.available) {
+    Write-Warning 'No ZKTeco ZK9500 was detected. Service will start in real-only mode and report the scanner offline until USB, FPSensor, and SDK access are ready.'
 }
 
 $env:PORT = [string]$Port
@@ -36,6 +36,6 @@ $env:BOZORTH3_PATH = $bozorth3Path
 $env:MINUTIAE_TEMP_DIR = Join-Path $projectRoot 'temp'
 $env:SCANNER_CAPTURE_TEMP_DIR = Join-Path $projectRoot 'temp\scanner'
 
-Write-Host "ZKTeco ZK9500 ready. Starting the real scanner service on port $Port."
+Write-Host "Starting the real-only ZKTeco service on port $Port. Simulation is disabled."
 & node (Join-Path $projectRoot 'fingerprint-service.js')
 exit $LASTEXITCODE

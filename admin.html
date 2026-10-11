@@ -878,6 +878,63 @@
             .analytics-quick-item:last-child { border-bottom: 0; }
         }
 
+        .system-status-toolbar { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; margin-bottom: 20px; }
+        .system-status-toolbar .page-title { margin-bottom: 6px; }
+        .system-status-loading { display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 130px; padding: 24px; border: 1px solid var(--panel-border); border-radius: 20px; color: #62748c; background: #fff; box-shadow: var(--panel-shadow); }
+        .system-status-summary { position: relative; overflow: hidden; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 18px; align-items: center; padding: 24px; margin-bottom: 18px; border-radius: 22px; color: #fff; background: linear-gradient(125deg, #12356d, #155fbe); box-shadow: 0 16px 34px rgba(15, 58, 120, .22); }
+        .system-status-summary.is-operational { background: linear-gradient(125deg, #07573b, #149769); }
+        .system-status-summary.is-offline { background: linear-gradient(125deg, #721c2b, #c43349); }
+        .system-status-summary-icon { display: grid; place-items: center; width: 54px; height: 54px; border-radius: 16px; background: rgba(255,255,255,.14); font-size: 24px; }
+        .system-status-summary h3 { margin: 0 0 4px; color: #fff; font-size: 21px; font-weight: 850; }
+        .system-status-summary p { margin: 0; color: rgba(255,255,255,.82); font-size: 13px; }
+        .system-status-summary-badge { padding: 8px 12px; border: 1px solid rgba(255,255,255,.25); border-radius: 999px; background: rgba(255,255,255,.13); font-size: 11px; font-weight: 850; letter-spacing: .08em; text-transform: uppercase; }
+        .system-status-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-bottom: 18px; }
+        .system-health-card { min-width: 0; padding: 18px; border: 1px solid #dfe8f3; border-radius: 18px; background: #fff; box-shadow: 0 9px 24px rgba(17, 50, 91, .07); }
+        .system-health-card-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 15px; }
+        .system-health-icon { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 11px; color: #1762c6; background: #e8f1ff; font-size: 18px; }
+        .system-health-state { display: inline-flex; align-items: center; gap: 6px; padding: 5px 8px; border-radius: 999px; color: #a15500; background: #fff3d6; font-size: 10px; font-weight: 850; text-transform: uppercase; }
+        .system-health-state::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+        .system-health-state.is-ready { color: #087443; background: #def8ea; }
+        .system-health-state.is-offline { color: #a91f35; background: #ffe5e9; }
+        .system-health-card h4 { margin: 0 0 6px; color: #193554; font-size: 14px; font-weight: 850; }
+        .system-health-card p { margin: 0; color: #6b7b90; font-size: 11px; line-height: 1.5; }
+        .system-status-layout { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(280px, .65fr); gap: 18px; }
+        .system-status-panel { overflow: hidden; border: 1px solid #dfe8f3; border-radius: 19px; background: #fff; box-shadow: 0 9px 25px rgba(17, 50, 91, .06); }
+        .system-status-panel-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 17px 19px; border-bottom: 1px solid #e7edf5; background: #f8fafd; }
+        .system-status-panel-header h3 { margin: 0; color: #193554; font-size: 15px; font-weight: 850; }
+        .system-status-panel-body { padding: 18px 19px; }
+        .system-bozorth-hero { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 14px; align-items: center; padding: 15px; margin-bottom: 15px; border: 1px solid #dbe7f5; border-radius: 15px; background: #f6f9fd; }
+        .system-bozorth-hero.is-ready { border-color: #bde7d2; background: #f0fbf5; }
+        .system-bozorth-icon { display: grid; place-items: center; width: 46px; height: 46px; border-radius: 14px; color: #1762c6; background: #e5efff; font-size: 21px; }
+        .system-bozorth-hero.is-ready .system-bozorth-icon { color: #087443; background: #d9f5e7; }
+        .system-bozorth-hero strong { display: block; color: #203b59; font-size: 15px; }
+        .system-bozorth-hero span { display: block; margin-top: 3px; color: #66768b; font-size: 11px; }
+        .system-detail-list { display: grid; gap: 0; margin: 0; }
+        .system-detail-row { display: grid; grid-template-columns: 125px minmax(0, 1fr); gap: 12px; padding: 10px 0; border-bottom: 1px solid #edf1f6; }
+        .system-detail-row:last-child { border-bottom: 0; }
+        .system-detail-row dt { color: #718096; font-size: 11px; font-weight: 750; }
+        .system-detail-row dd { margin: 0; color: #2e435e; font-size: 11px; font-weight: 700; overflow-wrap: anywhere; }
+        .system-matcher-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+        .system-matcher-item { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 11px; border: 1px solid #e4ebf4; border-radius: 11px; color: #445a73; background: #fafbfd; font-size: 11px; font-weight: 750; }
+        .system-matcher-indicator { width: 9px; height: 9px; border-radius: 50%; background: #d1485b; box-shadow: 0 0 0 3px #ffe7ea; }
+        .system-matcher-indicator.is-ready { background: #159461; box-shadow: 0 0 0 3px #dcf7e9; }
+        .system-status-advice { display: flex; gap: 10px; padding: 13px; margin-top: 15px; border: 1px solid #f3d49a; border-radius: 12px; color: #765018; background: #fff9ed; font-size: 11px; line-height: 1.5; }
+        .system-status-advice i { flex: 0 0 auto; margin-top: 1px; }
+
+        @media (max-width: 1050px) {
+            .system-status-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .system-status-layout { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 600px) {
+            .system-status-toolbar { display: block; }
+            .system-status-toolbar .analytics-refresh { margin-top: 13px; }
+            .system-status-grid { grid-template-columns: 1fr; }
+            .system-status-summary { grid-template-columns: auto minmax(0, 1fr); }
+            .system-status-summary-badge { grid-column: 1 / -1; width: fit-content; }
+            .system-matcher-grid { grid-template-columns: 1fr; }
+        }
+
         .application-history-view {
             --history-navy: #102a56;
             --history-blue: #165dcc;
@@ -1101,7 +1158,7 @@
             <i class="bi bi-plus-circle"></i> Register Criminal
         </div>
         <div class="nav-item" onclick="switchSection('statistics', event)">
-            <i class="bi bi-bar-chart"></i> Statistics
+            <i class="bi bi-bar-chart"></i> Analytics
         </div>
         <div class="nav-item" onclick="switchSection('system-status', event)">
             <i class="bi bi-info-circle"></i> System Status
@@ -1431,7 +1488,7 @@
             </div>
         </div>
 
-        <!-- Statistics Section -->
+        <!-- Analytics Section -->
         <div id="statistics" class="section">
             <div class="analytics-toolbar">
                 <div>
@@ -1524,18 +1581,36 @@
 
         <!-- System Status Section -->
         <div id="system-status" class="section">
-            <div class="page-title">
-                <i class="bi bi-info-circle"></i> System Status
-            </div>
-            <div class="page-subtitle">Inspect backend readiness, connectivity status, and service condition in one view.</div>
-
-            <div class="card">
-                <div class="card-header">System Information</div>
-                <div class="card-body">
-                    <div id="systemStatusContent" style="padding: 20px;">
-                        Loading system information...
-                    </div>
+            <div class="system-status-toolbar">
+                <div>
+                    <div class="page-title"><i class="bi bi-activity"></i> System Status</div>
+                    <div class="page-subtitle">Live readiness for the application, database, fingerprint engine, and physical scanner.</div>
                 </div>
+                <button type="button" class="analytics-refresh" onclick="loadSystemStatus()">
+                    <i class="bi bi-arrow-clockwise"></i> Refresh status
+                </button>
+            </div>
+            <div id="systemStatusLoading" class="system-status-loading" role="status" aria-live="polite">
+                <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+                Checking all services...
+            </div>
+            <div id="systemStatusContent" hidden>
+                <div id="systemStatusSummary"></div>
+                <div id="systemStatusGrid" class="system-status-grid"></div>
+                <div class="system-status-layout">
+                    <section class="system-status-panel">
+                        <div class="system-status-panel-header"><h3><i class="bi bi-fingerprint me-2"></i>Modified Bozorth3</h3><span id="systemBozorthBadge"></span></div>
+                        <div class="system-status-panel-body" id="systemBozorthDetails"></div>
+                    </section>
+                    <section class="system-status-panel">
+                        <div class="system-status-panel-header"><h3><i class="bi bi-diagram-3 me-2"></i>Matcher readiness</h3></div>
+                        <div class="system-status-panel-body">
+                            <div id="systemMatcherGrid" class="system-matcher-grid"></div>
+                            <div id="systemScannerAdvice"></div>
+                        </div>
+                    </section>
+                </div>
+                <div class="analytics-updated mt-3"><i class="bi bi-clock-history"></i> Last checked <span id="systemStatusUpdatedAt">—</span></div>
             </div>
         </div>
         </div>
@@ -2591,7 +2666,7 @@
             }
         }
 
-        // Load Statistics
+        // Load Analytics
         function analyticsNumber(value) {
             const number = Number(value);
             return Number.isFinite(number) ? number : 0;
@@ -2805,37 +2880,107 @@
             }
         }
 
+        function renderSystemHealthCard(service, icon) {
+            const ready = Boolean(service?.ready);
+            return `
+                <article class="system-health-card">
+                    <div class="system-health-card-head">
+                        <span class="system-health-icon"><i class="bi ${escapeHtml(icon)}"></i></span>
+                        <span class="system-health-state ${ready ? 'is-ready' : 'is-offline'}">${ready ? 'Ready' : 'Offline'}</span>
+                    </div>
+                    <h4>${escapeHtml(service?.label || 'Service')}</h4>
+                    <p>${escapeHtml(service?.message || 'No status details available.')}</p>
+                </article>`;
+        }
+
+        function renderSystemStatus(data) {
+            const bozorth = data.bozorth3_status || {};
+            const services = data.services || {};
+            const scanner = bozorth.scanner_status || {};
+            const service = bozorth.service_status || {};
+            const overall = String(data.overall_status || 'degraded').toLowerCase();
+            const summaryCopy = overall === 'operational'
+                ? 'All core services and the physical scanner are ready.'
+                : overall === 'offline'
+                    ? 'A critical backend service is offline. Review the checks below.'
+                    : 'Core application services are running, but one or more hardware services need attention.';
+            const summaryIcon = overall === 'operational' ? 'bi-check-circle' : overall === 'offline' ? 'bi-x-octagon' : 'bi-exclamation-triangle';
+
+            const summary = document.getElementById('systemStatusSummary');
+            summary.className = `system-status-summary is-${overall}`;
+            summary.innerHTML = `
+                <span class="system-status-summary-icon"><i class="bi ${summaryIcon}"></i></span>
+                <div><h3>${escapeHtml(data.system_name || 'Minutiae')}</h3><p>${escapeHtml(summaryCopy)}</p></div>
+                <span class="system-status-summary-badge">${escapeHtml(overall.replace(/_/g, ' '))}</span>`;
+
+            const healthCards = [
+                [services.web_api || { ready: true, label: 'Web API', message: 'Admin API is responding.' }, 'bi-globe2'],
+                [services.database || { ready: Boolean(data.database_status?.connected), label: 'MariaDB', message: data.database_status?.message }, 'bi-database-check'],
+                [services.fingerprint_service || { ready: Boolean(service.connected), label: 'Fingerprint Service', message: service.message }, 'bi-cpu'],
+                [services.scanner || { ready: Boolean(scanner.available), label: 'ZKTeco Scanner', message: 'Scanner status unavailable.' }, 'bi-usb-symbol']
+            ];
+            document.getElementById('systemStatusGrid').innerHTML = healthCards
+                .map(([item, icon]) => renderSystemHealthCard(item, icon))
+                .join('');
+
+            const bozorthReady = Boolean(bozorth.installed);
+            document.getElementById('systemBozorthBadge').innerHTML = `<span class="system-health-state ${bozorthReady ? 'is-ready' : 'is-offline'}">${bozorthReady ? 'Ready' : 'Unavailable'}</span>`;
+            document.getElementById('systemBozorthDetails').innerHTML = `
+                <div class="system-bozorth-hero ${bozorthReady ? 'is-ready' : ''}">
+                    <span class="system-bozorth-icon"><i class="bi bi-fingerprint"></i></span>
+                    <div><strong>${bozorthReady ? 'Installed and ready' : 'Could not verify installation'}</strong><span>${escapeHtml(bozorth.message || 'Status unavailable.')}</span></div>
+                </div>
+                <dl class="system-detail-list">
+                    <div class="system-detail-row"><dt>Executable path</dt><dd><code>${escapeHtml(bozorth.path || 'Not reported')}</code></dd></div>
+                    <div class="system-detail-row"><dt>Status source</dt><dd>${escapeHtml(bozorth.source === 'fingerprint_service' ? 'Windows fingerprint service' : 'PHP runtime fallback')}</dd></div>
+                    <div class="system-detail-row"><dt>Service endpoint</dt><dd>${escapeHtml(service.url || 'Not configured')}</dd></div>
+                    <div class="system-detail-row"><dt>Scanner provider</dt><dd>${escapeHtml(scanner.provider || 'Unknown')}</dd></div>
+                    <div class="system-detail-row"><dt>Capture safety</dt><dd>${scanner.simulation_allowed ? 'Simulation is enabled for testing' : 'Simulation is disabled — real scanner input only'}</dd></div>
+                </dl>`;
+
+            const matcherLabels = {
+                mindtct: 'MINDTCT',
+                sourceafis: 'SourceAFIS',
+                openafis: 'OpenAFIS',
+                mcc: 'MCC matcher',
+                jiang: 'Jiang matcher'
+            };
+            const matcherStatus = bozorth.matcher_status || {};
+            document.getElementById('systemMatcherGrid').innerHTML = Object.entries(matcherLabels)
+                .map(([key, label]) => `<div class="system-matcher-item"><span>${escapeHtml(label)}</span><span class="system-matcher-indicator ${matcherStatus[key] ? 'is-ready' : ''}" title="${matcherStatus[key] ? 'Ready' : 'Unavailable'}"></span></div>`)
+                .join('');
+
+            document.getElementById('systemScannerAdvice').innerHTML = scanner.available ? '' : `
+                <div class="system-status-advice"><i class="bi bi-info-circle"></i><span>Connect the ZKTeco ZK9500, then verify its USB connection, FPSensor driver, and SDK access. Simulation is disabled, so the system will never substitute a fake fingerprint.</span></div>`;
+
+            const checkedAt = data.timestamp ? new Date(String(data.timestamp).replace(' ', 'T')) : new Date();
+            document.getElementById('systemStatusUpdatedAt').textContent = Number.isNaN(checkedAt.getTime())
+                ? String(data.timestamp || 'just now')
+                : checkedAt.toLocaleString('en-PH', { dateStyle: 'medium', timeStyle: 'medium' });
+        }
+
         // Load System Status
         async function loadSystemStatus() {
+            const loading = document.getElementById('systemStatusLoading');
+            const content = document.getElementById('systemStatusContent');
+            loading.style.display = 'flex';
+            content.hidden = true;
+
             try {
                 const data = await requestJson('backend/criminal_record.php?action=status');
-
-                let html = `
-                    <div style="padding: 20px;">
-                        <div style="margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #e0e0e0;">
-                            <strong>System Name:</strong> ${escapeHtml(data.system_name || 'Minutiae')}<br>
-                            <strong>Version:</strong> 1.0.0
-                        </div>
-
-                        <div style="margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #e0e0e0;">
-                            <strong>Modified Bozorth3 Status:</strong><br>
-                            Installed: <span class="badge ${data.bozorth3_status?.installed ? 'bg-success' : 'bg-danger'}">${data.bozorth3_status?.installed ? 'Yes' : 'No'}</span><br>
-                            Path: <code>${escapeHtml(data.bozorth3_status?.path || 'Not configured')}</code><br>
-                            Message: ${escapeHtml(data.bozorth3_status?.message || 'Unknown')}
-                        </div>
-
-                        <div>
-                            <strong>Database Status:</strong><br>
-                            Connected: <span class="badge ${data.database_status?.connected ? 'bg-success' : 'bg-danger'}">${data.database_status?.connected ? 'Yes' : 'No'}</span><br>
-                            Message: ${escapeHtml(data.database_status?.message || 'Unknown')}
-                        </div>
-                    </div>
-                `;
-
-                document.getElementById('systemStatusContent').innerHTML = html;
+                renderSystemStatus(data);
+                content.hidden = false;
             } catch (error) {
                 console.error('Error loading system status:', error);
-                document.getElementById('systemStatusContent').innerHTML = '<div class="alert alert-danger">Error loading system status</div>';
+                content.hidden = false;
+                document.getElementById('systemStatusSummary').className = 'system-status-summary is-offline';
+                document.getElementById('systemStatusSummary').innerHTML = `<span class="system-status-summary-icon"><i class="bi bi-wifi-off"></i></span><div><h3>Status unavailable</h3><p>${escapeHtml(error.message || 'The system status endpoint could not be reached.')}</p></div><span class="system-status-summary-badge">Error</span>`;
+                document.getElementById('systemStatusGrid').innerHTML = '';
+                document.getElementById('systemBozorthDetails').innerHTML = '<div class="system-status-advice"><i class="bi bi-exclamation-circle"></i><span>Retry the status check after confirming the web container is running.</span></div>';
+                document.getElementById('systemMatcherGrid').innerHTML = '';
+                document.getElementById('systemScannerAdvice').innerHTML = '';
+            } finally {
+                loading.style.display = 'none';
             }
         }
 

@@ -57,10 +57,46 @@ class CriminalRecord {
      * Get system status
      */
     public function getSystemStatus() {
+        $bozorth3 = $this->matcher->getStatus();
+        $database = $this->db->testConnection();
+        $fingerprintService = (bool)($bozorth3['service_status']['connected'] ?? false);
+        $scannerAvailable = (bool)($bozorth3['scanner_status']['available'] ?? false);
+        $bozorth3Ready = (bool)($bozorth3['installed'] ?? false);
+        $databaseConnected = (bool)($database['connected'] ?? false);
+        $criticalServicesReady = $databaseConnected && $fingerprintService && $bozorth3Ready;
+
         return [
             'system_name' => 'Minutiae - Fingerprint Matching System',
-            'bozorth3_status' => $this->matcher->getStatus(),
-            'database_status' => $this->db->testConnection(),
+            'version' => '1.0.0',
+            'overall_status' => $criticalServicesReady && $scannerAvailable
+                ? 'operational'
+                : ($databaseConnected ? 'degraded' : 'offline'),
+            'bozorth3_status' => $bozorth3,
+            'database_status' => $database,
+            'services' => [
+                'web_api' => [
+                    'ready' => true,
+                    'label' => 'Web API',
+                    'message' => 'Admin API is responding.'
+                ],
+                'database' => [
+                    'ready' => $databaseConnected,
+                    'label' => 'MariaDB',
+                    'message' => $database['message'] ?? 'Database status unavailable.'
+                ],
+                'fingerprint_service' => [
+                    'ready' => $fingerprintService,
+                    'label' => 'Fingerprint Service',
+                    'message' => $bozorth3['service_status']['message'] ?? 'Fingerprint service status unavailable.'
+                ],
+                'scanner' => [
+                    'ready' => $scannerAvailable,
+                    'label' => 'ZKTeco Scanner',
+                    'message' => $scannerAvailable
+                        ? 'ZKTeco ZK9500 is connected and ready.'
+                        : 'ZKTeco ZK9500 is not available. Check USB, FPSensor driver, and SDK access.'
+                ]
+            ],
             'timestamp' => date('Y-m-d H:i:s')
         ];
     }
