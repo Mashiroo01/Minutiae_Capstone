@@ -235,6 +235,9 @@ function runBozorth3Matcher(options) {
         timedOut: false
     };
     try {
+        if (probePrepared.counts.used === 0 || referencePrepared.counts.used === 0) {
+            throw new Error('No usable minutiae were extracted from one or both fingerprints. Capture the fingerprint again.');
+        }
         if (!options.execute && (!config.executablePath || (!fs.existsSync(config.executablePath)
             && !(config.cygwinBashPath && fs.existsSync(config.cygwinBashPath))))) {
             throw new Error('Bozorth3 executable is not available.');

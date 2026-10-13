@@ -141,3 +141,29 @@ test('runner preserves the native score but withholds a decision when minutiae q
         fs.rmdirSync(tempDir);
     }
 });
+
+test('runner rejects an empty template before native execution with an operator-safe error', () => {
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'bozorth3-empty-test-'));
+    let executed = false;
+    const minutiae = Array.from({ length: 20 }, (_, index) => ({ x: 20 + index, y: 30 + index, angle: 0.1 * index, quality: 100 }));
+    try {
+        const result = runBozorth3Matcher({
+            probeMinutiae: minutiae,
+            referenceMinutiae: [],
+            threshold: 20,
+            config: { executablePath: 'mock-bozorth3', tempDir },
+            execute: () => {
+                executed = true;
+                return { status: 1, stderr: 'native path should not run' };
+            }
+        });
+
+        assert.equal(executed, false);
+        assert.equal(result.status, 'error');
+        assert.equal(result.result, 'UNAVAILABLE');
+        assert.match(result.error, /no usable minutiae/i);
+        assert.doesNotMatch(result.error, /bozorth3_|\\|\//);
+    } finally {
+        fs.rmdirSync(tempDir);
+    }
+});

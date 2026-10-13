@@ -90,3 +90,29 @@ test('the comparison exposes a four-model calibrated supporting arbiter without 
     assert.match(service, /mccThreshold:\s*Number\(process\.env\.MCC_MATCH_THRESHOLD \|\| 0\.030879\)/);
     assert.match(service, /jiangThreshold:\s*Number\(process\.env\.JIANG_MATCH_THRESHOLD \|\| 0\.2020075\)/);
 });
+
+test('the live matcher verifier expects the enhanced primary matcher contract', () => {
+    const verifier = fs.readFileSync(path.join(root, 'scripts', 'verify-academic-matchers.js'), 'utf8');
+
+    assert.match(verifier, /\['Modified Bozorth3', 'SourceAFIS', 'OpenAFIS', 'MCC', 'Jiang Matcher'\]/);
+    assert.doesNotMatch(verifier, /\['Bozorth3', 'SourceAFIS', 'OpenAFIS', 'MCC', 'Jiang Matcher'\]/);
+});
+
+test('the live comparison bounds SourceAFIS work and avoids retrying a failed extraction', () => {
+    const service = fs.readFileSync(path.join(root, 'fingerprint-service.js'), 'utf8');
+    const verifier = fs.readFileSync(path.join(root, 'scripts', 'verify-academic-matchers.js'), 'utf8');
+
+    assert.match(service, /sourceAfisTimeoutMs:\s*positiveInteger\(process\.env\.SOURCEAFIS_TIMEOUT_MS, 10000\)/);
+    assert.match(service, /timeout:\s*options\.timeoutMs \|\| AFIS_CONFIG\.academicMatchers\.sourceAfisTimeoutMs/);
+    assert.match(service, /sharedMinutiaeDiagnostics\.status !== 'ok'/);
+    assert.match(service, /SourceAFIS skipped because shared feature extraction failed/);
+    assert.match(verifier, /allowQualityRejection/);
+});
+
+test('the Modified Bozorth3 quality verifier can reuse its calibrated dataset path', () => {
+    const verifier = fs.readFileSync(path.join(root, 'scripts', 'verify-modified-bozorth3-quality.js'), 'utf8');
+
+    assert.match(verifier, /function resolveDatasetRoot\(\)/);
+    assert.match(verifier, /modified-bozorth3-calibration-20261009T031030Z/);
+    assert.match(verifier, /FVC_DATASET_ROOT/);
+});

@@ -9,8 +9,34 @@ const { runBozorth3Matcher } = require('../matchers/bozorth3/bozorth3-runner');
 const { runMindtctExtractor } = require('../matchers/mindtct/mindtct-runner');
 
 const ROOT = path.join(__dirname, '..');
-const DATASET_ROOT = process.env.FVC_DATASET_ROOT
-    || path.join(ROOT, 'temp', 'matcher-build', 'openafis', 'data', 'valid', 'fvc2004', 'DB4_B');
+
+function resolveDatasetRoot() {
+    const calibratedSummaryPath = path.join(
+        ROOT,
+        'reports',
+        'modified-bozorth3-calibration-20261009T031030Z',
+        'summary.json'
+    );
+    let calibratedDataset = null;
+    try {
+        calibratedDataset = JSON.parse(fs.readFileSync(calibratedSummaryPath, 'utf8')).dataset;
+    } catch (_) {
+        // An explicit environment variable or the local matcher-build dataset can still satisfy the check.
+    }
+    const candidates = [
+        process.env.FVC_DATASET_ROOT,
+        path.join(ROOT, 'temp', 'matcher-build', 'openafis', 'data', 'valid', 'fvc2004', 'DB4_B'),
+        calibratedDataset
+    ].filter(Boolean);
+    const selected = candidates.find((candidate) => ['101_1.tif', '101_2.tif', '102_2.tif']
+        .every((fileName) => fs.existsSync(path.join(candidate, fileName))));
+    if (!selected) {
+        throw new Error('FVC2004 DB4_B verification data was not found. Set FVC_DATASET_ROOT to the calibrated DB4_B directory.');
+    }
+    return selected;
+}
+
+const DATASET_ROOT = resolveDatasetRoot();
 const PORT = Number(process.env.MODIFIED_BOZORTH3_VERIFY_PORT || 19001);
 const BASE_URL = `http://127.0.0.1:${PORT}`;
 const EXTRACTOR = process.env.MODIFIED_BOZORTH3_VERIFY_EXTRACTOR || 'service';

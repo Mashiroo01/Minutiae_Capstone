@@ -22,12 +22,18 @@ async function compare(probe, reference) {
     return payload;
 }
 
-function assertRealResults(result, label) {
-    const expected = ['Bozorth3', 'SourceAFIS', 'OpenAFIS', 'MCC', 'Jiang Matcher'];
+function assertRealResults(result, label, { allowQualityRejection = false } = {}) {
+    const expected = ['Modified Bozorth3', 'SourceAFIS', 'OpenAFIS', 'MCC', 'Jiang Matcher'];
     for (const algorithm of expected) {
         const matcher = result.matchers.find((item) => item.algorithm === algorithm);
         if (!matcher) throw new Error(`${label}: ${algorithm} result is missing.`);
-        if (matcher.status !== 'ok') throw new Error(`${label}: ${algorithm} is unavailable: ${matcher.error}`);
+        if (matcher.status !== 'ok') {
+            if (!allowQualityRejection) throw new Error(`${label}: ${algorithm} is unavailable: ${matcher.error}`);
+            if (!matcher.error || matcher.result !== 'UNAVAILABLE') {
+                throw new Error(`${label}: ${algorithm} did not provide an explicit quality-rejection reason.`);
+            }
+            continue;
+        }
         if (!Number.isFinite(matcher.score)) throw new Error(`${label}: ${algorithm} score is not finite.`);
         if (!Number.isFinite(matcher.processingTimeMs) || matcher.processingTimeMs < 0) {
             throw new Error(`${label}: ${algorithm} processing time is invalid.`);
@@ -44,10 +50,10 @@ function assertRealResults(result, label) {
             }
         }
     }
-    if (result.supportingArbiter?.status !== 'ok') {
+    if (!allowQualityRejection && result.supportingArbiter?.status !== 'ok') {
         throw new Error(`${label}: the four-model supporting arbiter is unavailable.`);
     }
-    if (!Number.isFinite(result.supportingArbiter.normalizedMatchPercentage)) {
+    if (!allowQualityRejection && !Number.isFinite(result.supportingArbiter.normalizedMatchPercentage)) {
         throw new Error(`${label}: the four-model supporting arbiter percentage is invalid.`);
     }
 }
@@ -103,14 +109,14 @@ async function main() {
         { key: 'rotationSurrogate', label: 'synthetic 8-degree rotation surrogate', reference: rotatedReference },
         { key: 'pressureSurrogate', label: 'synthetic contrast/brightness pressure surrogate', reference: pressureSurrogate },
         { key: 'placementSurrogate', label: 'synthetic translated-placement surrogate', reference: placementReference },
-        { key: 'lowQualitySurrogate', label: 'synthetic downsample/JPEG low-quality surrogate', reference: lowQualityReference },
-        { key: 'blurrySurrogate', label: 'synthetic blurred fingerprint surrogate', reference: blurryReference },
-        { key: 'partialSurrogate', label: 'synthetic central partial-fingerprint surrogate', reference: partialReference }
+        { key: 'lowQualitySurrogate', label: 'synthetic downsample/JPEG low-quality surrogate', reference: lowQualityReference, allowQualityRejection: true },
+        { key: 'blurrySurrogate', label: 'synthetic blurred fingerprint surrogate', reference: blurryReference, allowQualityRejection: true },
+        { key: 'partialSurrogate', label: 'synthetic central partial-fingerprint surrogate', reference: partialReference, allowQualityRejection: true }
     ];
     const results = {};
     for (const scenario of scenarios) {
         results[scenario.key] = await compare(original, scenario.reference);
-        assertRealResults(results[scenario.key], scenario.label);
+        assertRealResults(results[scenario.key], scenario.label, scenario);
     }
 
     const identical = results.sameFilePair;

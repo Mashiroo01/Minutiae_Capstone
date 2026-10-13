@@ -202,6 +202,7 @@ const AFIS_CONFIG = {
         mccThreshold: Number(process.env.MCC_MATCH_THRESHOLD || 0.030879),
         jiangThreshold: Number(process.env.JIANG_MATCH_THRESHOLD || 0.2020075),
         sourceAfisDpi: Number(process.env.SOURCEAFIS_DPI || 500),
+        sourceAfisTimeoutMs: positiveInteger(process.env.SOURCEAFIS_TIMEOUT_MS, 10000),
         javaPath: process.env.JAVA_PATH || 'java',
         sourceAfisClassPath: process.env.SOURCEAFIS_CLASSPATH || [
             path.join(__dirname, 'matchers', 'sourceafis', 'target', 'classes'),
@@ -3060,7 +3061,7 @@ function runAcademicSourceAfis(probeImageBuffer, referenceImageBuffer, threshold
             String(probeDpi), String(referenceDpi)
         ], {
             encoding: 'utf8',
-            timeout: 30000,
+            timeout: options.timeoutMs || AFIS_CONFIG.academicMatchers.sourceAfisTimeoutMs,
             windowsHide: true
         });
         if (run.error) throw run.error;
@@ -4041,7 +4042,8 @@ app.post('/afis/compare-all', async (req, res) => {
                 referenceDpi: inputDiagnostics.candidate.dpi,
                 javaPath: AFIS_CONFIG.academicMatchers.javaPath,
                 classPath: AFIS_CONFIG.academicMatchers.sourceAfisClassPath,
-                tempDir: SCANNER_RUNTIME_CONFIG.tempDir
+                tempDir: SCANNER_RUNTIME_CONFIG.tempDir,
+                timeoutMs: AFIS_CONFIG.academicMatchers.sourceAfisTimeoutMs
             });
             sharedMinutiaeDiagnostics = {
                 status: 'ok',
@@ -4089,11 +4091,19 @@ app.post('/afis/compare-all', async (req, res) => {
             },
             {
                 key: 'sourceafis',
-                run: () => runAcademicSourceAfis(sourceAfisProbe, sourceAfisReference, appliedThresholds.sourceafis, {
-                    probeDpi: inputDiagnostics.probe.dpi,
-                    referenceDpi: inputDiagnostics.candidate.dpi,
-                    log: matcherLog('SOURCEAFIS')
-                })
+                run: () => sharedMinutiaeDiagnostics.status !== 'ok'
+                    ? academicMatcherError(
+                        'SourceAFIS',
+                        appliedThresholds.sourceafis,
+                        process.hrtime.bigint(),
+                        new Error(`SourceAFIS skipped because shared feature extraction failed: ${sharedMinutiaeDiagnostics.error}`)
+                    )
+                    : runAcademicSourceAfis(sourceAfisProbe, sourceAfisReference, appliedThresholds.sourceafis, {
+                        probeDpi: inputDiagnostics.probe.dpi,
+                        referenceDpi: inputDiagnostics.candidate.dpi,
+                        timeoutMs: AFIS_CONFIG.academicMatchers.sourceAfisTimeoutMs,
+                        log: matcherLog('SOURCEAFIS')
+                    })
             },
             {
                 key: 'openafis',

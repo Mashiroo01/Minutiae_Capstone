@@ -10,13 +10,15 @@
     "modified-bozorth3:calibrate": "node scripts/calibrate-bozorth3.js --modified",
     "modified-bozorth3:calibrate-and-activate": "node scripts/calibrate-bozorth3.js --modified --activate",
     "modified-bozorth3:verify-quality": "node scripts/verify-modified-bozorth3-quality.js",
-    "supporting-matchers:calibrate": "node scripts/calibrate-supporting-matchers.js"
+    "supporting-matchers:calibrate": "node scripts/calibrate-supporting-matchers.js",
+    "beta:smoke": "powershell -NoProfile -ExecutionPolicy Bypass -File .\\scripts\\beta-smoke.ps1",
+    "beta:check": "powershell -NoProfile -ExecutionPolicy Bypass -File .\\scripts\\run-beta-check.ps1"
   },
   "dependencies": {
     "cors": "^2.8.6",
-    "express": "^5.2.1",
+    "express": "^5.3.0",
     "node-hid": "^3.3.0",
-    "sharp": "^0.34.5",
+    "sharp": "^0.35.5",
     "usb": "^2.17.0"
   }
 }
