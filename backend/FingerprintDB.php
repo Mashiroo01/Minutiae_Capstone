@@ -1807,6 +1807,57 @@ class FingerprintDB {
         }
     }
 
+    /**
+     * Return de-identified aggregate evidence for biometric model analytics.
+     * No names, templates, images, or per-person identifiers cross this seam.
+     */
+    public function getBiometricAnalyticsEvidence() {
+        $empty = [
+            'applicant_records' => 0,
+            'applicants_with_fingerprints' => 0,
+            'active_criminal_records' => 0,
+            'active_criminal_fingerprints' => 0,
+            'dataset_participants' => 0,
+            'dataset_samples' => 0,
+            'stored_comparisons' => 0,
+            'reviewed_comparisons' => 0,
+            'reviewed_confirmed_matches' => 0,
+            'reviewed_cleared_matches' => 0
+        ];
+
+        if (!$this->db) {
+            return $empty;
+        }
+
+        try {
+            $inventory = $this->db->query("
+                SELECT
+                    (SELECT COUNT(*) FROM applicants) AS applicant_records,
+                    (SELECT COUNT(DISTINCT applicant_id) FROM applicant_fingerprints) AS applicants_with_fingerprints,
+                    (SELECT COUNT(*) FROM criminal_records WHERE is_active = 1) AS active_criminal_records,
+                    (SELECT COUNT(*) FROM criminal_fingerprints WHERE is_active = 1) AS active_criminal_fingerprints,
+                    (SELECT COUNT(*) FROM dataset_participants) AS dataset_participants,
+                    (SELECT COUNT(*) FROM dataset_fingerprint_samples) AS dataset_samples,
+                    (SELECT COUNT(*) FROM fingerprint_matches) AS stored_comparisons
+            ")->fetch(PDO::FETCH_ASSOC) ?: [];
+
+            $reviews = $this->db->query("
+                SELECT
+                    COUNT(*) AS reviewed_comparisons,
+                    SUM(CASE WHEN review_outcome = 'reject' THEN 1 ELSE 0 END) AS reviewed_confirmed_matches,
+                    SUM(CASE WHEN review_outcome = 'approve' THEN 1 ELSE 0 END) AS reviewed_cleared_matches
+                FROM fingerprint_matches
+                WHERE review_status = 'REVIEWED'
+                  AND review_outcome IN ('approve', 'reject')
+            ")->fetch(PDO::FETCH_ASSOC) ?: [];
+
+            return array_map('intval', array_merge($empty, $inventory, $reviews));
+        } catch (PDOException $e) {
+            error_log('Biometric analytics evidence query error: ' . $e->getMessage());
+            return $empty;
+        }
+    }
+
     public function getApplicationHistory($filters = [], $viewerRole = 'admin') {
         if (!$this->db) {
             return [];

@@ -6,6 +6,7 @@
 
 require_once 'Bozorth3Matcher.php';
 require_once 'FingerprintDB.php';
+require_once __DIR__ . '/BiometricAnalytics.php';
 require_once 'auth.php';
 
 class ApplicantInfo {
@@ -745,7 +746,17 @@ class ApplicantInfo {
      * Get applicant counters for dashboard.
      */
     public function getApplicantStats() {
-        return $this->db->getApplicantStatusStats();
+        $stats = $this->db->getApplicantStatusStats();
+        $profile = BiometricAnalytics::loadProfile(
+            dirname(__DIR__) . '/config/matcher-calibration.json',
+            'Modified Bozorth3'
+        );
+        $analytics = new BiometricAnalytics(dirname(__DIR__) . '/biometric_analytics.py');
+        $stats['biometric_evaluation'] = $analytics->analyze([
+            'profile' => $profile,
+            'evidence' => $this->db->getBiometricAnalyticsEvidence()
+        ]);
+        return $stats;
     }
     
     /**

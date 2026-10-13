@@ -2,13 +2,14 @@
 FROM php:8.3-apache-bookworm
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends curl \
+    && apt-get install -y --no-install-recommends curl python3 \
     && docker-php-ext-install pdo_mysql \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /var/www/html
 
 COPY --chown=www-data:www-data *.html *.js *.php ./
+COPY --chown=www-data:www-data biometric_analytics.py ./biometric_analytics.py
 COPY --chown=www-data:www-data backend/ ./backend/
 COPY --chown=www-data:www-data config/ ./config/
 

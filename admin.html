@@ -945,10 +945,35 @@
         .analytics-insight strong { display: block; color: #263b57; font-size: 12px; }
         .analytics-insight p { margin: 3px 0 0; color: #6d7c90; font-size: 11px; line-height: 1.45; }
         .analytics-empty { padding: 34px 15px; color: #7b899b; text-align: center; }
+        .biometric-evaluation-grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(300px, .95fr); gap: 18px; }
+        .biometric-evaluation-card { padding: 17px; border: 1px solid #e2e9f2; border-radius: 15px; background: #fafcfe; }
+        .biometric-evaluation-card h4 { margin: 0 0 4px; color: #223c59; font-size: 14px; font-weight: 850; }
+        .biometric-evaluation-card p { margin: 0 0 14px; color: #718095; font-size: 11px; line-height: 1.45; }
+        .biometric-matrix { width: 100%; border-collapse: separate; border-spacing: 5px; table-layout: fixed; }
+        .biometric-matrix th { padding: 7px 5px; color: #66778d; font-size: 10px; font-weight: 800; text-align: center; text-transform: uppercase; }
+        .biometric-matrix td { padding: 13px 7px; border-radius: 10px; color: #18344f; background: #eaf1fa; text-align: center; font-size: 20px; font-weight: 850; }
+        .biometric-matrix td.is-correct { color: #087443; background: #e5f8ee; }
+        .biometric-matrix td.is-error { color: #ad243a; background: #fff0f2; }
+        .biometric-matrix td small { display: block; margin-top: 3px; color: inherit; font-size: 9px; font-weight: 750; text-transform: uppercase; opacity: .78; }
+        .biometric-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
+        .biometric-metric { padding: 9px; border-radius: 10px; color: #607188; background: #fff; font-size: 10px; }
+        .biometric-metric strong { display: block; margin-top: 3px; color: #203d59; font-size: 14px; }
+        .biometric-posterior-list { display: grid; gap: 10px; }
+        .biometric-posterior { padding: 13px; border: 1px solid #dde7f3; border-radius: 12px; background: #fff; }
+        .biometric-posterior span { display: block; color: #65768c; font-size: 11px; }
+        .biometric-posterior strong { display: block; margin-top: 5px; color: #0d5aaf; font-size: 25px; line-height: 1; }
+        .biometric-posterior small { display: block; margin-top: 7px; color: #77869a; font-size: 10px; line-height: 1.4; }
+        .biometric-evidence { grid-column: 1 / -1; }
+        .biometric-evidence-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+        .biometric-evidence-item { padding: 10px; border-radius: 10px; color: #6c7b90; background: #fff; font-size: 10px; }
+        .biometric-evidence-item strong { display: block; margin-bottom: 3px; color: #203c58; font-size: 16px; }
+        .biometric-method-note { margin-top: 12px; padding: 10px 12px; border-radius: 10px; color: #705410; background: #fff7df; font-size: 10px; line-height: 1.5; }
 
         @media (max-width: 1100px) {
             .analytics-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
             .analytics-dashboard-grid { grid-template-columns: 1fr; }
+            .biometric-evaluation-grid { grid-template-columns: 1fr; }
+            .biometric-evidence { grid-column: auto; }
         }
 
         @media (max-width: 700px) {
@@ -961,6 +986,7 @@
             .analytics-outcome-list { width: 100%; }
             .analytics-bars { gap: 3px; }
             .analytics-bar-value { display: none; }
+            .biometric-evidence-grid { grid-template-columns: 1fr 1fr; }
         }
 
         @media (max-width: 480px) {
@@ -1737,6 +1763,20 @@
                         </section>
                     </div>
                 </div>
+
+                <section class="analytics-panel mt-3">
+                    <div class="analytics-panel-header">
+                        <div><h3 class="analytics-panel-title">Error matrix</h3><p class="analytics-panel-subtitle">Held-out confusion matrix and calibrated posterior probabilities for Modified Bozorth3</p></div>
+                        <span class="analytics-panel-badge">Python analysis</span>
+                    </div>
+                    <div class="analytics-panel-body">
+                        <div class="biometric-evaluation-grid">
+                            <div id="biometricErrorMatrix" class="biometric-evaluation-card" aria-live="polite"></div>
+                            <div id="biometricPosteriorProbabilities" class="biometric-evaluation-card" aria-live="polite"></div>
+                            <div id="biometricEvidenceCoverage" class="biometric-evaluation-card biometric-evidence" aria-live="polite"></div>
+                        </div>
+                    </div>
+                </section>
 
                 <section class="analytics-panel mt-3">
                     <div class="analytics-panel-header"><div><h3 class="analytics-panel-title">Operational insights</h3><p class="analytics-panel-subtitle">Automated observations from the current workload</p></div><span class="analytics-panel-badge">Live</span></div>
@@ -3095,6 +3135,70 @@
             `).join('');
         }
 
+        function renderBiometricEvaluation(evaluation) {
+            const matrixContainer = document.getElementById('biometricErrorMatrix');
+            const posteriorContainer = document.getElementById('biometricPosteriorProbabilities');
+            const evidenceContainer = document.getElementById('biometricEvidenceCoverage');
+
+            if (!evaluation || evaluation.status !== 'ready' || !evaluation.confusion_matrix) {
+                const message = escapeHtml(evaluation?.message || 'Biometric validation evidence is not available yet.');
+                matrixContainer.innerHTML = `<div class="analytics-empty"><i class="bi bi-grid-3x3-gap"></i><br>${message}</div>`;
+                posteriorContainer.innerHTML = '<div class="analytics-empty">Posterior probabilities require a held-out labeled matrix.</div>';
+                evidenceContainer.innerHTML = '<div class="analytics-empty">Applicant, criminal, and research dataset coverage is unavailable.</div>';
+                return;
+            }
+
+            const matrix = evaluation.confusion_matrix;
+            const metrics = evaluation.metrics || {};
+            const posterior = evaluation.posterior || {};
+            const operational = evaluation.operational_posterior;
+            const evidence = evaluation.evidence || {};
+            const warnings = Array.isArray(evaluation.warnings) ? evaluation.warnings : [];
+            const number = (value) => analyticsNumber(value).toLocaleString();
+
+            matrixContainer.innerHTML = `
+                <h4>Confusion matrix</h4>
+                <p>${escapeHtml(evaluation.matcher || 'Modified Bozorth3')} at threshold ${escapeHtml(String(evaluation.threshold ?? '—'))}; ${number(metrics.sample_count)} held-out labeled comparisons.</p>
+                <table class="biometric-matrix" aria-label="Held-out biometric confusion matrix">
+                    <thead><tr><th>Actual</th><th>Predicted match</th><th>Predicted no match</th></tr></thead>
+                    <tbody>
+                        <tr><th>Genuine</th><td class="is-correct">${number(matrix.true_positive)}<small>True positive</small></td><td class="is-error">${number(matrix.false_negative)}<small>False reject</small></td></tr>
+                        <tr><th>Impostor</th><td class="is-error">${number(matrix.false_positive)}<small>False accept</small></td><td class="is-correct">${number(matrix.true_negative)}<small>True negative</small></td></tr>
+                    </tbody>
+                </table>
+                <div class="biometric-metrics">
+                    <div class="biometric-metric">Accuracy<strong>${analyticsPercent(metrics.accuracy)}</strong></div>
+                    <div class="biometric-metric">False accept<strong>${analyticsPercent(metrics.false_accept_rate)}</strong></div>
+                    <div class="biometric-metric">False reject<strong>${analyticsPercent(metrics.false_reject_rate)}</strong></div>
+                </div>`;
+
+            posteriorContainer.innerHTML = `
+                <h4>Calibrated posterior probabilities</h4>
+                <p>Laplace-smoothed estimates from independent labels; these are not raw matcher percentages.</p>
+                <div class="biometric-posterior-list">
+                    <div class="biometric-posterior"><span>P(genuine | matcher says MATCH)</span><strong>${analyticsPercent(posterior.match_given_positive)}</strong><small>Held-out ${escapeHtml(evaluation.dataset || 'validation dataset')} estimate.</small></div>
+                    <div class="biometric-posterior"><span>P(non-match | matcher says NO MATCH)</span><strong>${analyticsPercent(posterior.nonmatch_given_negative)}</strong><small>Held-out negative predictive probability.</small></div>
+                    <div class="biometric-posterior"><span>Local reviewed-alert posterior</span><strong>${operational ? analyticsPercent(operational.match_given_reviewed_alert) : 'Not enough data'}</strong><small>${operational ? `${number(operational.reviewed_alerts)} independently reviewed alert${analyticsNumber(operational.reviewed_alerts) === 1 ? '' : 's'}.` : 'No independent local reviews are available.'}</small></div>
+                </div>`;
+
+            const coverage = [
+                ['Applicants', evidence.applicant_records],
+                ['Applicant fingerprints', evidence.applicants_with_fingerprints],
+                ['Active criminal records', evidence.active_criminal_records],
+                ['Active criminal fingerprints', evidence.active_criminal_fingerprints],
+                ['Dataset participants', evidence.dataset_participants],
+                ['Research samples', evidence.dataset_samples],
+                ['Stored comparisons', evidence.stored_comparisons],
+                ['Independent reviews', evidence.reviewed_comparisons]
+            ];
+            const note = [evaluation.method, posterior.prior_note, ...warnings].filter(Boolean).join(' ');
+            evidenceContainer.innerHTML = `
+                <h4>Evidence coverage</h4>
+                <p>De-identified aggregates from applicant fingerprints, the linked research dataset, and the active criminal database.</p>
+                <div class="biometric-evidence-grid">${coverage.map(([label, value]) => `<div class="biometric-evidence-item"><strong>${number(value)}</strong>${escapeHtml(label)}</div>`).join('')}</div>
+                <div class="biometric-method-note"><i class="bi bi-info-circle me-1"></i>${escapeHtml(note)}</div>`;
+        }
+
         function renderStatisticsAnalytics(stats) {
             const total = analyticsNumber(stats.total);
             const approved = analyticsNumber(stats.approved);
@@ -3119,6 +3223,7 @@
             renderAnalyticsTrend(stats.daily_trend);
             renderClearanceOutcomes(stats.status_distribution, total);
             renderFingerprintAnalytics(stats.fingerprint_distribution);
+            renderBiometricEvaluation(stats.biometric_evaluation);
             renderAnalyticsInsights(stats);
 
             const generatedAt = stats.generated_at ? new Date(stats.generated_at) : new Date();
