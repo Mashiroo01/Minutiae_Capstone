@@ -111,3 +111,21 @@ test('admin Analytics renders biometric error and posterior evidence with clear 
     assert.match(dockerfile, /biometric_analytics\.py/);
 });
 
+test('admin Analytics explains matrix rates, uncertainty, and low local evidence accessibly', () => {
+    const admin = fs.readFileSync(path.join(root, 'admin.html'), 'utf8');
+
+    assert.match(admin, /function biometricCellPercent\(value, total\)/);
+    assert.match(admin, /Genuine fingerprints/);
+    assert.match(admin, /Different fingerprints/);
+    assert.match(admin, /Sensitivity/);
+    assert.match(admin, /Specificity/);
+    assert.match(admin, /function analyticsConfidenceRange\(interval\)/);
+    assert.match(admin, /95% confidence range/);
+    assert.match(admin, /biometric-evidence-warning/);
+    assert.match(admin, /Low evidence/);
+    assert.match(admin, /\.analytics-panel-title \{[^}]*font-size: 19px/s);
+    assert.match(admin, /\.analytics-kpi-label \{[^}]*font-size: 13px/s);
+    assert.match(admin, /\.biometric-evaluation-card h4 \{[^}]*font-size: 18px/s);
+    assert.match(admin, /\.biometric-posterior span \{[^}]*font-size: 14px/s);
+});
+
