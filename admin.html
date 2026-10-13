@@ -68,9 +68,17 @@
         }
 
         .top-status {
-            font-size: 12px;
+            font-size: 15px;
             color: rgba(255, 255, 255, 0.88);
             letter-spacing: 0.3px;
+        }
+
+        #fingerprintNotificationButton {
+            font-size: 15px;
+        }
+
+        .navbar-admin .role-badge {
+            font-size: 14px;
         }
 
         .logout-button {
@@ -80,6 +88,7 @@
             background: rgba(255, 255, 255, 0.08);
             padding: 8px 14px;
             font-weight: 700;
+            font-size: 15px !important;
             display: inline-flex;
             align-items: center;
             gap: 8px;
@@ -119,13 +128,13 @@
             color: rgba(255, 255, 255, 0.7);
             text-transform: uppercase;
             letter-spacing: 1.1px;
-            font-size: 10px;
+            font-size: 13px;
             margin-bottom: 8px;
         }
 
         .sidebar-brand strong {
             display: block;
-            font-size: 18px;
+            font-size: 20px;
             line-height: 1.35;
         }
 
@@ -293,6 +302,7 @@
             border: 1px solid transparent;
             border-radius: 16px;
             font-weight: 600;
+            font-size: 17px;
         }
 
         .nav-item:hover {
@@ -309,7 +319,7 @@
         }
 
         .nav-item i {
-            font-size: 18px;
+            font-size: 20px;
             color: #ffe08a;
         }
 
@@ -410,8 +420,89 @@
             letter-spacing: 0.7px;
         }
 
+        .dashboard-toolbar { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; margin-bottom: 20px; }
+        .dashboard-toolbar .page-title { margin-bottom: 6px; }
+        .dashboard-toolbar .page-subtitle { margin: 0; }
+        .dashboard-refresh { display: inline-flex; align-items: center; gap: 8px; padding: 11px 16px; border: 1px solid rgba(0, 56, 168, .16); border-radius: 12px; color: var(--pnp-blue); background: #fff; font-size: 14px; font-weight: 800; box-shadow: 0 5px 16px rgba(15, 45, 95, .06); }
+        .dashboard-refresh:hover, .dashboard-refresh:focus { color: #fff; background: var(--pnp-blue); border-color: var(--pnp-blue); }
+        .dashboard-loading { display: none; align-items: center; justify-content: center; gap: 10px; min-height: 110px; margin-bottom: 18px; border: 1px solid var(--panel-border); border-radius: 18px; color: #68788d; background: #fff; box-shadow: var(--panel-shadow); }
+        .dashboard-kpi-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-bottom: 18px; }
+        .dashboard-kpi { position: relative; overflow: hidden; min-height: 138px; padding: 18px; border: 1px solid rgba(18, 54, 104, .1); border-radius: 19px; background: #fff; box-shadow: 0 10px 26px rgba(15, 45, 95, .07); }
+        .dashboard-kpi::after { content: ''; position: absolute; right: -28px; bottom: -30px; width: 92px; height: 92px; border-radius: 50%; background: var(--dashboard-kpi-glow, #e8f1ff); opacity: .8; }
+        .dashboard-kpi-head { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+        .dashboard-kpi-icon { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 12px; color: var(--dashboard-kpi-color, #165fc1); background: var(--dashboard-kpi-glow, #e8f1ff); font-size: 18px; }
+        .dashboard-kpi-label { color: #68788e; font-size: 12px; font-weight: 850; letter-spacing: .06em; text-transform: uppercase; }
+        .dashboard-kpi-value { position: relative; z-index: 1; margin-top: 12px; color: #153353; font-size: 30px; font-weight: 850; line-height: 1; }
+        .dashboard-kpi-detail { position: relative; z-index: 1; margin-top: 8px; color: #68788e; font-size: 13px; line-height: 1.4; }
+        .dashboard-kpi.is-amber { --dashboard-kpi-color: #b76d00; --dashboard-kpi-glow: #fff0cc; }
+        .dashboard-kpi.is-green { --dashboard-kpi-color: #07814f; --dashboard-kpi-glow: #dcf8eb; }
+        .dashboard-kpi.is-red { --dashboard-kpi-color: #bb2940; --dashboard-kpi-glow: #ffe5e9; }
+        .dashboard-main-grid { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(290px, .65fr); gap: 18px; margin-bottom: 18px; align-items: start; }
+        .dashboard-panel { overflow: hidden; border: 1px solid rgba(18, 54, 104, .1); border-radius: 19px; background: #fff; box-shadow: 0 10px 27px rgba(15, 45, 95, .07); }
+        .dashboard-panel-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 18px 19px 14px; border-bottom: 1px solid #edf1f6; }
+        .dashboard-panel-title { margin: 0; color: #173553; font-size: 17px; font-weight: 850; }
+        .dashboard-panel-subtitle { margin: 4px 0 0; color: #68788e; font-size: 13px; line-height: 1.4; }
+        .dashboard-panel-link { border: 0; color: #155fc2; background: transparent; font-size: 13px; font-weight: 800; }
+        .dashboard-panel-link:hover, .dashboard-panel-link:focus { color: #003b8f; text-decoration: underline; }
+        .dashboard-panel-body { padding: 17px 19px 19px; }
+        .dashboard-attention-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 11px; }
+        .dashboard-attention-item { padding: 14px; border: 1px solid #e5ebf3; border-radius: 13px; background: #f9fbfd; }
+        .dashboard-attention-item strong { display: block; color: #1d3a59; font-size: 22px; line-height: 1; }
+        .dashboard-attention-item span { display: block; margin-top: 7px; color: #5f7289; font-size: 12px; font-weight: 800; text-transform: uppercase; }
+        .dashboard-decision-progress { margin-top: 17px; padding-top: 15px; border-top: 1px solid #edf1f6; }
+        .dashboard-progress-copy { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 9px; color: #5b6e86; font-size: 13px; }
+        .dashboard-progress-copy strong { color: #24415f; }
+        .dashboard-progress-track { height: 8px; overflow: hidden; border-radius: 999px; background: #e7edf5; }
+        .dashboard-progress-track span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #165fc1, #2f84e8); }
+        .dashboard-quick-actions { display: grid; gap: 9px; }
+        .dashboard-quick-action { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 11px; align-items: center; width: 100%; padding: 12px; border: 1px solid #e2eaf4; border-radius: 13px; color: #25415f; background: #fafcfe; text-align: left; transition: transform .2s ease, border-color .2s ease, background .2s ease; }
+        .dashboard-quick-action:hover, .dashboard-quick-action:focus { transform: translateY(-1px); border-color: #b7cef0; background: #f3f7fd; }
+        .dashboard-quick-action-icon { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px; color: #165fc1; background: #e7f0ff; }
+        .dashboard-quick-action strong { display: block; font-size: 14px; }
+        .dashboard-quick-action small { display: block; margin-top: 3px; color: #697a90; font-size: 12px; line-height: 1.35; }
+        .dashboard-lower-grid { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(290px, .65fr); gap: 18px; align-items: start; }
+        .dashboard-recent-list { display: grid; gap: 0; }
+        .dashboard-recent-item { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; gap: 12px; align-items: center; padding: 12px 0; border-bottom: 1px solid #edf1f6; }
+        .dashboard-recent-item:last-child { border-bottom: 0; }
+        .dashboard-recent-avatar { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; color: #155fc2; background: #e8f1ff; font-size: 13px; font-weight: 850; }
+        .dashboard-recent-name { color: #213e5c; font-size: 14px; font-weight: 800; }
+        .dashboard-recent-meta { margin-top: 4px; color: #697a90; font-size: 12px; }
+        .dashboard-recent-status { white-space: nowrap; }
+        .dashboard-recent-view { border: 1px solid #ccdaec; border-radius: 9px; padding: 7px 10px; color: #155fc2; background: #fff; font-size: 12px; font-weight: 800; }
+        .dashboard-empty { padding: 28px 12px; color: #6b7c92; text-align: center; font-size: 13px; }
+        .dashboard-readiness { display: grid; gap: 10px; }
+        .dashboard-readiness-summary { display: flex; align-items: center; gap: 10px; padding: 12px; border-radius: 13px; color: #7a5010; background: #fff7e7; }
+        .dashboard-readiness-summary.is-operational { color: #087443; background: #eaf9f1; }
+        .dashboard-readiness-summary.is-offline { color: #a91f35; background: #fff0f2; }
+        .dashboard-readiness-summary i { font-size: 18px; }
+        .dashboard-readiness-summary strong { display: block; font-size: 14px; }
+        .dashboard-readiness-summary small { display: block; margin-top: 3px; color: inherit; opacity: .82; font-size: 12px; line-height: 1.4; }
+        .dashboard-readiness-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 2px; border-bottom: 1px solid #edf1f6; color: #52667e; font-size: 13px; }
+        .dashboard-readiness-row:last-child { border-bottom: 0; }
+        .dashboard-readiness-state { display: inline-flex; align-items: center; gap: 6px; font-weight: 800; }
+        .dashboard-readiness-state::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: #d1485b; }
+        .dashboard-readiness-state.is-ready { color: #087443; }
+        .dashboard-readiness-state.is-ready::before { background: #159461; }
+        .dashboard-snapshot { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-top: 14px; }
+        .dashboard-snapshot-item { padding: 12px; border-radius: 11px; color: #5e7188; background: #f6f9fc; font-size: 12px; }
+        .dashboard-snapshot-item strong { display: block; margin-top: 4px; color: #203e5c; font-size: 18px; }
+        .dashboard-updated { display: flex; align-items: center; gap: 7px; margin-top: 14px; color: #687a90; font-size: 12px; }
+
+        @media (max-width: 1050px) {
+            .dashboard-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .dashboard-main-grid, .dashboard-lower-grid { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 620px) {
+            .dashboard-toolbar { display: block; }
+            .dashboard-refresh { margin-top: 13px; }
+            .dashboard-kpi-grid, .dashboard-attention-grid { grid-template-columns: 1fr; }
+            .dashboard-recent-item { grid-template-columns: auto minmax(0, 1fr) auto; }
+            .dashboard-recent-status { grid-column: 2 / -1; grid-row: 2; }
+        }
+
         .table {
-            font-size: 13px;
+            font-size: 14px;
             margin-bottom: 0;
         }
 
@@ -428,7 +519,7 @@
 
         .table thead th {
             color: #35507f;
-            font-size: 11px;
+            font-size: 12px;
             font-weight: 800;
             letter-spacing: 0.9px;
             text-transform: uppercase;
@@ -462,7 +553,7 @@
             align-items: center;
             padding: 7px 12px;
             border-radius: 999px;
-            font-size: 11px;
+            font-size: 12px;
             font-weight: 800;
             letter-spacing: 0.4px;
             text-transform: uppercase;
@@ -500,7 +591,7 @@
 
         .btn-sm {
             padding: 7px 12px;
-            font-size: 12px;
+            font-size: 13px;
             border-radius: 12px;
             font-weight: 700;
         }
@@ -677,7 +768,7 @@
             color: white;
             padding: 7px 11px;
             border-radius: 999px;
-            font-size: 11px;
+            font-size: 12px;
             font-weight: 800;
             letter-spacing: 0.4px;
             text-transform: uppercase;
@@ -1078,11 +1169,37 @@
         }
 
         @media (max-width: 768px) {
+            .navbar-admin .container-fluid {
+                align-items: flex-start;
+                flex-wrap: wrap;
+                gap: 12px;
+            }
+
+            .navbar-admin .navbar-brand {
+                width: 100%;
+                white-space: normal;
+            }
+
+            .navbar-admin .container-fluid > .d-flex {
+                width: 100%;
+                flex-wrap: wrap;
+            }
+
+            .navbar-admin .top-status {
+                flex: 1 1 100%;
+            }
+
+            .navbar-admin #fingerprintNotificationButton,
+            .navbar-admin .logout-button {
+                justify-content: center;
+            }
+
             .navbar-brand {
                 font-size: 18px;
             }
 
             .sidebar {
+                margin-top: 24px;
                 padding: 16px 12px;
                 border-radius: 22px;
             }
@@ -1185,41 +1302,90 @@
 
         <!-- Dashboard Section -->
         <div id="dashboard" class="section active">
-            <div class="page-title">
-                <i class="bi bi-speedometer2"></i> Dashboard
+            <div class="dashboard-toolbar">
+                <div>
+                    <div class="page-title"><i class="bi bi-speedometer2"></i> Dashboard</div>
+                    <div class="page-subtitle">What needs attention now, recent application movement, and live biometric readiness.</div>
+                </div>
+                <button type="button" class="dashboard-refresh" onclick="loadDashboardData()">
+                    <i class="bi bi-arrow-clockwise"></i> Refresh dashboard
+                </button>
             </div>
-            <div class="page-subtitle">Operational overview for application intake, decision volume, and biometric screening readiness.</div>
-
-            <div class="row">
-                <div class="col-md-3">
-                    <div class="card stat-card">
-                        <div class="stat-label">Total Applications</div>
-                        <div class="stat-number" id="totalApplications">0</div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card stat-card">
-                        <div class="stat-label">Approved</div>
-                        <div class="stat-number" id="approvedCount" style="color: #28a745;">0</div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card stat-card">
-                        <div class="stat-label">Rejected</div>
-                        <div class="stat-number" id="rejectedCount" style="color: #dc3545;">0</div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card stat-card">
-                        <div class="stat-label">Criminal Records</div>
-                        <div class="stat-number" id="criminalCount">0</div>
-                    </div>
-                </div>
+            <div id="dashboardLoading" class="dashboard-loading" role="status" aria-live="polite">
+                <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+                Loading operational overview...
             </div>
+            <div id="dashboardContent" aria-live="polite">
+                <div class="dashboard-kpi-grid">
+                    <article class="dashboard-kpi is-amber">
+                        <div class="dashboard-kpi-head"><span class="dashboard-kpi-label">Needs attention</span><span class="dashboard-kpi-icon"><i class="bi bi-inbox"></i></span></div>
+                        <div class="dashboard-kpi-value" id="dashboardNeedsAttention">0</div>
+                        <div class="dashboard-kpi-detail">Pending, under review, or flagged</div>
+                    </article>
+                    <article class="dashboard-kpi">
+                        <div class="dashboard-kpi-head"><span class="dashboard-kpi-label">Submitted today</span><span class="dashboard-kpi-icon"><i class="bi bi-calendar2-plus"></i></span></div>
+                        <div class="dashboard-kpi-value" id="dashboardSubmittedToday">0</div>
+                        <div class="dashboard-kpi-detail" id="dashboardWeeklyIntake">0 received in the last 7 days</div>
+                    </article>
+                    <article class="dashboard-kpi is-green">
+                        <div class="dashboard-kpi-head"><span class="dashboard-kpi-label">Decision progress</span><span class="dashboard-kpi-icon"><i class="bi bi-check2-circle"></i></span></div>
+                        <div class="dashboard-kpi-value" id="dashboardDecisionRate">0%</div>
+                        <div class="dashboard-kpi-detail" id="dashboardDecisionDetail">0 of 0 applications decided</div>
+                    </article>
+                    <article class="dashboard-kpi is-red">
+                        <div class="dashboard-kpi-head"><span class="dashboard-kpi-label">Fingerprint alerts</span><span class="dashboard-kpi-icon"><i class="bi bi-fingerprint"></i></span></div>
+                        <div class="dashboard-kpi-value" id="dashboardFingerprintAlerts">0</div>
+                        <div class="dashboard-kpi-detail">Active biometric match notifications</div>
+                    </article>
+                </div>
 
-            <div class="alert system-banner mt-4">
-                <i class="bi bi-info-circle"></i>
-                <strong>System Ready:</strong> Modified Bozorth3 fingerprint matching is operational. Last system check at <span id="lastCheck">--:--</span>
+                <div class="dashboard-main-grid">
+                    <section class="dashboard-panel">
+                        <div class="dashboard-panel-header">
+                            <div><h3 class="dashboard-panel-title">Work queue</h3><p class="dashboard-panel-subtitle">Application stages requiring operator action</p></div>
+                            <button type="button" class="dashboard-panel-link" onclick="switchSection('applications')">Review applications <i class="bi bi-arrow-right"></i></button>
+                        </div>
+                        <div class="dashboard-panel-body">
+                            <div id="dashboardAttentionBreakdown" class="dashboard-attention-grid"></div>
+                            <div class="dashboard-decision-progress">
+                                <div class="dashboard-progress-copy"><span>Overall decision progress</span><strong id="dashboardProgressLabel">0%</strong></div>
+                                <div class="dashboard-progress-track" role="progressbar" aria-label="Application decision progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="dashboardProgressTrack"><span style="width: 0%"></span></div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="dashboard-panel">
+                        <div class="dashboard-panel-header"><div><h3 class="dashboard-panel-title">Quick actions</h3><p class="dashboard-panel-subtitle">Common daily operations</p></div></div>
+                        <div class="dashboard-panel-body dashboard-quick-actions">
+                            <button type="button" class="dashboard-quick-action" onclick="switchSection('applications')"><span class="dashboard-quick-action-icon"><i class="bi bi-file-earmark-check"></i></span><span><strong>Review applications</strong><small>Open the active screening queue</small></span><i class="bi bi-chevron-right"></i></button>
+                            <button type="button" class="dashboard-quick-action" onclick="switchSection('register-criminal')"><span class="dashboard-quick-action-icon"><i class="bi bi-person-plus"></i></span><span><strong>Register criminal</strong><small>Add demographics and fingerprint evidence</small></span><i class="bi bi-chevron-right"></i></button>
+                            <button type="button" class="dashboard-quick-action" onclick="switchSection('statistics')"><span class="dashboard-quick-action-icon"><i class="bi bi-graph-up-arrow"></i></span><span><strong>Open analytics</strong><small>Review trends and throughput</small></span><i class="bi bi-chevron-right"></i></button>
+                            <button type="button" class="dashboard-quick-action" onclick="switchSection('system-status')"><span class="dashboard-quick-action-icon"><i class="bi bi-activity"></i></span><span><strong>View system status</strong><small>Check scanner and matcher readiness</small></span><i class="bi bi-chevron-right"></i></button>
+                        </div>
+                    </section>
+                </div>
+
+                <div class="dashboard-lower-grid">
+                    <section class="dashboard-panel">
+                        <div class="dashboard-panel-header">
+                            <div><h3 class="dashboard-panel-title">Recent applications</h3><p class="dashboard-panel-subtitle">Latest submissions and their current clearance state</p></div>
+                            <button type="button" class="dashboard-panel-link" onclick="switchSection('applications')">View all <i class="bi bi-arrow-right"></i></button>
+                        </div>
+                        <div class="dashboard-panel-body"><div id="dashboardRecentApplications" class="dashboard-recent-list"></div></div>
+                    </section>
+
+                    <section class="dashboard-panel">
+                        <div class="dashboard-panel-header"><div><h3 class="dashboard-panel-title">Live readiness</h3><p class="dashboard-panel-subtitle">Services required for screening</p></div></div>
+                        <div class="dashboard-panel-body">
+                            <div id="dashboardSystemReadiness" class="dashboard-readiness"></div>
+                            <div class="dashboard-snapshot">
+                                <div class="dashboard-snapshot-item">Total applications<strong id="totalApplications">0</strong></div>
+                                <div class="dashboard-snapshot-item">Criminal records<strong id="criminalCount">0</strong></div>
+                            </div>
+                            <div class="dashboard-updated"><i class="bi bi-clock-history"></i> Updated <span id="dashboardUpdatedAt">—</span></div>
+                        </div>
+                    </section>
+                </div>
             </div>
         </div>
 
@@ -2215,21 +2381,125 @@
             }
         }
 
+        function dashboardNumber(value) {
+            const number = Number(value);
+            return Number.isFinite(number) ? number : 0;
+        }
+
+        function renderDashboardOperations(applicantData, criminalData, historyData, notificationData, systemData) {
+            const total = dashboardNumber(applicantData.total);
+            const approved = dashboardNumber(applicantData.approved);
+            const rejected = dashboardNumber(applicantData.rejected);
+            const pending = dashboardNumber(applicantData.pending);
+            const underReview = dashboardNumber(applicantData.under_review);
+            const flagged = dashboardNumber(applicantData.flagged);
+            const needsAttention = pending + underReview + flagged;
+            const decided = approved + rejected;
+            const decisionRate = Math.max(0, Math.min(100, dashboardNumber(applicantData.decision_rate)));
+            const notifications = Array.isArray(notificationData.notifications) ? notificationData.notifications : [];
+            const activeAlerts = dashboardNumber(notificationData.count || notifications.length);
+
+            document.getElementById('dashboardNeedsAttention').textContent = needsAttention.toLocaleString();
+            document.getElementById('dashboardSubmittedToday').textContent = dashboardNumber(applicantData.submitted_today).toLocaleString();
+            document.getElementById('dashboardWeeklyIntake').textContent = `${dashboardNumber(applicantData.submitted_last_7_days).toLocaleString()} received in the last 7 days`;
+            document.getElementById('dashboardDecisionRate').textContent = `${decisionRate.toFixed(decisionRate % 1 ? 1 : 0)}%`;
+            document.getElementById('dashboardDecisionDetail').textContent = `${decided.toLocaleString()} of ${total.toLocaleString()} applications decided`;
+            document.getElementById('dashboardFingerprintAlerts').textContent = activeAlerts.toLocaleString();
+            document.getElementById('totalApplications').textContent = total.toLocaleString();
+            document.getElementById('criminalCount').textContent = dashboardNumber(criminalData.total_criminals).toLocaleString();
+
+            document.getElementById('dashboardAttentionBreakdown').innerHTML = [
+                { label: 'Pending', count: pending },
+                { label: 'Under review', count: underReview },
+                { label: 'Flagged', count: flagged }
+            ].map((item) => `<div class="dashboard-attention-item"><strong>${item.count.toLocaleString()}</strong><span>${escapeHtml(item.label)}</span></div>`).join('');
+
+            const progressTrack = document.getElementById('dashboardProgressTrack');
+            progressTrack.setAttribute('aria-valuenow', String(decisionRate));
+            progressTrack.querySelector('span').style.width = `${decisionRate}%`;
+            document.getElementById('dashboardProgressLabel').textContent = `${decisionRate.toFixed(decisionRate % 1 ? 1 : 0)}%`;
+
+            const applications = Array.isArray(historyData.applicants) ? historyData.applicants.slice(0, 5) : [];
+            document.getElementById('dashboardRecentApplications').innerHTML = applications.length
+                ? applications.map((applicant) => {
+                    const name = String(applicant.name || 'Unnamed applicant');
+                    const initials = name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part.charAt(0).toUpperCase()).join('') || 'AP';
+                    const submittedAt = new Date(String(applicant.submitted_at || '').replace(' ', 'T'));
+                    const submittedLabel = Number.isNaN(submittedAt.getTime())
+                        ? 'Submission time unavailable'
+                        : submittedAt.toLocaleString('en-PH', { dateStyle: 'medium', timeStyle: 'short' });
+                    return `
+                        <article class="dashboard-recent-item">
+                            <span class="dashboard-recent-avatar" aria-hidden="true">${escapeHtml(initials)}</span>
+                            <div><div class="dashboard-recent-name">${escapeHtml(name)}</div><div class="dashboard-recent-meta">Application #${dashboardNumber(applicant.id)} · ${escapeHtml(submittedLabel)}</div></div>
+                            <span class="dashboard-recent-status status-${getStatusClass(applicant.clearance_status)}">${escapeHtml(formatStatusLabel(applicant.clearance_status))}</span>
+                            <button type="button" class="dashboard-recent-view" onclick="viewApplicant(${dashboardNumber(applicant.id)})" aria-label="View application ${dashboardNumber(applicant.id)}">View</button>
+                        </article>`;
+                }).join('')
+                : '<div class="dashboard-empty"><i class="bi bi-inbox d-block mb-2 fs-4"></i>No recent applications yet</div>';
+
+            const services = systemData.services || {};
+            const bozorth = systemData.bozorth3_status || {};
+            const overall = String(systemData.overall_status || 'offline').toLowerCase();
+            const overallLabel = overall === 'operational' ? 'All systems operational' : overall === 'degraded' ? 'Some services need attention' : 'System status unavailable';
+            const overallDetail = overall === 'operational'
+                ? 'Database, fingerprint engine, and scanner are ready.'
+                : overall === 'degraded'
+                    ? 'Core services are online; check the unavailable item below.'
+                    : 'Open System Status for diagnostics.';
+            const readinessRows = [
+                ['MariaDB', Boolean(services.database?.ready)],
+                ['Fingerprint service', Boolean(services.fingerprint_service?.ready)],
+                ['Modified Bozorth3', Boolean(bozorth.installed)],
+                ['ZKTeco scanner', Boolean(services.scanner?.ready)]
+            ];
+            document.getElementById('dashboardSystemReadiness').innerHTML = `
+                <div class="dashboard-readiness-summary is-${escapeHtml(overall)}"><i class="bi ${overall === 'operational' ? 'bi-check-circle' : overall === 'degraded' ? 'bi-exclamation-triangle' : 'bi-x-octagon'}"></i><div><strong>${escapeHtml(overallLabel)}</strong><small>${escapeHtml(overallDetail)}</small></div></div>
+                ${readinessRows.map(([label, ready]) => `<div class="dashboard-readiness-row"><span>${escapeHtml(label)}</span><span class="dashboard-readiness-state ${ready ? 'is-ready' : ''}">${ready ? 'Ready' : 'Offline'}</span></div>`).join('')}`;
+
+            const updatedAt = applicantData.generated_at ? new Date(applicantData.generated_at) : new Date();
+            document.getElementById('dashboardUpdatedAt').textContent = Number.isNaN(updatedAt.getTime())
+                ? 'just now'
+                : updatedAt.toLocaleString('en-PH', { dateStyle: 'medium', timeStyle: 'short' });
+        }
+
         // Load Dashboard Data
         async function loadDashboardData() {
-            try {
-                const [criminalData, applicantData] = await Promise.all([
-                    requestJson('backend/criminal_record.php?action=stats'),
-                    requestJson('backend/applicant_info.php?action=stats')
-                ]);
+            const loading = document.getElementById('dashboardLoading');
+            const content = document.getElementById('dashboardContent');
+            loading.style.display = 'flex';
+            content.style.opacity = '.45';
+            content.setAttribute('aria-busy', 'true');
 
-                document.getElementById('totalApplications').textContent = applicantData.total || '0';
-                document.getElementById('approvedCount').textContent = applicantData.approved || '0';
-                document.getElementById('rejectedCount').textContent = applicantData.rejected || '0';
-                document.getElementById('criminalCount').textContent = criminalData.total_criminals || '0';
-                document.getElementById('lastCheck').textContent = new Date().toLocaleTimeString();
+            try {
+                const results = await Promise.allSettled([
+                    requestJson('backend/applicant_info.php?action=stats'),
+                    requestJson('backend/criminal_record.php?action=stats'),
+                    requestJson('backend/applicant_info.php?action=history'),
+                    canAccessFingerprintNotifications()
+                        ? requestJson('backend/applicant_info.php?action=notifications&state=active&limit=50')
+                        : Promise.resolve({ notifications: [], count: 0 }),
+                    requestJson('backend/criminal_record.php?action=status')
+                ]);
+                const valueOr = (index, fallback) => results[index].status === 'fulfilled' ? results[index].value : fallback;
+                if (results.every((result) => result.status === 'rejected')) {
+                    throw results[0].reason || new Error('Dashboard data is unavailable.');
+                }
+
+                renderDashboardOperations(
+                    valueOr(0, {}),
+                    valueOr(1, {}),
+                    valueOr(2, { applicants: [] }),
+                    valueOr(3, { notifications: [], count: 0 }),
+                    valueOr(4, {})
+                );
             } catch (error) {
                 console.error('Error loading dashboard:', error);
+                document.getElementById('dashboardSystemReadiness').innerHTML = `<div class="dashboard-readiness-summary is-offline"><i class="bi bi-wifi-off"></i><div><strong>Dashboard data unavailable</strong><small>${escapeHtml(error.message || 'Try refreshing the page.')}</small></div></div>`;
+            } finally {
+                loading.style.display = 'none';
+                content.style.opacity = '1';
+                content.removeAttribute('aria-busy');
             }
         }
 
