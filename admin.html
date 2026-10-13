@@ -21,6 +21,12 @@
             --panel-bg: rgba(255, 255, 255, 0.94);
             --panel-border: rgba(0, 56, 168, 0.12);
             --panel-shadow: 0 20px 50px rgba(15, 33, 76, 0.12);
+            --sidebar-width: 268px;
+            --sidebar-inset: 20px;
+            --header-offset: 92px;
+            --content-gutter: 24px;
+            --content-padding: 28px;
+            --card-radius: 20px;
         }
 
         * {
@@ -44,7 +50,9 @@
             color: white;
             box-shadow: 0 18px 35px rgba(0, 32, 96, 0.22);
             padding: 16px 0 18px;
-            position: relative;
+            position: sticky;
+            top: 0;
+            z-index: 1030;
         }
 
         .navbar-admin::after {
@@ -104,13 +112,14 @@
 
         .sidebar {
             background: linear-gradient(180deg, rgba(4, 39, 112, 0.96) 0%, rgba(7, 30, 79, 0.97) 100%);
-            min-height: calc(100vh - 92px);
+            min-height: 0;
+            height: calc(100vh - var(--header-offset) - var(--sidebar-inset));
             box-shadow: 12px 0 34px rgba(8, 26, 68, 0.15);
             padding: 22px 14px;
             position: fixed;
-            width: 268px;
-            left: 20px;
-            top: 92px;
+            width: var(--sidebar-width);
+            left: var(--sidebar-inset);
+            top: var(--header-offset);
             overflow-y: auto;
             border-radius: 28px;
             border: 1px solid rgba(255, 255, 255, 0.08);
@@ -139,12 +148,13 @@
         }
 
         .main-content {
-            margin-left: 318px;
-            padding: 118px 28px 34px;
+            margin-left: calc(var(--sidebar-inset) + var(--sidebar-width) + var(--content-gutter));
+            padding: var(--content-padding) var(--content-padding) 34px 0;
         }
 
         .content-shell {
-            max-width: 1240px;
+            width: 100%;
+            max-width: none;
         }
 
         .admin-hero {
@@ -899,7 +909,7 @@
 
         .analytics-dashboard-grid { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(300px, .75fr); gap: 18px; align-items: start; }
         .analytics-side-stack { display: grid; gap: 18px; }
-        .analytics-panel { border: 1px solid rgba(17, 56, 112, .1); border-radius: 20px; background: #fff; box-shadow: 0 12px 30px rgba(15, 45, 95, .07); overflow: hidden; }
+        .analytics-panel { border: 1px solid rgba(17, 56, 112, .1); border-radius: var(--card-radius); background: #fff; box-shadow: 0 12px 30px rgba(15, 45, 95, .07); overflow: hidden; }
         .analytics-panel-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; padding: 19px 21px 14px; }
         .analytics-panel-title { margin: 0; color: #142746; font-size: 19px; font-weight: 850; }
         .analytics-panel-subtitle { margin: 5px 0 0; color: #68798f; font-size: 14px; line-height: 1.45; }
@@ -945,24 +955,32 @@
         .analytics-insight strong { display: block; color: #263b57; font-size: 15px; }
         .analytics-insight p { margin: 4px 0 0; color: #607188; font-size: 14px; line-height: 1.5; }
         .analytics-empty { padding: 34px 15px; color: #7b899b; text-align: center; }
-        .biometric-evaluation-grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(300px, .95fr); gap: 18px; }
-        .biometric-evaluation-card { padding: 20px; border: 1px solid #dbe5f1; border-radius: 16px; background: #f8fbff; }
-        .biometric-evaluation-card h4 { margin: 0 0 5px; color: #1b3654; font-size: 18px; font-weight: 850; }
-        .biometric-evaluation-card p { margin: 0 0 16px; color: #64758b; font-size: 14px; line-height: 1.5; }
-        .biometric-matrix { width: 100%; border-collapse: separate; border-spacing: 5px; table-layout: fixed; }
-        .biometric-matrix th { padding: 8px 6px; color: #5c6f87; font-size: 13px; font-weight: 800; text-align: center; }
-        .biometric-matrix td { padding: 15px 8px; border-radius: 11px; color: #18344f; background: #eaf1fa; text-align: center; font-size: 23px; font-weight: 850; }
+        .biometric-analysis-panel { width: 100%; max-width: none; }
+        .biometric-analysis-panel > .analytics-panel-header { align-items: center; padding: 24px 26px 18px; border-bottom: 1px solid #edf2f7; }
+        .biometric-analysis-panel .analytics-panel-title { font-size: 22px; }
+        .biometric-analysis-panel .analytics-panel-subtitle { max-width: 880px; font-size: 15px; line-height: 1.55; }
+        .biometric-analysis-panel > .analytics-panel-body { padding: 22px 26px 26px; }
+        .biometric-evaluation-grid { display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(0, .92fr); gap: 20px; align-items: stretch; }
+        .biometric-evaluation-card { min-width: 0; padding: 24px; border: 1px solid #dbe5f1; border-radius: 16px; background: #f8fbff; }
+        .biometric-evaluation-card h4 { margin: 0 0 7px; color: #1b3654; font-size: 20px; font-weight: 850; }
+        .biometric-evaluation-card p { margin: 0 0 18px; color: #64758b; font-size: 15px; line-height: 1.55; }
+        .biometric-matrix { width: 100%; border-collapse: separate; border-spacing: 8px; table-layout: fixed; }
+        .biometric-matrix th { padding: 10px 8px; color: #52667f; font-size: 14px; font-weight: 800; line-height: 1.35; text-align: center; }
+        .biometric-matrix thead th:first-child { width: 29%; text-align: left; }
+        .biometric-matrix tbody th { text-align: left; }
+        .biometric-matrix td { padding: 19px 10px; border-radius: 12px; color: #18344f; background: #eaf1fa; text-align: center; font-size: 28px; font-weight: 850; }
         .biometric-matrix td.is-correct { color: #087443; background: #e5f8ee; }
         .biometric-matrix td.is-error { color: #ad243a; background: #fff0f2; }
-        .biometric-matrix td small { display: block; margin-top: 4px; color: inherit; font-size: 11px; font-weight: 750; line-height: 1.35; opacity: .85; }
-        .biometric-metrics { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; margin-top: 14px; }
-        .biometric-metric { padding: 10px; border-radius: 10px; color: #596c84; background: #fff; font-size: 12px; }
-        .biometric-metric strong { display: block; margin-top: 4px; color: #173754; font-size: 16px; }
-        .biometric-posterior-list { display: grid; gap: 10px; }
-        .biometric-posterior { padding: 15px; border: 1px solid #d8e4f2; border-radius: 12px; background: #fff; }
-        .biometric-posterior span { display: block; color: #53677f; font-size: 14px; font-weight: 750; }
-        .biometric-posterior strong { display: block; margin-top: 6px; color: #0d5aaf; font-size: 30px; line-height: 1; }
-        .biometric-posterior small { display: block; margin-top: 8px; color: #68798e; font-size: 12px; line-height: 1.45; }
+        .biometric-matrix td small { display: block; margin-top: 7px; color: inherit; font-size: 13px; font-weight: 700; line-height: 1.4; opacity: .88; }
+        .biometric-cell-label { display: block; margin-bottom: 2px; font-size: 12px; font-weight: 850; letter-spacing: .045em; text-transform: uppercase; }
+        .biometric-metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-top: 18px; }
+        .biometric-metric { min-height: 82px; padding: 14px 15px; border: 1px solid #e2eaf4; border-radius: 12px; color: #596c84; background: #fff; font-size: 13px; font-weight: 700; }
+        .biometric-metric strong { display: block; margin-top: 7px; color: #173754; font-size: 21px; line-height: 1.1; }
+        .biometric-posterior-list { display: grid; gap: 14px; }
+        .biometric-posterior { width: 100%; padding: 18px 19px; border: 1px solid #d8e4f2; border-radius: 13px; background: #fff; }
+        .biometric-posterior span { display: block; color: #405872; font-size: 15px; font-weight: 800; line-height: 1.4; }
+        .biometric-posterior strong { display: block; margin-top: 9px; color: #0d5aaf; font-size: 34px; line-height: 1; }
+        .biometric-posterior small { display: block; margin-top: 10px; color: #68798e; font-size: 13px; line-height: 1.5; }
         .biometric-evidence-warning { display: inline-flex; align-items: center; gap: 6px; margin-bottom: 10px; padding: 6px 9px; border-radius: 999px; color: #8a4b00; background: #fff0cc; font-size: 12px; font-weight: 850; }
         .biometric-profile { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; }
         .biometric-profile span { padding: 6px 9px; border-radius: 999px; color: #385570; background: #eaf1f8; font-size: 12px; font-weight: 750; }
@@ -975,9 +993,11 @@
         @media (max-width: 1100px) {
             .analytics-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
             .analytics-dashboard-grid { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 1000px) {
             .biometric-evaluation-grid { grid-template-columns: 1fr; }
             .biometric-evidence { grid-column: auto; }
-            .biometric-metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); }
         }
 
         @media (max-width: 700px) {
@@ -991,7 +1011,7 @@
             .analytics-bars { gap: 3px; }
             .analytics-bar-value { display: none; }
             .biometric-evidence-grid { grid-template-columns: 1fr 1fr; }
-            .biometric-metrics { grid-template-columns: 1fr 1fr; }
+            .biometric-analysis-panel > .analytics-panel-header { align-items: flex-start; }
         }
 
         @media (max-width: 480px) {
@@ -1176,7 +1196,8 @@
                 position: static;
                 width: auto;
                 min-height: auto;
-                margin: 104px 16px 0;
+                height: auto;
+                margin: 16px 16px 0;
                 left: auto;
                 top: auto;
             }
@@ -1267,7 +1288,7 @@
 </head>
 <body>
     <!-- Navigation -->
-    <nav class="navbar navbar-dark navbar-admin fixed-top">
+    <nav class="navbar navbar-dark navbar-admin">
         <div class="container-fluid">
             <span class="navbar-brand">
                 <i class="bi bi-shield-lock"></i> MINUTIAE - Admin Panel
@@ -1769,7 +1790,7 @@
                     </div>
                 </div>
 
-                <section class="analytics-panel mt-3">
+                <section class="analytics-panel biometric-analysis-panel mt-3">
                     <div class="analytics-panel-header">
                         <div><h3 class="analytics-panel-title">Error matrix</h3><p class="analytics-panel-subtitle">Held-out confusion matrix and calibrated posterior probabilities for Modified Bozorth3</p></div>
                         <span class="analytics-panel-badge">Python analysis</span>
@@ -3189,8 +3210,8 @@
                 <table class="biometric-matrix" aria-label="Held-out biometric confusion matrix">
                     <thead><tr><th>Actual</th><th>Predicted match</th><th>Predicted no match</th></tr></thead>
                     <tbody>
-                        <tr><th>Genuine fingerprints</th><td class="is-correct">${number(matrix.true_positive)}<small>${biometricCellPercent(matrix.true_positive, genuineTotal)} correctly matched</small></td><td class="is-error">${number(matrix.false_negative)}<small>${biometricCellPercent(matrix.false_negative, genuineTotal)} false rejects</small></td></tr>
-                        <tr><th>Different fingerprints</th><td class="is-error">${number(matrix.false_positive)}<small>${biometricCellPercent(matrix.false_positive, differentTotal)} false accepts</small></td><td class="is-correct">${number(matrix.true_negative)}<small>${biometricCellPercent(matrix.true_negative, differentTotal)} correctly rejected</small></td></tr>
+                        <tr><th>Genuine fingerprints</th><td class="is-correct">${number(matrix.true_positive)}<small><span class="biometric-cell-label">True positive</span>${biometricCellPercent(matrix.true_positive, genuineTotal)} correctly matched</small></td><td class="is-error">${number(matrix.false_negative)}<small><span class="biometric-cell-label">False reject</span>${biometricCellPercent(matrix.false_negative, genuineTotal)} of genuine comparisons</small></td></tr>
+                        <tr><th>Different fingerprints</th><td class="is-error">${number(matrix.false_positive)}<small><span class="biometric-cell-label">False accept</span>${biometricCellPercent(matrix.false_positive, differentTotal)} of different comparisons</small></td><td class="is-correct">${number(matrix.true_negative)}<small><span class="biometric-cell-label">True negative</span>${biometricCellPercent(matrix.true_negative, differentTotal)} correctly rejected</small></td></tr>
                     </tbody>
                 </table>
                 <div class="biometric-metrics">
@@ -3205,11 +3226,11 @@
                 <h4>Calibrated posterior probabilities</h4>
                 <p>How trustworthy each matcher decision was on the labeled benchmark. These are calibrated estimates, not raw similarity scores.</p>
                 <div class="biometric-posterior-list">
-                    <div class="biometric-posterior"><span>When the matcher says MATCH, probability it is genuine</span><strong>${analyticsPercent(posterior.match_given_positive)}</strong><small>95% confidence range: ${analyticsConfidenceRange(posterior.positive_confidence_interval_95)} on ${escapeHtml(evaluation.dataset || 'the validation dataset')}.</small></div>
-                    <div class="biometric-posterior"><span>When the matcher says NO MATCH, probability it is different</span><strong>${analyticsPercent(posterior.nonmatch_given_negative)}</strong><small>95% confidence range: ${analyticsConfidenceRange(posterior.negative_confidence_interval_95)} on the held-out benchmark.</small></div>
+                    <div class="biometric-posterior"><span>P(genuine | matcher says MATCH)</span><strong>${analyticsPercent(posterior.match_given_positive)}</strong><small>Probability that a MATCH decision is genuine. 95% confidence range: ${analyticsConfidenceRange(posterior.positive_confidence_interval_95)} on ${escapeHtml(evaluation.dataset || 'the validation dataset')}.</small></div>
+                    <div class="biometric-posterior"><span>P(non-match | matcher says NO MATCH)</span><strong>${analyticsPercent(posterior.nonmatch_given_negative)}</strong><small>Probability that a NO MATCH decision is different. 95% confidence range: ${analyticsConfidenceRange(posterior.negative_confidence_interval_95)} on the held-out benchmark.</small></div>
                     <div class="biometric-posterior">
                         ${hasLowLocalEvidence ? '<span class="biometric-evidence-warning"><i class="bi bi-exclamation-triangle-fill"></i>Low evidence</span>' : ''}
-                        <span>Local independently reviewed alerts</span>
+                        <span>Local reviewed-alert posterior</span>
                         <strong>${operational ? analyticsPercent(operational.match_given_reviewed_alert) : 'Not enough data'}</strong>
                         <small>${operational ? `${number(reviewedAlerts)} reviewed alert${reviewedAlerts === 1 ? '' : 's'}; 95% confidence range: ${analyticsConfidenceRange(operational.confidence_interval_95)}. ${hasLowLocalEvidence ? 'Treat this as an early estimate until at least 30 reviews are available.' : ''}` : 'No independent local reviews are available. Add reviewed outcomes before using a local estimate.'}</small>
                     </div>

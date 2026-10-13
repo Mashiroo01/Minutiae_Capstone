@@ -125,7 +125,36 @@ test('admin Analytics explains matrix rates, uncertainty, and low local evidence
     assert.match(admin, /Low evidence/);
     assert.match(admin, /\.analytics-panel-title \{[^}]*font-size: 19px/s);
     assert.match(admin, /\.analytics-kpi-label \{[^}]*font-size: 13px/s);
-    assert.match(admin, /\.biometric-evaluation-card h4 \{[^}]*font-size: 18px/s);
-    assert.match(admin, /\.biometric-posterior span \{[^}]*font-size: 14px/s);
+    assert.match(admin, /\.biometric-evaluation-card h4 \{[^}]*font-size: 20px/s);
+    assert.match(admin, /\.biometric-posterior span \{[^}]*font-size: 15px/s);
+});
+
+test('admin Analytics uses the full content width with a sticky application header', () => {
+    const admin = fs.readFileSync(path.join(root, 'admin.html'), 'utf8');
+
+    assert.match(admin, /\.content-shell\s*\{[^}]*width:\s*100%[^}]*max-width:\s*none/s);
+    assert.match(admin, /\.navbar-admin\s*\{[^}]*position:\s*sticky[^}]*top:\s*0[^}]*z-index:\s*1030/s);
+    assert.doesNotMatch(admin, /<nav class="navbar navbar-dark navbar-admin fixed-top">/);
+    assert.match(admin, /\.biometric-analysis-panel\s*\{[^}]*width:\s*100%[^}]*max-width:\s*none/s);
+});
+
+test('error matrix cards flex across desktop and stack at the analytics breakpoint', () => {
+    const admin = fs.readFileSync(path.join(root, 'admin.html'), 'utf8');
+
+    assert.match(admin, /\.biometric-evaluation-grid\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1\.08fr\)\s+minmax\(0,\s*\.92fr\)/s);
+    assert.match(admin, /@media \(max-width:\s*1000px\)[\s\S]*?\.biometric-evaluation-grid\s*\{[^}]*grid-template-columns:\s*1fr/s);
+    assert.match(admin, /\.biometric-metrics\s*\{[^}]*grid-template-columns:\s*repeat\(auto-fit,\s*minmax\(130px,\s*1fr\)\)/s);
+    assert.match(admin, /class="analytics-panel biometric-analysis-panel mt-3"/);
+});
+
+test('error matrix cells and posterior cards retain the requested operator labels', () => {
+    const admin = fs.readFileSync(path.join(root, 'admin.html'), 'utf8');
+
+    for (const label of ['True positive', 'False reject', 'False accept', 'True negative']) {
+        assert.match(admin, new RegExp(label, 'i'));
+    }
+    assert.match(admin, /P\(genuine \| matcher says MATCH\)/);
+    assert.match(admin, /P\(non-match \| matcher says NO MATCH\)/);
+    assert.match(admin, /Local reviewed-alert posterior/);
 });
 
