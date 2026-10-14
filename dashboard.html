@@ -16,7 +16,7 @@
             --pnp-bg: #f3f7ff;
             --pnp-card: #ffffff;
             --pnp-border: #d5def0;
-            --pnp-shadow: 0 24px 48px rgba(11, 40, 102, 0.14);
+            --pnp-shadow: 0 10px 28px rgba(11, 40, 102, 0.1);
         }
 
         * {
@@ -28,7 +28,7 @@
         body {
             background:
                 radial-gradient(circle at 15% 20%, rgba(252, 209, 22, 0.16), transparent 28%),
-                radial-gradient(circle at 85% 80%, rgba(206, 17, 38, 0.13), transparent 24%),
+                radial-gradient(circle at 85% 80%, rgba(0, 56, 168, 0.09), transparent 24%),
                 linear-gradient(180deg, #f9fbff 0%, #eef4ff 54%, var(--pnp-bg) 100%);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             color: var(--pnp-ink);
@@ -41,10 +41,12 @@
 
         /* Navbar */
         .navbar {
-            background: linear-gradient(100deg, var(--pnp-blue-dark) 0%, var(--pnp-blue) 62%, var(--pnp-red) 100%);
+            background: radial-gradient(circle at 0 0, rgba(64, 137, 255, 0.52), transparent 32%), var(--pnp-blue);
             box-shadow: 0 14px 30px rgba(0, 30, 90, 0.24);
             padding: 16px 30px 18px;
-            position: relative;
+            position: sticky;
+            top: 0;
+            z-index: 1030;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -73,7 +75,7 @@
 
         .nav-meta {
             color: rgba(255, 255, 255, 0.92);
-            font-size: 13px;
+            font-size: 15px;
             letter-spacing: 0.3px;
             padding: 8px 14px;
             border-radius: 999px;
@@ -93,7 +95,8 @@
             color: white;
             background: rgba(255, 255, 255, 0.08);
             padding: 8px 14px;
-            font-size: 13px;
+            min-height: 42px;
+            font-size: 15px;
             font-weight: 700;
             display: inline-flex;
             align-items: center;
@@ -142,21 +145,22 @@
 
         /* Main Container */
         .main-container {
-            max-width: 1120px;
-            margin: 0 auto;
-            padding: 34px 20px 42px;
+            width: 100%;
+            max-width: none;
+            margin: 0;
+            padding: 32px 28px 42px;
         }
 
         .hero-shell {
             display: grid;
-            grid-template-columns: minmax(0, 1.6fr) minmax(260px, 0.9fr);
+            grid-template-columns: minmax(0, 1.85fr) minmax(280px, 1fr);
             gap: 18px;
             margin-bottom: 18px;
         }
 
         .hero-panel,
         .hero-sidecard {
-            border-radius: 24px;
+            border-radius: 14px;
             border: 1px solid var(--pnp-border);
             box-shadow: var(--pnp-shadow);
         }
@@ -276,9 +280,9 @@
         /* Tab Content */
         .tab-content {
             background: var(--pnp-card);
-            border-radius: 26px;
+            border-radius: 14px;
             box-shadow: var(--pnp-shadow);
-            padding: 42px;
+            padding: clamp(24px, 3vw, 42px);
             border: 1px solid var(--pnp-border);
         }
 
@@ -439,7 +443,7 @@
 
         /* Results */
         .result-card {
-            border-radius: 18px;
+            border-radius: 14px;
             padding: 25px;
             margin-bottom: 20px;
             border-left: 5px solid;
@@ -535,7 +539,7 @@
         .fingerprint-callout {
             background: linear-gradient(135deg, rgba(206, 17, 38, 0.08) 0%, rgba(252, 209, 22, 0.18) 100%);
             border: 1px solid rgba(206, 17, 38, 0.12);
-            border-radius: 18px;
+            border-radius: 14px;
             padding: 18px 18px 20px;
             margin-bottom: 18px;
         }
@@ -782,7 +786,7 @@
             }
 
             .main-container {
-                padding: 15px 10px;
+                padding: 18px 14px 28px;
             }
 
             .tab-content {

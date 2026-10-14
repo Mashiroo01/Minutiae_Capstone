@@ -460,6 +460,13 @@ class CriminalInfo {
     public function getAllCriminals() {
         return $this->db->getCriminalRecords();
     }
+
+    /**
+     * Get a bounded, searchable page for the admin criminal database.
+     */
+    public function getCriminalRecordsPage($page, $perPage, $search = '') {
+        return $this->db->getCriminalRecordsPage($page, $perPage, $search);
+    }
     
     /**
      * Set PDO connection
@@ -741,7 +748,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     switch ($action) {
         case 'list':
             $auth->requireRole(['admin', 'super_admin', 'officer'], 'list_criminal_records', 'criminal');
-            $result = ['criminals' => $criminalInfo->getAllCriminals()];
+            $page = max(1, intval($_GET['page'] ?? 1));
+            $limit = max(1, min(50, intval($_GET['limit'] ?? 50)));
+            $search = trim((string)($_GET['search'] ?? ''));
+            $pageResult = $criminalInfo->getCriminalRecordsPage($page, $limit, $search);
+            $result = [
+                'criminals' => $pageResult['records'],
+                'pagination' => $pageResult['pagination'],
+                'search' => $search
+            ];
             echo json_encode($result);
             break;
             

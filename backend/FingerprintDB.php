@@ -1079,6 +1079,103 @@ class FingerprintDB {
             return [];
         }
     }
+
+    /**
+     * Get one filtered page of criminal records for the admin database table.
+     */
+    public function getCriminalRecordsPage($page = 1, $perPage = 50, $search = '', $includeInactive = false) {
+        $page = max(1, intval($page));
+        $perPage = max(1, min(50, intval($perPage)));
+        $search = trim((string)$search);
+
+        if (!$this->db) {
+            return [
+                'records' => [],
+                'pagination' => [
+                    'page' => 1,
+                    'per_page' => $perPage,
+                    'total' => 0,
+                    'total_pages' => 1,
+                    'from' => 0,
+                    'to' => 0
+                ]
+            ];
+        }
+
+        try {
+            $conditions = [];
+            $params = [];
+
+            if (!$includeInactive) {
+                $conditions[] = 'cr.is_active = 1';
+            }
+
+            if ($search !== '') {
+                $conditions[] = '(cr.name LIKE ? OR cr.case_number LIKE ?)';
+                $needle = '%' . $search . '%';
+                $params[] = $needle;
+                $params[] = $needle;
+            }
+
+            $where = empty($conditions) ? '' : ' WHERE ' . implode(' AND ', $conditions);
+            $countSql = 'SELECT COUNT(*) FROM criminal_records cr' . $where;
+            $countStmt = $this->db->prepare($countSql);
+            $countStmt->execute($params);
+            $total = intval($countStmt->fetchColumn());
+            $totalPages = max(1, (int)ceil($total / $perPage));
+            $page = min($page, $totalPages);
+            $offset = ($page - 1) * $perPage;
+
+            $sql = "
+                SELECT
+                    cr.id,
+                    cr.name,
+                    cr.age,
+                    cr.sex,
+                    cr.case_number,
+                    cr.is_active,
+                    cr.deleted_at,
+                    cr.deletion_reason,
+                    cr.record_date,
+                    COUNT(cf.id) AS fingerprint_count
+                FROM criminal_records cr
+                LEFT JOIN criminal_fingerprints cf ON cr.id = cf.criminal_id AND cf.is_active = 1
+                {$where}
+                GROUP BY cr.id
+                ORDER BY cr.record_date DESC
+                LIMIT {$perPage} OFFSET {$offset}
+            ";
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
+            $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $count = count($records);
+
+            return [
+                'records' => $records,
+                'pagination' => [
+                    'page' => $page,
+                    'per_page' => $perPage,
+                    'total' => $total,
+                    'total_pages' => $totalPages,
+                    'from' => $total > 0 ? $offset + 1 : 0,
+                    'to' => $total > 0 ? $offset + $count : 0
+                ]
+            ];
+        } catch (PDOException $e) {
+            error_log('Query error: ' . $e->getMessage());
+            return [
+                'records' => [],
+                'pagination' => [
+                    'page' => 1,
+                    'per_page' => $perPage,
+                    'total' => 0,
+                    'total_pages' => 1,
+                    'from' => 0,
+                    'to' => 0
+                ]
+            ];
+        }
+    }
     
     /**
      * Search for criminals by demographics (name, age, sex)
