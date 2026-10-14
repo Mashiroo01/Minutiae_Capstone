@@ -1010,6 +1010,7 @@
         let currentCheckSignature = null;
         let privacyNoticeVersion = '2026-03-28';
         let currentDashboardUser = null;
+        let dashboardAccessRequest = null;
         let latestFingerprintComparisonResult = null;
 
         const consentOverlay = document.getElementById('privacyConsentOverlay');
@@ -1710,23 +1711,34 @@
         }
 
         async function enforceDashboardAccess() {
-            document.body.classList.add('auth-pending');
-            try {
-                const response = await fetch('backend/auth.php?action=session', { cache: 'no-store' });
-                const data = await response.json();
+            if (dashboardAccessRequest) {
+                return dashboardAccessRequest;
+            }
 
-                if (!response.ok || !data.authenticated || !['admin', 'super_admin'].includes(data.user?.role)) {
+            dashboardAccessRequest = (async () => {
+                try {
+                    const response = await fetch('backend/auth.php?action=session', { cache: 'no-store' });
+                    const data = await response.json();
+
+                    if (!response.ok || !data.authenticated || !['admin', 'super_admin'].includes(data.user?.role)) {
+                        window.location.replace('login.html?redirect=dashboard.html');
+                        return false;
+                    }
+
+                    currentDashboardUser = data.user;
+                    updateDashboardAuthUI(currentDashboardUser);
+                    document.body.classList.remove('auth-pending');
+                    return true;
+                } catch (error) {
                     window.location.replace('login.html?redirect=dashboard.html');
                     return false;
                 }
+            })();
 
-                currentDashboardUser = data.user;
-                updateDashboardAuthUI(currentDashboardUser);
-                document.body.classList.remove('auth-pending');
-                return true;
-            } catch (error) {
-                window.location.replace('login.html?redirect=dashboard.html');
-                return false;
+            try {
+                return await dashboardAccessRequest;
+            } finally {
+                dashboardAccessRequest = null;
             }
         }
 
