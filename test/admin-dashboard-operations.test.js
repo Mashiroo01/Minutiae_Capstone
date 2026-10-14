@@ -8,13 +8,23 @@ const test = require('node:test');
 const root = path.join(__dirname, '..');
 const adminPage = fs.readFileSync(path.join(root, 'admin.html'), 'utf8');
 
-test('dashboard prioritizes current workload and biometric alerts over lifetime totals', () => {
+test('dashboard prioritizes three balanced workload KPIs without a fingerprint alerts card', () => {
     assert.match(adminPage, /id="dashboardNeedsAttention"/);
     assert.match(adminPage, /id="dashboardSubmittedToday"/);
     assert.match(adminPage, /id="dashboardDecisionRate"/);
-    assert.match(adminPage, /id="dashboardFingerprintAlerts"/);
+    assert.doesNotMatch(adminPage, /id="dashboardFingerprintAlerts"/);
+    assert.doesNotMatch(adminPage, /dashboard-kpi-label">Fingerprint alerts/i);
+    assert.match(adminPage, /\.dashboard-kpi-grid\s*\{[^}]*grid-template-columns:\s*repeat\(3,/s);
     assert.match(adminPage, /id="dashboardAttentionBreakdown"/);
     assert.match(adminPage, /id="dashboardRecentApplications"/);
+});
+
+test('work queue shows only pending and under-review work in two equal tiles', () => {
+    assert.match(adminPage, /\.dashboard-attention-grid\s*\{[^}]*grid-template-columns:\s*repeat\(2,/s);
+    assert.match(adminPage, /const needsAttention = pending \+ underReview;/);
+    assert.match(adminPage, /\{ label: 'Pending', count: pending \},\s*\{ label: 'Under review', count: underReview \}/s);
+    assert.doesNotMatch(adminPage, /\{ label: 'Flagged', count: flagged \}/);
+    assert.match(adminPage, /\.dashboard-main-grid\s*\{[^}]*align-items:\s*stretch/s);
 });
 
 test('dashboard provides direct operator actions and live system readiness', () => {
@@ -23,7 +33,7 @@ test('dashboard provides direct operator actions and live system readiness', () 
     assert.match(adminPage, /Open analytics/);
     assert.match(adminPage, /View system status/);
     assert.match(adminPage, /id="dashboardSystemReadiness"/);
-    assert.match(adminPage, /function renderDashboardOperations\(applicantData, criminalData, historyData, notificationData, systemData\)/);
+    assert.match(adminPage, /function renderDashboardOperations\(applicantData, criminalData, historyData, systemData\)/);
     assert.doesNotMatch(adminPage, /<strong>System Ready:<\/strong> Modified Bozorth3 fingerprint matching is operational/);
 });
 

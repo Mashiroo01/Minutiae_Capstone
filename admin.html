@@ -440,7 +440,7 @@
         .dashboard-refresh { display: inline-flex; align-items: center; gap: 8px; padding: 11px 16px; border: 1px solid rgba(0, 56, 168, .16); border-radius: 12px; color: var(--pnp-blue); background: #fff; font-size: 14px; font-weight: 800; box-shadow: 0 5px 16px rgba(15, 45, 95, .06); }
         .dashboard-refresh:hover, .dashboard-refresh:focus { color: #fff; background: var(--pnp-blue); border-color: var(--pnp-blue); }
         .dashboard-loading { display: none; align-items: center; justify-content: center; gap: 10px; min-height: 110px; margin-bottom: 18px; border: 1px solid var(--panel-border); border-radius: 18px; color: #68788d; background: #fff; box-shadow: var(--panel-shadow); }
-        .dashboard-kpi-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-bottom: 18px; }
+        .dashboard-kpi-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-bottom: 18px; }
         .dashboard-kpi { position: relative; overflow: hidden; min-height: 138px; padding: 18px; border: 1px solid rgba(18, 54, 104, .1); border-radius: 19px; background: #fff; box-shadow: 0 10px 26px rgba(15, 45, 95, .07); }
         .dashboard-kpi::after { content: ''; position: absolute; right: -28px; bottom: -30px; width: 92px; height: 92px; border-radius: 50%; background: var(--dashboard-kpi-glow, #e8f1ff); opacity: .8; }
         .dashboard-kpi-head { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
@@ -450,8 +450,11 @@
         .dashboard-kpi-detail { position: relative; z-index: 1; margin-top: 8px; color: #68788e; font-size: 13px; line-height: 1.4; }
         .dashboard-kpi.is-amber { --dashboard-kpi-color: #b76d00; --dashboard-kpi-glow: #fff0cc; }
         .dashboard-kpi.is-green { --dashboard-kpi-color: #07814f; --dashboard-kpi-glow: #dcf8eb; }
-        .dashboard-kpi.is-red { --dashboard-kpi-color: #bb2940; --dashboard-kpi-glow: #ffe5e9; }
-        .dashboard-main-grid { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(290px, .65fr); gap: 18px; margin-bottom: 18px; align-items: start; }
+        .dashboard-main-grid { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(290px, .65fr); gap: 18px; margin-bottom: 18px; align-items: stretch; }
+        .dashboard-main-grid > .dashboard-panel { height: 100%; }
+        .dashboard-main-grid > .dashboard-panel:first-child { display: flex; flex-direction: column; }
+        .dashboard-main-grid > .dashboard-panel:first-child .dashboard-panel-body { flex: 1; display: flex; flex-direction: column; }
+        .dashboard-main-grid > .dashboard-panel:first-child .dashboard-decision-progress { margin-top: auto; }
         .dashboard-panel { overflow: hidden; border: 1px solid rgba(18, 54, 104, .1); border-radius: 19px; background: #fff; box-shadow: 0 10px 27px rgba(15, 45, 95, .07); }
         .dashboard-panel-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 18px 19px 14px; border-bottom: 1px solid #edf1f6; }
         .dashboard-panel-title { margin: 0; color: #173553; font-size: 17px; font-weight: 850; }
@@ -459,7 +462,7 @@
         .dashboard-panel-link { border: 0; color: #155fc2; background: transparent; font-size: 13px; font-weight: 800; }
         .dashboard-panel-link:hover, .dashboard-panel-link:focus { color: #003b8f; text-decoration: underline; }
         .dashboard-panel-body { padding: 17px 19px 19px; }
-        .dashboard-attention-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 11px; }
+        .dashboard-attention-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 11px; }
         .dashboard-attention-item { padding: 14px; border: 1px solid #e5ebf3; border-radius: 13px; background: #f9fbfd; }
         .dashboard-attention-item strong { display: block; color: #1d3a59; font-size: 22px; line-height: 1; }
         .dashboard-attention-item span { display: block; margin-top: 7px; color: #5f7289; font-size: 12px; font-weight: 800; text-transform: uppercase; }
@@ -503,7 +506,6 @@
         .dashboard-updated { display: flex; align-items: center; gap: 7px; margin-top: 14px; color: #687a90; font-size: 12px; }
 
         @media (max-width: 1050px) {
-            .dashboard-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
             .dashboard-main-grid, .dashboard-lower-grid { grid-template-columns: 1fr; }
         }
 
@@ -1446,7 +1448,7 @@
                     <article class="dashboard-kpi is-amber">
                         <div class="dashboard-kpi-head"><span class="dashboard-kpi-label">Needs attention</span><span class="dashboard-kpi-icon"><i class="bi bi-inbox"></i></span></div>
                         <div class="dashboard-kpi-value" id="dashboardNeedsAttention">0</div>
-                        <div class="dashboard-kpi-detail">Pending, under review, or flagged</div>
+                        <div class="dashboard-kpi-detail">Pending or under review</div>
                     </article>
                     <article class="dashboard-kpi">
                         <div class="dashboard-kpi-head"><span class="dashboard-kpi-label">Submitted today</span><span class="dashboard-kpi-icon"><i class="bi bi-calendar2-plus"></i></span></div>
@@ -1457,11 +1459,6 @@
                         <div class="dashboard-kpi-head"><span class="dashboard-kpi-label">Decision progress</span><span class="dashboard-kpi-icon"><i class="bi bi-check2-circle"></i></span></div>
                         <div class="dashboard-kpi-value" id="dashboardDecisionRate">0%</div>
                         <div class="dashboard-kpi-detail" id="dashboardDecisionDetail">0 of 0 applications decided</div>
-                    </article>
-                    <article class="dashboard-kpi is-red">
-                        <div class="dashboard-kpi-head"><span class="dashboard-kpi-label">Fingerprint alerts</span><span class="dashboard-kpi-icon"><i class="bi bi-fingerprint"></i></span></div>
-                        <div class="dashboard-kpi-value" id="dashboardFingerprintAlerts">0</div>
-                        <div class="dashboard-kpi-detail">Active biometric match notifications</div>
                     </article>
                 </div>
 
@@ -2551,32 +2548,26 @@
             return Number.isFinite(number) ? number : 0;
         }
 
-        function renderDashboardOperations(applicantData, criminalData, historyData, notificationData, systemData) {
+        function renderDashboardOperations(applicantData, criminalData, historyData, systemData) {
             const total = dashboardNumber(applicantData.total);
             const approved = dashboardNumber(applicantData.approved);
             const rejected = dashboardNumber(applicantData.rejected);
             const pending = dashboardNumber(applicantData.pending);
             const underReview = dashboardNumber(applicantData.under_review);
-            const flagged = dashboardNumber(applicantData.flagged);
-            const needsAttention = pending + underReview + flagged;
+            const needsAttention = pending + underReview;
             const decided = approved + rejected;
             const decisionRate = Math.max(0, Math.min(100, dashboardNumber(applicantData.decision_rate)));
-            const notifications = Array.isArray(notificationData.notifications) ? notificationData.notifications : [];
-            const activeAlerts = dashboardNumber(notificationData.count || notifications.length);
-
             document.getElementById('dashboardNeedsAttention').textContent = needsAttention.toLocaleString();
             document.getElementById('dashboardSubmittedToday').textContent = dashboardNumber(applicantData.submitted_today).toLocaleString();
             document.getElementById('dashboardWeeklyIntake').textContent = `${dashboardNumber(applicantData.submitted_last_7_days).toLocaleString()} received in the last 7 days`;
             document.getElementById('dashboardDecisionRate').textContent = `${decisionRate.toFixed(decisionRate % 1 ? 1 : 0)}%`;
             document.getElementById('dashboardDecisionDetail').textContent = `${decided.toLocaleString()} of ${total.toLocaleString()} applications decided`;
-            document.getElementById('dashboardFingerprintAlerts').textContent = activeAlerts.toLocaleString();
             document.getElementById('totalApplications').textContent = total.toLocaleString();
             document.getElementById('criminalCount').textContent = dashboardNumber(criminalData.total_criminals).toLocaleString();
 
             document.getElementById('dashboardAttentionBreakdown').innerHTML = [
                 { label: 'Pending', count: pending },
-                { label: 'Under review', count: underReview },
-                { label: 'Flagged', count: flagged }
+                { label: 'Under review', count: underReview }
             ].map((item) => `<div class="dashboard-attention-item"><strong>${item.count.toLocaleString()}</strong><span>${escapeHtml(item.label)}</span></div>`).join('');
 
             const progressTrack = document.getElementById('dashboardProgressTrack');
@@ -2641,9 +2632,6 @@
                     requestJson('backend/applicant_info.php?action=stats'),
                     requestJson('backend/criminal_record.php?action=stats'),
                     requestJson('backend/applicant_info.php?action=history'),
-                    canAccessFingerprintNotifications()
-                        ? requestJson('backend/applicant_info.php?action=notifications&state=active&limit=50')
-                        : Promise.resolve({ notifications: [], count: 0 }),
                     requestJson('backend/criminal_record.php?action=status')
                 ]);
                 const valueOr = (index, fallback) => results[index].status === 'fulfilled' ? results[index].value : fallback;
@@ -2655,8 +2643,7 @@
                     valueOr(0, {}),
                     valueOr(1, {}),
                     valueOr(2, { applicants: [] }),
-                    valueOr(3, { notifications: [], count: 0 }),
-                    valueOr(4, {})
+                    valueOr(3, {})
                 );
             } catch (error) {
                 console.error('Error loading dashboard:', error);
